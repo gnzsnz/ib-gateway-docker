@@ -61,8 +61,8 @@ Run:
 
     $ docker-compose up
 
-After about ~30s the following ports will be ready for usage on the container 
-and docker host:
+After image is donwloaded, container is started + 30s, the following ports will be ready for usage on the 
+container and docker host:
 
 | Port | Description                                |
 | ---- | ------------------------------------------ |
