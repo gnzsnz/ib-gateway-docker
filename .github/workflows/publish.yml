@@ -8,7 +8,6 @@ on:
 jobs:
   publish-docker:
     name: "Publish Docker Image"
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
