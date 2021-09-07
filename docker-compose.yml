@@ -1,0 +1,17 @@
+version: "3.4"
+
+services:
+  ib-gateway:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER}
+      TWS_USERID: ${TWS_USERID}
+      TWS_PASSWORD: ${TWS_PASSWORD}
+      TRADING_MODE: ${TRADING_MODE:-live}
+    ports:
+      - "127.0.0.2:4001:4001"
+      - "127.0.0.2:4002:4002"
+      - "127.0.0.2:5900:5900"
