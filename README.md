@@ -1,4 +1,4 @@
-![GitHub Logo](/doc/res/logo.png)
+<img src="https://github.com/waytrade/ib-gateway-docker/blob/master/doc/res/logo.png" height="300" />
 
 # Interactive Brokers Gateway Docker
 
@@ -73,7 +73,7 @@ and docker host:
 
 _Note that those port are only exposed to the docker host (127.0.0.1), 
 but not to the network of the host. To expose it to the whole network change the port
-mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). **Attention**: see [Leaving localhost](###Leavinglocalhost)_
+mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). **Attention**: see [Leaving localhost](#Leavinglocalhost)_
 
 ## Versions and Tags
 
@@ -85,7 +85,7 @@ archive of historic versions. Therefore this respoitory contains the full
 Gateway installation file for all supported versions, so that that a specifc
 image version can be re-build on-demand.
 
-See [Supported tags](##Supportedtags)
+See [Supported tags](#SupportedTags)
 
 ## Security Considerations
 
