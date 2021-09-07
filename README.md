@@ -8,7 +8,7 @@ This is the home of the **waytrade/ib-gateway-docker** images.
 
 A docker image to run the Interactive Brokers Gateway Application without any human interaction on a docker container.
 
-It contains:
+It includes:
 - [IB Gateway Application](https://www.interactivebrokers.com/en/index.php?f=16457)
 - [IBC Application](https://github.com/IbcAlpha/IBC) -
 to controll the IB Gateway Application (simulates user input).
@@ -16,6 +16,7 @@ to controll the IB Gateway Application (simulates user input).
 a X11 virtual framebuffer to run IB Gateway Application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) -
 a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintainance purpose).
+- [socat](https://linux.die.net/man/1/socat) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to 127.0.0.1 by default).
 
 ## How to use?
 
@@ -55,7 +56,7 @@ Example .env file:
 TWS_USERID=myAccountName
 TWS_PASSWORD=myPassword
 TRADING_MODE=paper
-ENABLE_VNC=true
+ENABLE_VNC_SERVER=true
 ```
 
 Run:
@@ -69,11 +70,12 @@ and docker host:
 | ---- | ------------------------------------------ |
 | 4001 | TWS API port for live accounts.            |
 | 4002 | TWS API port for paper accounts.           |
-| 5900 | 'live' or 'paper'                          |
+| 5900 | When ENABLE_VNC_SERVER was defined, this the VNC port. |
 
 _Note that those port are only exposed to the docker host (127.0.0.1), 
 but not to the network of the host. To expose it to the whole network change the port
-mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). **Attention**: see [Leaving localhost](#Leaving-localhost)_
+mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). 
+**Attention**: see [Leaving localhost](#Leaving-localhost)_
 
 ## Versions and Tags
 
@@ -86,6 +88,22 @@ Gateway installation file for all supported versions, so that that a specifc
 image version can be re-build on-demand.
 
 See [Supported tags](#Supported-Tags)
+
+## Customizing the image
+
+The image can be customized by overwiting the default configuration files
+with custom ones.
+
+Apps and config file locations:
+
+| App |  Folder  | Config file  | Default |
+| ---- | -------------------- | ------------ | ------- |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini | [jts.ini](https://github.com/waytrade/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
+| IBC | /root/ibc | /root/ibc/config.ini | [config.ini](https://github.com/waytrade/ib-gateway-docker/blob/master/config/ibc/config.ini) |   
+
+To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
+run-script.
+
 
 ## Security Considerations
 
