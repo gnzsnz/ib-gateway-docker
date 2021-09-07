@@ -27,15 +27,13 @@ version: "3.4"
 
 services:
   ib-gateway:
+    image: waytrade/ib-gateway:1010
     restart: always
-    build:
-      context: .
-      dockerfile: ./Dockerfile
     environment:
+      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER}
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-live}
-      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER}
     ports:
       - "127.0.0.2:4001:4001"
       - "127.0.0.2:4002:4002"
@@ -109,19 +107,23 @@ run-script.
 
 ### Leaving localhost
 
-The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket connection between a client and the IB Gateway. If the port to IB API is open 
+The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket 
+connection between a client and the IB Gateway. If the port to IB API is open 
 to the network, every device on it (including potential rogue devices) access 
 your IB account via the IB Gateway.\
 Because of this, the default `docker-comose.yml` only exposes the IB API port 
 to the **localhost** on the docker host, but not to the whole network. \
-If you want to connect to IB Gateway from a remote device, consider adding an additional layer of security (e.g. TLS/SSL) to protect the 'plain text' TCP 
+If you want to connect to IB Gateway from a remote device, consider adding an 
+additional layer of security (e.g. TLS/SSL) to protect the 'plain text' TCP 
 sockets against unauthorized access or manipulation.
 
 ### Credentials
 
 This image does not contain nor store any user credentials. \
 They are provided as environment variable during the container startup and
-the host is responsible to properly protect it (e.g. use [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) or similar).
+the host is responsible to properly protect it (e.g. use 
+[Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) 
+or similar).
 
 ## Supported Tags
 
