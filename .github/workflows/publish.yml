@@ -1,10 +1,8 @@
 name: "Publish Docker"
 
 on:
-  push:
-    branches:
-      - master
-    tags: 
+  create:
+    tags:
       - v*
 
 jobs:
