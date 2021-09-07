@@ -16,15 +16,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Set vars
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag production
+        run: docker build . --file Dockerfile
 
       - name: Push image
         run: |
