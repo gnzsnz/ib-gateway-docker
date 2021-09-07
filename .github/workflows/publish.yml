@@ -24,8 +24,8 @@ jobs:
 
       - name: Push image
         run: |
-          IMAGE_NAME=production
-          IMAGE_ID=ghcr.io/${{ github.repository }}/ib-gateway
+          IMAGE_NAME=ib-gateway
+          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           # Strip git ref prefix from version
