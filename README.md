@@ -35,9 +35,9 @@ services:
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-live}
     ports:
-      - "127.0.0.2:4001:4001"
-      - "127.0.0.2:4002:4002"
-      - "127.0.0.2:5900:5900"
+      - "127.0.0.1:4001:4001"
+      - "127.0.0.1:4002:4002"
+      - "127.0.0.1:5900:5900"
 ```
 
 Create an .env on root directory or set the following environment variables:
