@@ -79,12 +79,6 @@ mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:').
 
 The docker image version is similar to the IB Gateway version on the image.
 
-The IB Gateway Application is published via two channels: 'stable' and 'latest'.
-IB does not let you choose a specific version for download, nor is there an 
-archive of historic versions. Therefore this repository contains the full 
-Gateway installation file for all supported versions, so that a specific
-image version can be re-build at any time.
-
 See [Supported tags](#Supported-Tags)
 
 ## Customizing the image
