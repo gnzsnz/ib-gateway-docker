@@ -2,7 +2,7 @@
 
 # Interactive Brokers Gateway Docker
 
-This is the home of the **waytrade/ib-gateway-docker** images.
+This is the home of the **[waytrade/ib-gateway](https://hub.docker.com/r/waytrade/ib-gateway)** images.
 
 ## What is it?
 
@@ -70,7 +70,7 @@ container and docker host:
 | 4002 | TWS API port for paper accounts.           |
 | 5900 | When ENABLE_VNC_SERVER was defined, this the VNC port. |
 
-_Note that those port are only exposed to the docker host (127.0.0.1), 
+_Note that those ports are only exposed to the docker host (127.0.0.1), 
 but not to the network of the host. To expose it to the whole network change the port
 mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). 
 **Attention**: see [Leaving localhost](#Leaving-localhost)_
@@ -82,8 +82,8 @@ The docker image version is similar to the IB Gateway version on the image.
 The IB Gateway Application is published via two channels: 'stable' and 'latest'.
 IB does not let you choose a specific version for download, nor is there an 
 archive of historic versions. Therefore this repository contains the full 
-Gateway installation file for all supported versions, so that that a specific
-image version can be re-build on-demand.
+Gateway installation file for all supported versions, so that a specific
+image version can be re-build at any time.
 
 See [Supported tags](#Supported-Tags)
 
@@ -109,7 +109,7 @@ run-script.
 
 The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket 
 connection between a client and the IB Gateway. If the port to IB API is open 
-to the network, every device on it (including potential rogue devices) access 
+to the network, every device on it (including potential rogue devices) can access 
 your IB account via the IB Gateway.\
 Because of this, the default `docker-compose.yml` only exposes the IB API port 
 to the **localhost** on the docker host, but not to the whole network. \
