@@ -1,4 +1,4 @@
-ARG IB_GATWAY_VERSION=1010
+ARG IB_GATEWAY_VERSION=1010
 ARG IBC_VERSION=3.10.0
 
 #
@@ -10,7 +10,7 @@ ARG IBC_VERSION=3.10.0
 
 FROM ubuntu:20.04 as setup
 
-ARG IB_GATWAY_VERSION
+ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
 
 # Prepare system
@@ -23,9 +23,9 @@ RUN apt-get install --no-install-recommends --yes \
 WORKDIR /tmp/setup
 
 # Install IB Gateway
-COPY ./external/ibgateway/ibgateway-${IB_GATWAY_VERSION}-standalone-linux-x64.sh ./external/ibgateway/ibgateway-${IB_GATWAY_VERSION}-standalone-linux-x64.sh
-RUN chmod a+x ./external/ibgateway/ibgateway-${IB_GATWAY_VERSION}-standalone-linux-x64.sh
-RUN ./external/ibgateway/ibgateway-${IB_GATWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATWAY_VERSION}
+COPY ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+RUN chmod a+x ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+RUN ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
 COPY ./config/ibgateway/jts.ini /root/Jts/jts.ini
 
 # Install IBC
@@ -45,7 +45,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:20.04
 
-ARG IB_GATWAY_VERSION
+ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
 
 WORKDIR /root
@@ -68,7 +68,7 @@ RUN chmod a+x /root/scripts/*.sh
 COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
 
 # IBC env vars
-ENV TWS_MAJOR_VRSN ${IB_GATWAY_VERSION}
+ENV TWS_MAJOR_VRSN ${IB_GATEWAY_VERSION}
 ENV TWS_PATH /root/Jts
 ENV IBC_PATH /root/ibc
 ENV IBC_INI /root/ibc/config.ini
