@@ -2,7 +2,7 @@
 
 # Interactive Brokers Gateway Docker
 
-This is the home of the **[waytrade/ib-gateway[(https://hub.docker.com/r/waytrade/ib-gateway)** images.
+This is the home of the **[waytrade/ib-gateway](https://hub.docker.com/r/waytrade/ib-gateway)** images.
 
 ## What is it?
 
