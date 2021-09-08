@@ -30,10 +30,10 @@ services:
     image: waytrade/ib-gateway:1010
     restart: always
     environment:
-      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER}
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-live}
+      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER:-}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
