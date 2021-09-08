@@ -70,7 +70,7 @@ container and docker host:
 | 4002 | TWS API port for paper accounts.           |
 | 5900 | When ENABLE_VNC_SERVER was defined, this the VNC port. |
 
-_Note that those port are only exposed to the docker host (127.0.0.1), 
+_Note that those ports are only exposed to the docker host (127.0.0.1), 
 but not to the network of the host. To expose it to the whole network change the port
 mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). 
 **Attention**: see [Leaving localhost](#Leaving-localhost)_
