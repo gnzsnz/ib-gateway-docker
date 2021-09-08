@@ -2,6 +2,8 @@
 
 # Interactive Brokers Gateway Docker
 
+[![Publish Docker](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml/badge.svg)](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml)
+
 This is the home of the **[waytrade/ib-gateway](https://hub.docker.com/r/waytrade/ib-gateway)** images.
 
 ## What is it?
