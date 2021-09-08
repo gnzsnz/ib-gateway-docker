@@ -11,11 +11,11 @@ A docker image to run the Interactive Brokers Gateway Application without any hu
 It includes:
 - [IB Gateway Application](https://www.interactivebrokers.com/en/index.php?f=16457)
 - [IBC Application](https://github.com/IbcAlpha/IBC) -
-to controll the IB Gateway Application (simulates user input).
+to control the IB Gateway Application (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) -
 a X11 virtual framebuffer to run IB Gateway Application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) -
-a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintainance purpose).
+a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
 - [socat](https://linux.die.net/man/1/socat) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to 127.0.0.1 by default).
 
 ## How to use?
@@ -61,7 +61,7 @@ Run:
 
     $ docker-compose up
 
-After image is donwloaded, container is started + 30s, the following ports will be ready for usage on the 
+After image is downloaded, container is started + 30s, the following ports will be ready for usage on the 
 container and docker host:
 
 | Port | Description                                |
@@ -81,8 +81,8 @@ The docker image version is similar to the IB Gateway version on the image.
 
 The IB Gateway Application is published via two channels: 'stable' and 'latest'.
 IB does not let you choose a specific version for download, nor is there an 
-archive of historic versions. Therefore this respoitory contains the full 
-Gateway installation file for all supported versions, so that that a specifc
+archive of historic versions. Therefore this repository contains the full 
+Gateway installation file for all supported versions, so that that a specific
 image version can be re-build on-demand.
 
 See [Supported tags](#Supported-Tags)
@@ -111,7 +111,7 @@ The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket
 connection between a client and the IB Gateway. If the port to IB API is open 
 to the network, every device on it (including potential rogue devices) access 
 your IB account via the IB Gateway.\
-Because of this, the default `docker-comose.yml` only exposes the IB API port 
+Because of this, the default `docker-compose.yml` only exposes the IB API port 
 to the **localhost** on the docker host, but not to the whole network. \
 If you want to connect to IB Gateway from a remote device, consider adding an 
 additional layer of security (e.g. TLS/SSL) to protect the 'plain text' TCP 
