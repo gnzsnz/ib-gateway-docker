@@ -109,7 +109,7 @@ run-script.
 
 The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket 
 connection between a client and the IB Gateway. If the port to IB API is open 
-to the network, every device on it (including potential rogue devices) access 
+to the network, every device on it (including potential rogue devices) can access 
 your IB account via the IB Gateway.\
 Because of this, the default `docker-compose.yml` only exposes the IB API port 
 to the **localhost** on the docker host, but not to the whole network. \
