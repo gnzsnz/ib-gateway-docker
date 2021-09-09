@@ -33,7 +33,7 @@ services:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-live}
-      ENABLE_VNC_SERVER: ${ENABLE_VNC_SERVER:-}
+      VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -42,19 +42,19 @@ services:
 
 Create an .env on root directory or set the following environment variables:
 
-| Varabiel          | Description                                | Default                |
-| ----------------- | ------------------------------------------ | -----------------------|
-| TWS_USERID        | The TWS user name.                         |                        |
-| TWS_PASSWORD      | The TWS password.                          |                        |
-| TRADING_MODE      | 'live' or 'paper'                          | live                   |
-| ENABLE_VNC_SERVER | If defined, enable VNC server.             | not defined (disabled) |
+| Varabiel            | Description                                | Default                |
+| ------------------- | ------------------------------------------ | -----------------------|
+| TWS_USERID          | The TWS user name.                         |                        |
+| TWS_PASSWORD        | The TWS password.                          |                        |
+| TRADING_MODE        | 'live' or 'paper'                          | paper                  |
+| VNC_SERVER_PASSWORD | VNC server password. If not defined, no VNC server will be started. | not defined (VNC disabled) |
 
 Example .env file:
 ```
-TWS_USERID=myAccountName
-TWS_PASSWORD=myPassword
+TWS_USERID=myTwsAccountName
+TWS_PASSWORD=myTwsPassword
 TRADING_MODE=paper
-ENABLE_VNC_SERVER=true
+VNC_SERVER_PASSWORD=myVncPassword
 ```
 
 Run:
@@ -64,16 +64,16 @@ Run:
 After image is downloaded, container is started + 30s, the following ports will be ready for usage on the 
 container and docker host:
 
-| Port | Description                                |
-| ---- | ------------------------------------------ |
-| 4001 | TWS API port for live accounts.            |
-| 4002 | TWS API port for paper accounts.           |
-| 5900 | When ENABLE_VNC_SERVER was defined, this the VNC port. |
+| Port | Description                                                |
+| ---- | ---------------------------------------------------------- |
+| 4001 | TWS API port for live accounts.                            |
+| 4002 | TWS API port for paper accounts.                           |
+| 5900 | When VNC_SERVER_PASSWORD was defined, the VNC server port. |
 
-_Note that those ports are only exposed to the docker host (127.0.0.1), 
-but not to the network of the host. To expose it to the whole network change the port
-mappings on `docker-compose.yml` accordingly (remove the '127.0.0.1:'). 
-**Attention**: see [Leaving localhost](#Leaving-localhost)_
+_Note that with the above `docker-compose.yml`, ports are only exposed to the 
+docker host (127.0.0.1), but not to the network of the host. To expose it to 
+the whole network change the port mappings on accordingly (remove the 
+'127.0.0.1:'). **Attention**: See [Leaving localhost](#Leaving-localhost)_
 
 ## Versions and Tags
 
@@ -108,8 +108,8 @@ your IB account via the IB Gateway.\
 Because of this, the default `docker-compose.yml` only exposes the IB API port 
 to the **localhost** on the docker host, but not to the whole network. \
 If you want to connect to IB Gateway from a remote device, consider adding an 
-additional layer of security (e.g. TLS/SSL) to protect the 'plain text' TCP 
-sockets against unauthorized access or manipulation.
+additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the 
+'plain text' TCP sockets against unauthorized access or manipulation.
 
 ### Credentials
 
@@ -125,4 +125,3 @@ or similar).
 | --- | ------------------ | -------------------------- |------------ |
 | 1010 | 10.10             | latest                     | 3.10.0      |
 | 981 | 981c               | stable                     | 3.10.0      |
- 

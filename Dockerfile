@@ -1,4 +1,4 @@
-ARG IB_GATEWAY_VERSION=1010
+ARG IB_GATEWAY_VERSION=981
 ARG IBC_VERSION=3.10.0
 
 #
@@ -23,9 +23,9 @@ RUN apt-get install --no-install-recommends --yes \
 WORKDIR /tmp/setup
 
 # Install IB Gateway
-COPY ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-RUN chmod a+x ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-RUN ./external/ibgateway/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
+RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+RUN chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+RUN ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
 COPY ./config/ibgateway/jts.ini /root/Jts/jts.ini
 
 # Install IBC
