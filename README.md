@@ -93,8 +93,8 @@ Note the the [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/mas
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version, 
 but IB does only provide donwload links for the 'latest' or 'stable' version (there is no 'old version' donwload archive). \
 The installer files stored on [releases](https://github.com/waytrade/ib-gateway-docker/releases) have been donwloaded from 
-IB homepage and renamed to refelect the version.
-If you want to Gateway donwload from IB homepage directly, or use your local installation file, change this line 
+IB homepage and renamed to refelect the version.\
+If you want to donwload Gateway from IB homepage directly, or use your local installation file, change this line 
 on [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile)
 ```RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh``` to download (or copy) the file from the source you prefer.\
 Example: change to  ```RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh``` for using current stable version from IB homepage.
