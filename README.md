@@ -86,8 +86,8 @@ See [Supported tags](#Supported-Tags)
 
 ### IB Gateway installation files
 
-Note the the [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile) 
-**does not donwload IB Gateway installer files from IB homepage but from the
+Note that the [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile) 
+**does not download IB Gateway installer files from IB homepage but from the
 [releases](https://github.com/waytrade/ib-gateway-docker/releases) of this project**.
 
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version, 
