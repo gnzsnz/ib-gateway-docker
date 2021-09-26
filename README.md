@@ -83,6 +83,20 @@ The docker image version is similar to the IB Gateway version on the image.
 
 See [Supported tags](#Supported-Tags)
 
+
+### IB Gateway installation files
+
+Note the the [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile) 
+**does not donwload IB Gateway installer files from IB homepage but from the
+[releases](https://github.com/waytrade/ib-gateway-docker/releases) of this project**.
+
+This is because it shall be possible to (re-)build the image, targeting a specific Gateway version, 
+but IB does only provide donwload links for the 'latest' or 'stable' version (there is no 'old version' donwload archive). \
+If you want to Gateway donwload from IB homepage directly, or use your local installation file, change this line 
+on [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile)
+```RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh``` to download (or copy) the file from the source you prefer.
+
+
 ## Customizing the image
 
 The image can be customized by overwiting the default configuration files
