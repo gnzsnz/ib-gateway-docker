@@ -142,5 +142,7 @@ or similar).
 
 | Tag | IB Gateway Version | IB Gateway Release Channel | IBC Version |
 | --- | ------------------ | -------------------------- |------------ |
+| 1012.2c | 10.10.2c       | latest                     | 3.12.0      |
+| 981.3g | 981.3g          | stable                     | 3.12.0      |
 | 1010 | 10.10             | latest                     | 3.10.0      |
 | 981 | 981c               | stable                     | 3.10.0      |
