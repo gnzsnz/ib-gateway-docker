@@ -29,7 +29,7 @@ version: "3.4"
 
 services:
   ib-gateway:
-    image: waytrade/ib-gateway:1010
+    image: waytrade/ib-gateway:1012.2c
     restart: always
     environment:
       TWS_USERID: ${TWS_USERID}
