@@ -44,7 +44,7 @@ services:
 
 Create an .env on root directory or set the following environment variables:
 
-| Varabiel            | Description                                | Default                |
+| Variable            | Description                                | Default                |
 | ------------------- | ------------------------------------------ | -----------------------|
 | TWS_USERID          | The TWS user name.                         |                        |
 | TWS_PASSWORD        | The TWS password.                          |                        |
@@ -91,9 +91,9 @@ Note that the [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/ma
 [releases](https://github.com/waytrade/ib-gateway-docker/releases) of this project**.
 
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version, 
-but IB does only provide donwload links for the 'latest' or 'stable' version (there is no 'old version' donwload archive). \
-The installer files stored on [releases](https://github.com/waytrade/ib-gateway-docker/releases) have been donwloaded from 
-IB homepage and renamed to refelect the version.\
+but IB does only provide download links for the 'latest' or 'stable' version (there is no 'old version' download archive). \
+The installer files stored on [releases](https://github.com/waytrade/ib-gateway-docker/releases) have been downloaded from 
+IB homepage and renamed to reflect the version.\
 If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line 
 on [Dockerfile](https://github.com/waytrade/ib-gateway-docker/blob/master/Dockerfile)
 ```RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh``` to download (or copy) the file from the source you prefer.\
@@ -102,7 +102,7 @@ Example: change to  ```RUN curl -sSL https://download2.interactivebrokers.com/in
 
 ## Customizing the image
 
-The image can be customized by overwiting the default configuration files
+The image can be customized by overwriting the default configuration files
 with custom ones.
 
 Apps and config file locations:
