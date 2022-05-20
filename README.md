@@ -1,8 +1,15 @@
 <img src="https://github.com/waytrade/ib-gateway-docker/blob/master/doc/res/logo.png" height="300" />
 
-# Interactive Brokers Gateway Docker
+
+# Interactive Brokers Gateway Docker (INACTIVE PROJECT!)
 
 [![Publish Docker](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml/badge.svg)](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml)
+
+## Aborted Project!!
+I have got banned from IB (https://github.com/stoqey/ib/discussions/137) and have no more need for this project, therefore it has been aborted. \
+**There won't be any more updates, if you use it currently, fork it and continue maintance on your own**
+
+
 
 This is the home of the **[waytrade/ib-gateway](https://hub.docker.com/r/waytrade/ib-gateway)** images.
 
