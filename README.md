@@ -97,6 +97,7 @@ with
 ```
 COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh 
 ```
+3) Remove ```RUN sha256sum --check ./checksums/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256``` (unless you want to keep checksum-check)
 3) Donwload IB Gateway and name the file ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh, where {IB_GATEWAY_VERSION} must match the version as configured on Dockerfile (first line)
 4) Donwload IBC and name the file IBCLinux-{IBC_VERSION}.zip , where {IBC_VERSION} must match the version as configured on Dockerfile (second line)
 5) Build and run: ```docker-compose up --build```
