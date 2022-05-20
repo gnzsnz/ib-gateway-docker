@@ -88,7 +88,7 @@ the whole network change the port mappings on accordingly (remove the
 ```
 git clone https://github.com/waytrade/ib-gateway-docker
 ```
-2) Change docker file to use local IB Gateway installer file instead of loading it from this project:
+2) Change docker file to use your local IB Gateway installer file, instead of loading it from this project releases:
 Open `Dockerfile` on editor and replace this line:
 ```
 RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`
@@ -97,7 +97,7 @@ with
 ```
 COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh 
 ```
-3) Remove ```RUN sha256sum --check ./checksums/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256``` (unless you want to keep checksum-check)
+3) Remove ```RUN sha256sum --check ./checksums/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256``` from Dockerfile (unless you want to keep checksum-check)
 3) Donwload IB Gateway and name the file ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh, where {IB_GATEWAY_VERSION} must match the version as configured on Dockerfile (first line)
 4) Donwload IBC and name the file IBCLinux-{IBC_VERSION}.zip , where {IBC_VERSION} must match the version as configured on Dockerfile (second line)
 5) Build and run: ```docker-compose up --build```
