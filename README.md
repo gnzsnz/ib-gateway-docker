@@ -1,7 +1,7 @@
 <img src="https://github.com/waytrade/ib-gateway-docker/blob/master/doc/res/logo.png" height="300" />
 
 
-# Interactive Brokers Gateway Docker (INACTIVE PROJECT!)
+# Interactive Brokers Gateway Docker (ABORTED!)
 
 [![Publish Docker](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml/badge.svg)](https://github.com/waytrade/ib-gateway-docker/actions/workflows/publish.yml)
 
