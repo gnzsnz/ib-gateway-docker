@@ -9,9 +9,7 @@
 I have got banned from IB (https://github.com/stoqey/ib/discussions/137) and have no more need for this project, therefore it has been aborted. \
 **There won't be any more updates, if you use it currently, fork it and continue maintance on your own**
 
-
-
-This is the home of the **[waytrade/ib-gateway](https://hub.docker.com/r/waytrade/ib-gateway)** images.
+-----------------------------------------------------
 
 ## What is it?
 
