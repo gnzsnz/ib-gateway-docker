@@ -98,8 +98,7 @@ COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 ```
 3) Donwload IB Gateway and name the file ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh, where {IB_GATEWAY_VERSION} must match the version as configured on Dockerfile (first line)
 4) Donwload IBC and name the file IBCLinux-{IBC_VERSION}.zip , where {IBC_VERSION} must match the version as configured on Dockerfile (second line)
-5) Build and run it: ```docker-compose up --build" 
-
+5) Build and run it: ```docker-compose up --build```
 
 ## Versions and Tags
 
