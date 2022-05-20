@@ -82,6 +82,25 @@ docker host (127.0.0.1), but not to the network of the host. To expose it to
 the whole network change the port mappings on accordingly (remove the 
 '127.0.0.1:'). **Attention**: See [Leaving localhost](#Leaving-localhost)_
 
+## How build locally
+
+1) Clone this repo
+```
+git clone https://github.com/waytrade/ib-gateway-docker
+```
+2) Change docker file to use local IB Gateway installer file instead of loading it from this project:
+Open `Dockerfile` on editor and replace this line:
+```
+RUN curl -sSL https://github.com/waytrade/ib-gateway-docker/releases/download/v${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`
+```
+with
+COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh 
+```
+3) Donwload IB Gateway and name the file ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh, where {IB_GATEWAY_VERSION} must match the version as configured on Dockerfile (first line)
+4) Donwload IBC and name the file IBCLinux-{IBC_VERSION}.zip , where {IBC_VERSION} must match the version as configured on Dockerfile (second line)
+5) Build and run it: ```docker-compose up --build" 
+
+
 ## Versions and Tags
 
 The docker image version is similar to the IB Gateway version on the image.
