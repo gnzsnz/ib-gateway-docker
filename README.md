@@ -174,5 +174,5 @@ or similar).
 
 | Tag                                                                                                         | IB Gateway Version  | IB Gateway Release Channel | IBC Version  |
 | ----------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------- | ------------ |
-| [1016.1i](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/25859150?tag=1012.2m) | [10.16.1i]()            | latest                     | 3.13.0       |
-| [1012.2m](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/25859150?tag=1012.2m) | [10.12.2m]()            | stable                     | 3.13.0       |
+| [1016.1i](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/25859150?tag=1012.2m) | 10.16.1i            | `latest`                   | 3.13.0       |
+| [1012.2m](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/25859150?tag=1012.2m) | 10.12.2m            | `stable`                   | 3.13.0       |
