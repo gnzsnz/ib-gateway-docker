@@ -25,14 +25,14 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/unusualalpha/ib-gateway
-        flavor: |
-          latest=false
-        tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+          flavor: |
+            latest=false
+          tags: |
+              type=ref,event=branch
+              type=ref,event=pr
+              type=match,pattern=v(\d+.\d+),group=1
+              type=match,pattern=v(\d+.\d+.\w+),group=1
+              type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
         uses: docker/login-action@17f28ab24d0d2832d5ff23a1409bbfc373ebcb96
