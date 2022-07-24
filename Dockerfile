@@ -8,7 +8,7 @@ ARG IBC_VERSION=3.13.0
 # production image and consume unnecessary space.
 #
 
-FROM ubuntu:20.04 as setup
+FROM ubuntu:22.04 as setup
 
 ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
@@ -49,7 +49,7 @@ COPY ./scripts /root/scripts
 # Build Stage: build production image
 #
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
