@@ -178,3 +178,5 @@ or similar).
 | --------------------------------------------------------------------------------------- | ------------------- | -------------------------- | ------------ |
 | [1016.1i](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.16.1i            | `latest`                   | 3.13.0       |
 | [1012.2m](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.12.2m            | `stable`                   | 3.13.0       |
+| [10.16.1n](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/)| 10.16.1n            | `latest`                   | 3.14.0       |
+| [10.12.2p](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.12.2p            | `stable`                   | 3.14.0       |
