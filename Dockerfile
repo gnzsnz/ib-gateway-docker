@@ -40,7 +40,7 @@ RUN mkdir /root/ibc
 RUN unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc
 RUN chmod -R u+x /root/ibc/*.sh 
 RUN chmod -R u+x /root/ibc/scripts/*.sh
-COPY ./config/ibc/config.ini /root/ibc/config.ini
+COPY ./config/ibc/config.ini.tmpl /root/ibc/config.ini.tmpl
 
 # Copy scripts
 COPY ./scripts /root/scripts
@@ -59,6 +59,7 @@ WORKDIR /root
 # Prepare system
 RUN apt-get update -y
 RUN apt-get install --no-install-recommends --yes \
+  gettext \
   xvfb \
   libxslt-dev \
   libxrender1 \

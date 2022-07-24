@@ -10,6 +10,8 @@ if [ -n "$VNC_SERVER_PASSWORD" ]; then
   /root/scripts/run_x11_vnc.sh &
 fi
 
+envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
+
 /root/scripts/fork_ports_delayed.sh &
 
 /root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \

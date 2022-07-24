@@ -12,7 +12,7 @@ A docker image to run the Interactive Brokers Gateway Application without any hu
 
 It includes:
 
-- [IB Gateway Application](https://www.interactivebrokers.com/en/index.php?f=16457)
+- [IB Gateway Application](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php), [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - [IBC Application](https://github.com/IbcAlpha/IBC) -
 to control the IB Gateway Application (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) -
@@ -50,6 +50,7 @@ Create an .env on root directory or set the following environment variables:
 | `TWS_USERID`          | The TWS **username**.                                               |                            |
 | `TWS_PASSWORD`        | The TWS **password**.                                               |                            |
 | `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
+| `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not-set**                |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | not defined (VNC disabled) |
 
 Example .env file:
@@ -58,6 +59,7 @@ Example .env file:
 TWS_USERID=myTwsAccountName
 TWS_PASSWORD=myTwsPassword
 TRADING_MODE=paper
+READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
 ```
 
@@ -140,10 +142,10 @@ with custom ones.
 
 Apps and config file locations:
 
-| App        |  Folder   | Config file          | Default                                                                                           |
-| ---------- | --------- | -------------------- | ------------------------------------------------------------------------------------------------- |
-| IB Gateway | /root/Jts | /root/Jts/jts.ini    | [jts.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
-| IBC        | /root/ibc | /root/ibc/config.ini | [config.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibc/config.ini) |
+| App        |  Folder   | Config file               | Default                                                                                           |
+| ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
+| IBC        | /root/ibc | /root/ibc/config.ini.tmpl | [config.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
