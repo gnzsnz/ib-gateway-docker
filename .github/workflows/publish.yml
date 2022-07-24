@@ -25,6 +25,14 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ghcr.io/unusualalpha/ib-gateway
+        flavor: |
+          latest=false
+        tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=match,pattern=v(\d+.\d+),group=1
+            type=match,pattern=v(\d+.\d+.\w+),group=1
+            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
         uses: docker/login-action@17f28ab24d0d2832d5ff23a1409bbfc373ebcb96
@@ -40,23 +48,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      # - name: Build image
-      #   run: docker build . --file Dockerfile --tag ib-gateway
-
-      # - name: Push image
-      #   run: |
-      #     IMAGE_NAME=ib-gateway
-      #     IMAGE_ID=ghcr.io/unusualalpha/$IMAGE_NAME
-      #     # Change all uppercase to lowercase
-      #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-      #     # Strip git ref prefix from version
-      #     VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-      #     # Strip "v" prefix from tag name
-      #     [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-      #     # Use Docker `latest` tag convention
-      #     [ "$VERSION" == "master" ] && VERSION=latest
-      #     echo IMAGE_ID=$IMAGE_ID
-      #     echo VERSION=$VERSION
-      #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-      #     docker push $IMAGE_ID:$VERSION
