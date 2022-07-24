@@ -6,9 +6,6 @@ on:
       - 'master'
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - 'master'
 
 jobs:
   publish-docker:
@@ -28,8 +25,6 @@ jobs:
           flavor: |
             latest=false
           tags: |
-              type=ref,event=branch
-              type=ref,event=pr
               type=match,pattern=v(\d+.\d+),group=1
               type=match,pattern=v(\d+.\d+.\w+),group=1
               type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
@@ -45,6 +40,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
