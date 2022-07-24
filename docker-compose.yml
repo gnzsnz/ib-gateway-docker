@@ -10,6 +10,7 @@ services:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
+      READ_ONLY_API: ${READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
     ports:
       - "127.0.0.1:4001:4001"

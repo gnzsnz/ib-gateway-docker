@@ -8,7 +8,7 @@ ARG IBC_VERSION=3.13.0
 # production image and consume unnecessary space.
 #
 
-FROM ubuntu:20.04 as setup
+FROM ubuntu:22.04 as setup
 
 ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
@@ -33,7 +33,6 @@ RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.
 RUN chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 RUN ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
 COPY ./config/ibgateway/jts.ini /root/Jts/jts.ini
-COPY ./config/ibgateway/ibgateway.vmoptions /root/Jts/ibgateway/${IB_GATEWAY_VERSION}/
 
 # Install IBC
 RUN curl -sSL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip --output IBCLinux-${IBC_VERSION}.zip
@@ -41,7 +40,7 @@ RUN mkdir /root/ibc
 RUN unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc
 RUN chmod -R u+x /root/ibc/*.sh 
 RUN chmod -R u+x /root/ibc/scripts/*.sh
-COPY ./config/ibc/config.ini /root/ibc/config.ini
+COPY ./config/ibc/config.ini.tmpl /root/ibc/config.ini.tmpl
 
 # Copy scripts
 COPY ./scripts /root/scripts
@@ -50,7 +49,7 @@ COPY ./scripts /root/scripts
 # Build Stage: build production image
 #
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG IB_GATEWAY_VERSION
 ARG IBC_VERSION
@@ -60,6 +59,7 @@ WORKDIR /root
 # Prepare system
 RUN apt-get update -y
 RUN apt-get install --no-install-recommends --yes \
+  gettext \
   xvfb \
   libxslt-dev \
   libxrender1 \
