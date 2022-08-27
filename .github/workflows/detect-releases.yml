@@ -1,0 +1,50 @@
+name: Detect IB-Gateway Releases
+
+on:
+  workflow_dispatch:
+
+jobs:
+  detect-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        channel: ["stable", "latest"]
+    steps:
+      - name: Cache Versions
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.channel }}-versions
+          key: ${{ runner.os }}-${{ matrix.channel }}-versions
+
+      - name: Get Latest Version
+        id: version
+        run: |
+          set -ex
+          res=$(curl -s https://download2.interactivebrokers.com/installers/tws/${{ matrix.channel }}-standalone/version.json | sed 's/tws${{ matrix.channel }}_callback(//g;s/);//g')
+          build_version=$(jq -r '.buildVersion' <<< "$res")
+          build_dateTime=$(jq -r '.buildDateTime' <<< "$res")
+          echo "buildVersion: $buildVersion"
+          echo "::set-output name=build_version::$build_version"
+          echo "::set-output name=build_dateTime::$build_dateTime"
+
+      - name: Check if there is an update
+        id: check-update
+        run: |
+          set -ex
+          if ! grep -Fxq "${{ steps.version.outputs.build_version }}" ${{ matrix.channel }}-versions
+          then
+            echo "::set-output name=has_update::false"
+          else
+            echo "::set-output name=has_update::true"
+          fi
+
+      - name: Create Issue
+        if: ${{ steps.check-update.outputs.has_update == 'true' }}
+        run: |
+          gh issue list --repo XXX --label "ibgateway-release"
+
+      - name: Update Versions File
+        if: ${{ steps.check-update.outputs.has_update == 'true' }}
+        run: echo "${{ steps.version.outputs.build_version }}" >> ${{ matrix.channel }}-versions
