@@ -69,8 +69,11 @@ jobs:
 
       - name: Create Issue
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
+            --repo ${{ github.action_repository }}
             --title "IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released" \
             --body "**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)"
 
