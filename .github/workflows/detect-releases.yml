@@ -73,7 +73,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
-            --repo "$GITHUB_REPOSITORY"
+            --repo "$GITHUB_REPOSITORY" \
             --title 'IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released' \
             --body '**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)'
 
