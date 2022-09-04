@@ -1,7 +1,8 @@
 name: Detect IB-Gateway Releases
 
 on:
-  push:
+  schedule:
+    - cron: "0 8 * * *"
 
   workflow_dispatch:
 
@@ -58,18 +59,18 @@ jobs:
           git config user.email github-actions@github.com
           git add .
           git commit -m "add new ib-gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) release file"
-          success=0;
-          attempts=0;
-          until $success || [ $attempts = 10 ];
+          success=0
+          attempts=0
+          until [ "$success" -ne "0" ] || [ "$attempts" -eq "10" ]
           do
-              let ++attempts;
-              git pull;
-              git push;
-              success=$?;
-          done;
-          if ! $success;
+              let ++attempts
+              git pull
+              git push
+              if $(git push); then success=1; fi
+          done
+          if [ "$success" -eq "0" ]
           then
-              echo "Gave up after $attempts attempts";
+              echo "Gave up after $attempts attempts"
           fi
 
       - name: Create Issue
