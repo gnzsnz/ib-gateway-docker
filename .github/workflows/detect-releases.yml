@@ -74,8 +74,8 @@ jobs:
         run: |
           gh issue create \
             --repo "$GITHUB_REPOSITORY"
-            --title "IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released" \
-            --body "**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)"
+            --title 'IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released' \
+            --body '**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)'
 
       # - name: Update Versions File
       #   if: ${{ steps.check-update.outputs.has_update == 'true' }}
