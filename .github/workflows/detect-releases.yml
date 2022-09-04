@@ -17,13 +17,6 @@ jobs:
       matrix:
         channel: ["stable", "latest"]
     steps:
-      - name: Cache Versions
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ matrix.channel }}-versions
-          key: ${{ runner.os }}-${{ matrix.channel }}-versions
-
       - name: Get Latest Version
         id: version
         run: |
@@ -33,20 +26,20 @@ jobs:
           echo "::set-output name=build_version::$build_version"
           #echo "::set-output name=build_dateTime::$build_dateTime"
 
-      - name: Check if there is an update
-        id: check-update
-        run: |
-          if [ ! -f ${{ matrix.channel }}-versions ] || [ ! grep -Fxq "${{ steps.version.outputs.build_version }}" ${{ matrix.channel }}-versions ]
-          then
-            echo "::set-output name=has_update::true"
-          else
-            echo "::set-output name=has_update::false"
-          fi
-
       - uses: actions/checkout@v3
         with:
           ref: gh-pages
           lfs: true
+
+      - name: Check if there is an update
+        id: check-update
+        run: |
+          if [ -f './ibgateway-releases/ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh' ]
+          then
+            echo "::set-output name=has_update::false"
+          else
+            echo "::set-output name=has_update::true"
+          fi
 
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
@@ -67,16 +60,12 @@ jobs:
           git commit -m "add new ib-gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) release file"
           #git push
 
-      - name: Create Issue
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh issue create \
-            --repo "$GITHUB_REPOSITORY" \
-            --title 'IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released' \
-            --body '**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)'
-
-      # - name: Update Versions File
+      # - name: Create Issue
       #   if: ${{ steps.check-update.outputs.has_update == 'true' }}
-      #   run: echo "${{ steps.version.outputs.build_version }}" >> ${{ matrix.channel }}-versions
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh issue create \
+      #       --repo "$GITHUB_REPOSITORY" \
+      #       --title "IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released" \
+      #       --body "**Build Version:** ${{ steps.version.outputs.build_version }}\n**Channel:** ${{ matrix.channel }}\n[ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)"
