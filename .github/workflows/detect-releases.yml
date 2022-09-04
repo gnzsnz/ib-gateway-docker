@@ -36,11 +36,11 @@ jobs:
       - name: Check if there is an update
         id: check-update
         run: |
-          if ! grep -Fxq "${{ steps.version.outputs.build_version }}" ${{ matrix.channel }}-versions
+          if [ ! -f ${{ matrix.channel }}-versions ] || [ ! grep -Fxq "${{ steps.version.outputs.build_version }}" ${{ matrix.channel }}-versions ]
           then
-            echo "::set-output name=has_update::false"
-          else
             echo "::set-output name=has_update::true"
+          else
+            echo "::set-output name=has_update::false"
           fi
 
       - uses: actions/checkout@v3
