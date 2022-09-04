@@ -1,7 +1,13 @@
 name: Detect IB-Gateway Releases
 
 on:
+  push:
+
   workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash -ex
 
 jobs:
   detect-release:
@@ -40,11 +46,20 @@ jobs:
             echo "::set-output name=has_update::true"
           fi
 
-      - name: Create Issue
+      - uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          lfs: true
+
+      - name: Download and commit
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: |
-          gh issue list --repo XXX --label "ibgateway-release"
+          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-x64.sh'
+          dest='./ibgateway-releases/ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
+          curl -sSL "$download_url" --output "$dest"
+          sha256sum "$dest" > "${dest}.sha256"
+          # TODO: commit
 
-      - name: Update Versions File
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        run: echo "${{ steps.version.outputs.build_version }}" >> ${{ matrix.channel }}-versions
+      # - name: Update Versions File
+      #   if: ${{ steps.check-update.outputs.has_update == 'true' }}
+      #   run: echo "${{ steps.version.outputs.build_version }}" >> ${{ matrix.channel }}-versions

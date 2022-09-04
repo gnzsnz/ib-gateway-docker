@@ -3,15 +3,15 @@ name: "Publish Docker"
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   publish-docker:
-    name: "Publish Docker Image"
+    name: Publish Docker Image
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout source code"
-        uses: "actions/checkout@v2"
+      - name: Checkout source code
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           lfs: true
@@ -23,9 +23,9 @@ jobs:
           flavor: |
             latest=false
           tags: |
-              type=match,pattern=v(\d+.\d+),group=1
-              type=match,pattern=v(\d+.\d+.\w+),group=1
-              type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+            type=match,pattern=v(\d+.\d+),group=1
+            type=match,pattern=v(\d+.\d+.\w+),group=1
+            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
         uses: docker/login-action@17f28ab24d0d2832d5ff23a1409bbfc373ebcb96
