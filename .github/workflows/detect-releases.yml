@@ -29,10 +29,9 @@ jobs:
         run: |
           res=$(curl -s https://download2.interactivebrokers.com/installers/tws/${{ matrix.channel }}-standalone/version.json | sed 's/tws${{ matrix.channel }}_callback(//g;s/);//g')
           build_version=$(jq -r '.buildVersion' <<< "$res")
-          build_dateTime=$(jq -r '.buildDateTime' <<< "$res")
-          echo "buildVersion: $buildVersion"
+          #build_dateTime=$(jq -r '.buildDateTime' <<< "$res")
           echo "::set-output name=build_version::$build_version"
-          echo "::set-output name=build_dateTime::$build_dateTime"
+          #echo "::set-output name=build_dateTime::$build_dateTime"
 
       - name: Check if there is an update
         id: check-update
