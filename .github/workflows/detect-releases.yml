@@ -58,7 +58,19 @@ jobs:
           git config user.email github-actions@github.com
           git add .
           git commit -m "add new ib-gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) release file"
-          git push
+          success=0;
+          attempts=0;
+          until $success || [ $attempts = 10 ];
+          do
+              let ++attempts;
+              git pull;
+              git push;
+              success=$?;
+          done;
+          if ! $success;
+          then
+              echo "Gave up after $attempts attempts";
+          fi
 
       - name: Create Issue
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
