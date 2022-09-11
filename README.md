@@ -1,10 +1,6 @@
-<img src="https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/logo.png" height="300" />
-
 # Interactive Brokers Gateway Docker
 
-[![Publish Docker](https://github.com/UnusualAlpha/ib-gateway-docker/actions/workflows/publish.yml/badge.svg)](https://github.com/UnusualAlpha/ib-gateway-docker/actions/workflows/publish.yml)
-
------------------------------------------------------
+<img src="https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/logo.png" height="300" />
 
 ## What is it?
 
