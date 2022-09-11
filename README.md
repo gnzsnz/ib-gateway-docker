@@ -1,4 +1,4 @@
-<img src="https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/doc/res/logo.png" height="300" />
+<img src="https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/logo.png" height="300" />
 
 # Interactive Brokers Gateway Docker
 
@@ -20,6 +20,15 @@ a X11 virtual framebuffer to run IB Gateway Application without graphics hardwar
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) -
 a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
 - [socat](https://linux.die.net/man/1/socat) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to 127.0.0.1 by default).
+
+## Supported Tags
+
+| Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
+| -------- | ------------------ | ----------- | --------------------------- |
+| `latest` | `10.18.1c`         | `3.14.0`    | `latest` `10.18` `10.18.1c` |
+| `stable` | `10.12.2u`         | `3.14.0`    | `stable` `10.12` `10.12.2u` |
+
+See all available tags [here](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/).
 
 ## How to use?
 
@@ -76,10 +85,10 @@ container and docker host:
 | 4002 | TWS API port for paper accounts.                             |
 | 5900 | When `VNC_SERVER_PASSWORD` was defined, the VNC server port. |
 
-_Note that with the above `docker-compose.yml`, ports are only exposed to the 
-docker host (127.0.0.1), but not to the network of the host. To expose it to 
-the whole network change the port mappings on accordingly (remove the 
-'127.0.0.1:'). **Attention**: See [Leaving localhost](#Leaving-localhost)_
+_Note that with the above `docker-compose.yml`, ports are only exposed to the
+docker host (127.0.0.1), but not to the network of the host. To expose it to
+the whole network change the port mappings on accordingly (remove the
+'127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
 ## How build locally
 
@@ -114,7 +123,7 @@ Open `Dockerfile` on editor and replace this lines:
 
 The docker image version is similar to the IB Gateway version on the image.
 
-See [Supported tags](#Supported-Tags)
+See [Supported tags](#supported-tags)
 
 ### IB Gateway installation files
 
@@ -145,7 +154,7 @@ Apps and config file locations:
 | App        |  Folder   | Config file               | Default                                                                                           |
 | ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
 | IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
-| IBC        | /root/ibc | /root/ibc/config.ini.tmpl | [config.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
+| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
@@ -154,29 +163,23 @@ run-script.
 
 ### Leaving localhost
 
-The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket 
-connection between a client and the IB Gateway. If the port to IB API is open 
-to the network, every device on it (including potential rogue devices) can access 
-your IB account via the IB Gateway.\
-Because of this, the default `docker-compose.yml` only exposes the IB API port 
-to the **localhost** on the docker host, but not to the whole network. \
-If you want to connect to IB Gateway from a remote device, consider adding an 
-additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the 
+The IB API protocol is based on an unencrypted, unauthenticated, raw TCP socket
+connection between a client and the IB Gateway. If the port to IB API is open
+to the network, every device on it (including potential rogue devices) can access
+your IB account via the IB Gateway.
+
+Because of this, the default `docker-compose.yml` only exposes the IB API port
+to the **localhost** on the docker host, but not to the whole network.
+
+If you want to connect to IB Gateway from a remote device, consider adding an
+additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 'plain text' TCP sockets against unauthorized access or manipulation.
 
 ### Credentials
 
-This image does not contain nor store any user credentials. \
+This image does not contain nor store any user credentials.
+
 They are provided as environment variable during the container startup and
 the host is responsible to properly protect it (e.g. use
 [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) 
 or similar).
-
-## Supported Tags
-
-| Tag                                                                                     | IB Gateway Version  | IB Gateway Release Channel | IBC Version  |
-| --------------------------------------------------------------------------------------- | ------------------- | -------------------------- | ------------ |
-| [1016.1i](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.16.1i            | `latest`                   | 3.13.0       |
-| [1012.2m](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.12.2m            | `stable`                   | 3.13.0       |
-| [10.16.1n](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/)| 10.16.1n            | `latest`                   | 3.14.0       |
-| [10.12.2p](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/) | 10.12.2p            | `stable`                   | 3.14.0       |

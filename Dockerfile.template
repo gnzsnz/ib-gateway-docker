@@ -1,5 +1,3 @@
-ARG IB_GATEWAY_VERSION=10.12.2p
-ARG IBC_VERSION=3.14.0
 
 #
 # Setup Stage: install apps
@@ -10,8 +8,8 @@ ARG IBC_VERSION=3.14.0
 
 FROM ubuntu:22.04 as setup
 
-ARG IB_GATEWAY_VERSION
-ARG IBC_VERSION
+ENV IB_GATEWAY_VERSION=$VERSION
+ENV IBC_VERSION=3.14.0
 
 # Prepare system
 RUN apt-get update -y
@@ -26,9 +24,9 @@ WORKDIR /tmp/setup
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
 RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
-    --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+  --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
-    --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
+  --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
 RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
 RUN chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 RUN ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
@@ -51,8 +49,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ARG IB_GATEWAY_VERSION
-ARG IBC_VERSION
+ENV IB_GATEWAY_VERSION=$VERSION
 
 WORKDIR /root
 
