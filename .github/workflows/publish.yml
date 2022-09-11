@@ -15,6 +15,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
           lfs: true
+      - name: Extract release channel
+        id: channel
+        run: |
+          channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
+          echo "::set-output name=channel::$channel"
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -37,7 +42,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ steps.channel.outputs.channel }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
