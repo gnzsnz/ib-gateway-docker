@@ -8,7 +8,7 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.12.2u
+ENV IB_GATEWAY_VERSION=10.12.2v
 ENV IBC_VERSION=3.14.0
 
 # Prepare system
