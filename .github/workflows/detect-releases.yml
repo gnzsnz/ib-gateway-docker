@@ -29,6 +29,8 @@ jobs:
 
       - name: Check if there is an update
         id: check-update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh api repos/UnusualAlpha/ib-gateway-docker/git/trees/gh-pages?recursive=1 --jq '.tree[] | select(.path | contains("ibgateway-releases/")) | .path' > /tmp/ibgateway-releases
           if grep -qF 'ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh' /tmp/ibgateway-releases
@@ -48,6 +50,8 @@ jobs:
 
       - name: Upload
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           upload() {
             sha=$(shasum "$1" | cut -d " " -f 1)
