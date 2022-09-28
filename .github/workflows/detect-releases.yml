@@ -61,7 +61,7 @@ jobs:
             gh api --method PUT "/repos/UnusualAlpha/ib-gateway-docker/contents/ibgateway-releases/$1" --input - < payload.json
           }
 
-          upload 'ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
+          #upload 'ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
           upload 'ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh.sha256'
 
       # - name: Create Issue
