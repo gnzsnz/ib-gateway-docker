@@ -58,6 +58,7 @@ jobs:
             echo "{\"branch\":\"gh-pages\",\"message\":\"upload $1\", \"sha\":\"$sha\",\"content\":\"" > payload.json
             base64 -w 0 < "$1" >> payload.json
             echo "\"}" >> payload.json
+            cat payload.json
             gh api --method PUT "/repos/UnusualAlpha/ib-gateway-docker/contents/ibgateway-releases/$1" --input - < payload.json
           }
 
