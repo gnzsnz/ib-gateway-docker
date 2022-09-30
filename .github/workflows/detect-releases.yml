@@ -18,6 +18,8 @@ jobs:
       matrix:
         channel: ["stable", "latest"]
     steps:
+      - uses: actions/checkout@v3
+
       - name: Get Latest Version
         id: version
         run: |
@@ -41,9 +43,6 @@ jobs:
           # else
           #   echo "::set-output name=has_update::true"
           # fi
-
-      - uses: actions/checkout@v3
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
 
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
