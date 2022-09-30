@@ -1,4 +1,4 @@
-name: Detect IB-Gateway Releases
+name: Detect IB Gateway Releases
 
 on:
   schedule:
@@ -56,8 +56,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
-            -t 'ibgateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }})' \
-            -n '`ibgateway` **${{ matrix.channel }}** release files' \
+            -t 'IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}' \
+            -n 'IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }} release files' \
             ibgateway-*
 
       - name: Create Issue
@@ -68,9 +68,9 @@ jobs:
           body=$(cat << EOF
           **Build Version:** ${{ steps.version.outputs.build_version }}
           **Channel:** ${{ matrix.channel }}
-          [ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/releases/tag/ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }})
+          [ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}](https://github.com/UnusualAlpha/ib-gateway-docker/releases/tag/ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }})
           EOF)
           gh issue create \
             --repo "$GITHUB_REPOSITORY" \
-            --title "IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released" \
+            --title "IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }} was released" \
             --body "$body"
