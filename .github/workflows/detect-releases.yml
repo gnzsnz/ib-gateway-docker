@@ -34,15 +34,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release list
-          echo "::set-output name=has_update::false"
-          # gh api repos/UnusualAlpha/ib-gateway-docker/git/trees/gh-pages?recursive=1 --jq '.tree[] | select(.path | contains("ibgateway-releases/")) | .path' > /tmp/ibgateway-releases
-          # if grep -qF 'ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh' /tmp/ibgateway-releases
-          # then
-          #   echo "::set-output name=has_update::false"
-          # else
-          #   echo "::set-output name=has_update::true"
-          # fi
+          gh release list > /tmp/ibgateway-releases
+          if grep -qF '${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
+          then
+            echo "::set-output name=has_update::false"
+          else
+            echo "::set-output name=has_update::true"
+          fi
 
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
