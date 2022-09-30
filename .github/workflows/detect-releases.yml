@@ -55,29 +55,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ steps.version.outputs.build_version }} ibgateway-*
-
-      # - name: Commit
-      #   if: ${{ steps.check-update.outputs.has_update == 'true' }}
-      #   run: |
-      #     cd ./ibgateway-releases
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add .
-      #     git commit -m "add new ib-gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) release file"
-      #     success=0
-      #     attempts=0
-      #     until [ "$success" -ne "0" ] || [ "$attempts" -eq "10" ]
-      #     do
-      #         let ++attempts
-      #         git pull
-      #         git push
-      #         if $(git push); then success=1; fi
-      #     done
-      #     if [ "$success" -eq "0" ]
-      #     then
-      #         echo "Gave up after $attempts attempts"
-      #     fi
+          gh release create 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
+            -t 'ibgateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }})' \
+            -n '`ibgateway` **${{ matrix.channel }}** release files' \
+            ibgateway-*
 
       - name: Create Issue
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
@@ -87,7 +68,7 @@ jobs:
           body=$(cat << EOF
           **Build Version:** ${{ steps.version.outputs.build_version }}
           **Channel:** ${{ matrix.channel }}
-          [ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)
+          [ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/releases/tag/ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }})
           EOF)
           gh issue create \
             --repo "$GITHUB_REPOSITORY" \
