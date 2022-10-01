@@ -9,6 +9,7 @@
 FROM ubuntu:22.04 as setup
 
 ENV IB_GATEWAY_VERSION=10.12.2v
+ENV IB_GATEWAY_RELEASE_CHANNEL=stable
 ENV IBC_VERSION=3.14.0
 
 # Prepare system
@@ -23,9 +24,9 @@ WORKDIR /tmp/setup
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
-RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
+RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
   --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
+RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
   --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
 RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
 RUN chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
@@ -49,7 +50,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.12.2u
+ENV IB_GATEWAY_VERSION=10.12.2v
 
 WORKDIR /root
 
