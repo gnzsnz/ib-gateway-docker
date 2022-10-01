@@ -1,4 +1,4 @@
-name: Detect IB-Gateway Releases
+name: Detect IB Gateway Releases
 
 on:
   schedule:
@@ -18,6 +18,8 @@ jobs:
       matrix:
         channel: ["stable", "latest"]
     steps:
+      - uses: actions/checkout@v3
+
       - name: Get Latest Version
         id: version
         run: |
@@ -27,15 +29,13 @@ jobs:
           echo "::set-output name=build_version::$build_version"
           #echo "::set-output name=build_dateTime::$build_dateTime"
 
-      - uses: actions/checkout@v3
-        with:
-          ref: gh-pages
-          lfs: true
-
       - name: Check if there is an update
         id: check-update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -f './ibgateway-releases/ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh' ]
+          gh release list > /tmp/ibgateway-releases
+          if grep -qF '${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
           then
             echo "::set-output name=has_update::false"
           else
@@ -45,34 +45,20 @@ jobs:
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: |
-          cd ./ibgateway-releases
           download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-x64.sh'
           dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
           curl -sSL "$download_url" --output "$dest"
           sha256sum "$dest" > "${dest}.sha256"
 
-      - name: Commit
+      - name: Create release
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./ibgateway-releases
-
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "add new ib-gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) release file"
-          success=0
-          attempts=0
-          until [ "$success" -ne "0" ] || [ "$attempts" -eq "10" ]
-          do
-              let ++attempts
-              git pull
-              git push
-              if $(git push); then success=1; fi
-          done
-          if [ "$success" -eq "0" ]
-          then
-              echo "Gave up after $attempts attempts"
-          fi
+          gh release create 'ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' \
+            -t 'IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}' \
+            -n 'IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }} release files' \
+            ibgateway-*
 
       - name: Create Issue
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
@@ -82,9 +68,9 @@ jobs:
           body=$(cat << EOF
           **Build Version:** ${{ steps.version.outputs.build_version }}
           **Channel:** ${{ matrix.channel }}
-          [ibgateway-releases](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases)
+          [ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }}](https://github.com/UnusualAlpha/ib-gateway-docker/releases/tag/ibgateway-${{ matrix.channel }}@${{ steps.version.outputs.build_version }})
           EOF)
           gh issue create \
             --repo "$GITHUB_REPOSITORY" \
-            --title "IB-Gateway ${{ steps.version.outputs.build_version }} (${{ matrix.channel }}) was released" \
+            --title "IB Gateway ${{ matrix.channel }} ${{ steps.version.outputs.build_version }} was released" \
             --body "$body"
