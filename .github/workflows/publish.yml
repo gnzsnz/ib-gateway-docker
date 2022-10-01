@@ -8,6 +8,7 @@ on:
 jobs:
   publish-docker:
     name: Publish Docker Image
+    environment: prod
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
