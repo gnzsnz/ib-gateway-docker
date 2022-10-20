@@ -21,7 +21,7 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.19.1c`         | `3.14.0`    | `latest` `10.19` `10.19.1c` |
+| `latest` | `10.19.1d`         | `3.14.0`    | `latest` `10.19` `10.19.1d` |
 | `stable` | `10.12.2v`         | `3.14.0`    | `stable` `10.12` `10.12.2v` |
 
 See all available tags [here](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/).
