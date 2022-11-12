@@ -21,7 +21,7 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.20.1b`         | `3.14.0`    | `latest` `10.20` `10.20.1b` |
+| `latest` | `10.20.1c`         | `3.14.0`    | `latest` `10.20` `10.20.1c` |
 | `stable` | `10.12.2x`         | `3.14.0`    | `stable` `10.12` `10.12.2x` |
 
 
