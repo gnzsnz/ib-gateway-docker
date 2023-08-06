@@ -21,8 +21,8 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.22.1m`         | `3.16.0`    | `latest` `10.22` `10.22.1m` |
-| `stable` | `10.19.1j`         | `3.15.2`    | `stable` `10.19` `10.19.1j` |
+| `latest` | `10.24.1b`         | `3.18.0`    | `latest` `10.22` `10.24.1b` |
+| `stable` | `10.19.2b`         | `3.18.0`    | `stable` `10.19` `10.19.2b` |
 
 
 See all available tags [here](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/).
@@ -43,6 +43,12 @@ services:
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-live}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
+      READ_ONLY_API: ${READ_ONLY_API:-}
+      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
+      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
+      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -58,6 +64,10 @@ Create an .env on root directory or set the following environment variables:
 | `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
 | `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not defined**            |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | **not defined** (VNC disabled)|
+| TWOFA_TIMEOUT_ACTION | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME` | 'exit' |
+| AUTO_RESTART_TIME | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM | **not defined** |
+| RELOGIN_AFTER_2FA_TIMEOUT | support relogin after timeout | 'no' |
+| TIME_ZONE | Support for timezone, see your TWS jts.ini file for valid values | "Etc/UTC" |
 
 Example .env file:
 
@@ -67,6 +77,10 @@ TWS_PASSWORD=myTwsPassword
 TRADING_MODE=paper
 READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
+TWOFA_TIMEOUT_ACTION=restart
+AUTO_RESTART_TIME=11:59 PM
+RELOGIN_AFTER_2FA_TIMEOUT=yes
+TIME_ZONE=Europe/Lisbon
 ```
 
 Run:
