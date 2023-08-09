@@ -12,7 +12,7 @@ fi
 
 # replace env variables
 envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
-envsubst < "${TWS_PATH}/jts.ini.tmpl" > "${TWS_PATH}/jts.ini"
+envsubst < "${TWS_INI}.tmpl" > "${TWS_INI}"
 
 
 /root/scripts/fork_ports_delayed.sh &
