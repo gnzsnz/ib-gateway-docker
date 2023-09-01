@@ -2,7 +2,7 @@ name: Detect IB Gateway Releases
 
 on:
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 6 * * *"
 
   workflow_dispatch:
 
