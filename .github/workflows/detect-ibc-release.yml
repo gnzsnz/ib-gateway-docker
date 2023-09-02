@@ -36,7 +36,7 @@ jobs:
           current=${{ steps.version.outputs.CURRENT_IBC }}
           latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
 
-          if [[ "$current" -eq "$latest" ]]; then
+          if [[ "$current" = "$latest" ]]; then
             update="true"
           else
             update="false"
