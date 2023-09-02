@@ -37,9 +37,9 @@ jobs:
           latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
 
           if [[ "$current" = "$latest" ]]; then
-            update="true"
-          else
             update="false"
+          else
+            update="true"
           fi
 
           echo "update=$update" >> $GITHUB_OUTPUT
