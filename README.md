@@ -49,6 +49,10 @@ services:
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+#    volumes:
+#      - ${PWD}/
+#      - ${PWD}/
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -59,15 +63,16 @@ Create an .env on root directory or set the following environment variables:
 
 | Variable              | Description                                                         | Default                    |
 | --------------------- | ------------------------------------------------------------------- | -------------------------- |
-| `TWS_USERID`          | The TWS **username**.                                               |                            |
-| `TWS_PASSWORD`        | The TWS **password**.                                               |                            |
-| `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
-| `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not defined**            |
+| `TWS_USERID`  | The TWS **username**. |  |
+| `TWS_PASSWORD`  | The TWS **password**. | |
+| `TRADING_MODE`  | **live** or **paper** | **paper**                  |
+| `READ_ONLY_API`  | **yes** or **no** ([see](image-files/config/ibc/config.ini.tmpl))  | **not defined**  |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | **not defined** (VNC disabled)|
 | `TWOFA_TIMEOUT_ACTION` | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'exit' |
 | `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
 | `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) or a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
+| `CUSTOM_CONFIG` | If set to `YES`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 
 Example .env file:
 
@@ -81,6 +86,7 @@ TWOFA_TIMEOUT_ACTION=restart
 AUTO_RESTART_TIME=11:59 PM
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
+CUSTOM_CONFIG=
 ```
 
 Run:
@@ -100,7 +106,7 @@ docker host (127.0.0.1), but not to the network of the host. To expose it to
 the whole network change the port mappings on accordingly (remove the
 '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
-## How build locally
+## How to build locally
 
 1. Clone this repo
 
@@ -137,34 +143,35 @@ See [Supported tags](#supported-tags)
 
 ### IB Gateway installation files
 
-Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile.template)
 **does not download IB Gateway installer files from IB homepage but from the
-[github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) of this project**.
+[releases repository](https://github.com/gnzsnz/ib-gateway-docker/releases) of this project**.
 
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
 but IB does only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
 
-The installer files stored on [github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) have been downloaded from
-IB homepage and renamed to reflect the version.
+The installer files stored on [releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been downloaded from IB homepage and renamed to reflect the version.
 
-If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
-on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line on Dockerfile
+
 `RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
---output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
+--output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` 
+
+to download (or copy) the file from the source you prefer.
 
 **Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
 
 ## Customizing the image
 
 The image can be customized by overwriting the default configuration files
-with custom ones.
+with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
 
 Apps and config file locations:
 
 | App        |  Folder   | Config file               | Default                                                                                           |
 | ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
-| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
+| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
@@ -191,5 +198,4 @@ This image does not contain nor store any user credentials.
 
 They are provided as environment variable during the container startup and
 the host is responsible to properly protect it (e.g. use
-[Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) 
-or similar).
+[Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) or similar).
