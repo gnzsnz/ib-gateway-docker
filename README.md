@@ -51,8 +51,8 @@ services:
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
 #    volumes:
-#      - ${PWD}/
-#      - ${PWD}/
+#      - ${PWD}/jts.ini:/root/Jts/jts.ini
+#      - ${PWD}/config.ini:/root/ibc/config.ini
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
