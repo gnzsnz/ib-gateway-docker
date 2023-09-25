@@ -8,7 +8,7 @@ on:
 
 env:
   IBC_REPO: https://github.com/IbcAlpha/IBC.git
-  BRANCH_PREFIX: 
+  BRANCH_PREFIX: IBC-update
 jobs:
   detect-release:
     runs-on: ubuntu-latest
