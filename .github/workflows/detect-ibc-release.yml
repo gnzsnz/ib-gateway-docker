@@ -8,6 +8,7 @@ on:
 
 env:
   IBC_REPO: https://github.com/IbcAlpha/IBC.git
+  BRANCH_PREFIX: 
 jobs:
   detect-release:
     runs-on: ubuntu-latest
@@ -26,9 +27,13 @@ jobs:
       - name: Get IBC latest version
         id: ibc_version
         run: |
-          git clone ${{ env.IBC_REPO }} /tmp/IBC
-          IBC_LATEST="$(git -C /tmp/IBC tag --sort=creatordate | tail -1)"
-          echo "IBC_LATEST=$IBC_LATEST" >> $GITHUB_OUTPUT
+          IBC_LATEST="$(gh release list -R ${{ env.IBC_REPO }} --exclude-drafts --exclude-pre-releases |grep 'Latest'|cut -f1)"
+          if [ -n ${IBC_LATEST} ]
+          then
+            echo "IBC_LATEST=$IBC_LATEST" >> $GITHUB_OUTPUT
+          else
+          echo "IBC_LATEST=" >> $GITHUB_OUTPUT
+          fi
 
       - name: Verify latest version
         id: verify_latest
@@ -44,14 +49,29 @@ jobs:
 
           echo "update=$update" >> $GITHUB_OUTPUT
 
-      - name: Create Pull Request
+      - name: Check if branch already exists
+        id: verify_branch
         if: ${{ steps.verify_latest.outputs.update == 'true' }}
+        run: |
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
+          prefix=${{ env.BRANCH_PREFIX }}
+          search=${prefix}-${latest}
+
+          if [ -n $(git branch --list | grep "$search") ]; then
+            echo "BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: ${{ steps.verify_branch.outputs.update == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ver=${{ steps.version.outputs.CURRENT_IBC }}
           latest=${{ steps.ibc_version.outputs.IBC_LATEST}}
-          branch="IBC-update-${latest}"
+          prefix=${{ env.BRANCH_PREFIX }}
+          branch="${prefix}-${latest}"
           git config user.name github-actions
           git config user.email github-actions@github.com
           git pull
