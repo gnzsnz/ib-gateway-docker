@@ -70,7 +70,7 @@ jobs:
           # get stable and latest versions
           _stable_dockerfile='stable/Dockerfile'
           _latest_dockerfile='latest/Dockerfile'
-          if [ ${{ matrix.channel }} = 'latest']; then
+          if [ ${{ matrix.channel }} = 'latest' ]; then
             # set latest
             LATEST_VERSION=${{ steps.version.outputs.build_version }}
             LATEST_MINOR=$(echo $LATEST_VERSION | cut -d '.' -f1,2)
@@ -79,7 +79,7 @@ jobs:
             STABLE_VERSION=$(grep 'ENV IB_GATEWAY_VERSION=' $_stable_dockerfile | head -1 | cut -d '=' -f2)
             STABLE_MINOR=$(echo $STABLE_VERSION| cut -d '.' -f1,2)
 
-          elif [ ${{ matrix.channel }} = 'stable']; then
+          elif [ ${{ matrix.channel }} = 'stable' ]; then
             # set STABLE
             STABLE_VERSION=${{ steps.version.outputs.build_version }}
             STABLE_MINOR=$(echo $STABLE_VERSION | cut -d '.' -f1,2)
