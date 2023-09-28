@@ -25,7 +25,7 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 | `latest` | `10.25.1j`  | `3.18.0` | `latest` `10.25.1j` `10.25` |
 | `stable` | `10.19.2d`  | `3.18.0` | `stable` `10.19.2d` `10.19` |
 
-This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/117795730?tag=stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/120858613?tag=latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
+This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
 
 ## How to use?
 
