@@ -22,10 +22,10 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `$LATEST_VERSION`  | `$IBC_VERSION` | `latest` `$LATEST_MINOR` `$LATEST_VERSION` |
-| `stable` | `$STABLE_VERSION`  | `$IBC_VERSION` | `stable` `$STABLE_MINOR` `$STABLE_VERSION` |
+| `latest` | `${LATEST_VERSION}`  | `${IBC_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
+| `stable` | `${STABLE_VERSION}`  | `${IBC_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
 
-This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/117795730?tag=stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/120858613?tag=latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
+This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
 
 ## How to use?
 
