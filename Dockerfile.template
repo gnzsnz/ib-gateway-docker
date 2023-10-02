@@ -20,6 +20,8 @@ RUN apt-get update -y && \
   curl \
   ca-certificates \
   unzip && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* && \
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
@@ -55,11 +57,13 @@ COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
 # Prepare system
 RUN apt-get update -y && \
   apt-get install --no-install-recommends --yes \
-  gettext-base  \
+  gettext-base \
   socat \
   xvfb \
   x11vnc \
-  && rm -rf /var/lib/apt/lists/*
+  openssh-client && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 # Copy files
 COPY --from=setup /root/ .
