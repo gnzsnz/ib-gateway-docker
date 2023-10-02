@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export DISPLAY=:1
 
