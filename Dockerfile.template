@@ -68,7 +68,7 @@ RUN chmod a+x /root/scripts/*.sh
 # IBC env vars
 ENV TWS_MAJOR_VRSN ${IB_GATEWAY_VERSION}
 ENV TWS_PATH /root/Jts
-ENV TWS_INI /root/Jts/jts.ini
+ENV TWS_INI jts.ini
 ENV IBC_PATH /root/ibc
 ENV IBC_INI /root/ibc/config.ini
 
