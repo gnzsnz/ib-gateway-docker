@@ -61,6 +61,7 @@ RUN apt-get update -y && \
   socat \
   xvfb \
   x11vnc \
+  sshpass \
   openssh-client && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
