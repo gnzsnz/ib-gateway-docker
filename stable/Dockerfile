@@ -8,7 +8,7 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.19.2d
+ENV IB_GATEWAY_VERSION=10.19.2f
 ENV IB_GATEWAY_RELEASE_CHANNEL=stable
 ENV IBC_VERSION=3.18.0
 
@@ -29,7 +29,7 @@ RUN apt-get update -y && \
   chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} &&\
   # Install IBC
-  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
+  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}-Update.1/IBCLinux-${IBC_VERSION}.zip && \
   mkdir /root/ibc && \
   unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
@@ -47,7 +47,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.19.2d
+ENV IB_GATEWAY_VERSION=10.19.2f
 
 WORKDIR /root
 COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
@@ -68,7 +68,7 @@ RUN chmod a+x /root/scripts/*.sh
 # IBC env vars
 ENV TWS_MAJOR_VRSN ${IB_GATEWAY_VERSION}
 ENV TWS_PATH /root/Jts
-ENV TWS_INI /root/Jts/jts.ini
+ENV TWS_INI jts.ini
 ENV IBC_PATH /root/ibc
 ENV IBC_INI /root/ibc/config.ini
 

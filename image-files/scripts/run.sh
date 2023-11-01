@@ -3,7 +3,7 @@
 export DISPLAY=:1
 
 rm -f /tmp/.X1-lock
-Xvfb :1 -ac -screen 0 1024x768x16 &
+Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
 
 if [ "$SSH_TUNNEL" = "yes" ]; then
 

@@ -12,6 +12,7 @@ services:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
@@ -31,6 +32,7 @@ services:
 #    volumes:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
 #      - ${PWD}/config.ini:/root/ibc/config.ini
+#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
