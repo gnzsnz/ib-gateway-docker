@@ -74,7 +74,7 @@ Create an .env on root directory or set the following environment variables:
 | `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
 | `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
-| TWS_SETTINGS_PATH | The settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume . |  |
+| `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume . |  |
 | `CUSTOM_CONFIG` | If set to `YES`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 
 Example .env file:
@@ -94,8 +94,9 @@ CUSTOM_CONFIG=
 ```
 
 Run:
-
-  $ docker-compose up
+```bash
+docker compose up
+```
 
 After image is downloaded, container is started + 30s, the following ports will be ready for usage on the container and docker host:
 
