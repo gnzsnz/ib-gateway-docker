@@ -8,6 +8,10 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
     SSH_LOCAL_PORT=4001
   fi
 
+  if [ -z "$SSH_REMOTE_PORT" ]; then
+    SSH_REMOTE_PORT="$SSH_LOCAL_PORT"
+  fi
+
   while true
   do
     ssh "${SSH_OPTIONS}" -NR "${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT}" \
