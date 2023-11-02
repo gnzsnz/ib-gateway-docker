@@ -16,10 +16,12 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
   do
     ssh "${SSH_OPTIONS}" -NR "${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT}" \
       "${SSH_USER_TUNNEL}"
-    sleep "${SSH_RESTART:-20}"
+    sleep "${SSH_RESTART:-5}"
   done
 
 else
+  # no ssh tunnel, start socat
+  sleep 30
   #
   if [ "$TRADING_MODE" = "paper" ]; then
     # paper
