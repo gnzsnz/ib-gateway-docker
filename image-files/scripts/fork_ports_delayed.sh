@@ -12,10 +12,15 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
     SSH_REMOTE_PORT="$SSH_LOCAL_PORT"
   fi
 
+  if [ -n "$SSH_VNC_PORT" ] && [ -n "$VNC_SERVER_PASSWORD" ]
+  then
+    SSH_VNC_TUNNEL="-R 127.0.0.1:5900:localhost:$SSH_VNC_PORT"
+  fi
+
   while true
   do
-    ssh "${SSH_OPTIONS}" -NR "${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT}" \
-      "${SSH_USER_TUNNEL}"
+    echo "> ssh sock: $SSH_AUTH_SOCK"
+    bash -c "ssh ${SSH_OPTIONS} -TNR 127.0.0.1:${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT} ${SSH_VNC_TUNNEL:-} ${SSH_USER_TUNNEL}"
     sleep "${SSH_RESTART:-5}"
   done
 

@@ -16,7 +16,7 @@ a X11 virtual framebuffer to run IB Gateway Application without graphics hardwar
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) -
 a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
 - [socat](https://linux.die.net/man/1/socat) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to 127.0.0.1 by default).
-- Optional remote [ssh tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
+- Optional remote [ssh tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections.
 - Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
 
 ## Supported Tags
@@ -68,6 +68,7 @@ services:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
 #      - ${PWD}/config.ini:/root/ibc/config.ini
 #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
+#      - ${PWD}/ssh/:/root/.ssh
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -89,15 +90,16 @@ Create an .env on root directory or set the following environment variables:
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
 | `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume . |  |
-| `CUSTOM_CONFIG` | If set to `YES`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
-`SSH_TUNNEL` | If set to `yes` then `socat` won't start and a remote ssh tunnel is started | **not defined** |
-`SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
-`SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting | 20 |
-`SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting | 3 |
-`SSH_PASSPHRASE` | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys | **not defined** |
-`SSH_REMOTE_PORT` | Remote port to connect to. | Same port than IB gateway 4001/4002 |
-`SSH_USER_TUNNEL` | `user@server` to connect to | **not defined** |
-`SSH_RESTART` | Number of seconds to wait before restarting tunnel in case of disconnection | 5 |
+| `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
+| `SSH_TUNNEL` | If set to `yes` then `socat` won't start and a remote ssh tunnel is started | **not defined** |
+| `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
+| `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting | 20 |
+| `SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting | 3 |
+| `SSH_PASSPHRASE` | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys | **not defined** |
+| `SSH_REMOTE_PORT` | Remote port to connect to. | Same port than IB gateway 4001/4002 |
+| `SSH_USER_TUNNEL` | `user@server` to connect to | **not defined** |
+| `SSH_RESTART` | Number of seconds to wait before restarting tunnel in case of disconnection | 5 |
+| `SSH_VNC_PORT` | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT` | **not defined** |
 
 Example .env file:
 
@@ -121,6 +123,7 @@ SSH_PASSPHRASE=
 SSH_REMOTE_PORT=
 SSH_USER_TUNNEL=
 SSH_RESTART=
+SSH_VNC_PORT=
 ```
 
 Run:
@@ -192,18 +195,28 @@ Open `Dockerfile` on editor and replace this lines:
 ## Customizing the image
 
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
+yes
+However, if you need to go beyend what's avaiable The image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
 
-However, if you need to go beyend what's avaiable The image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
-
-Apps and config file locations:
+Default Apps and config file locations:
 
 | App     |  Folder   | Config file    | Default          |
 | ------- | --------- | -------------- | ---------------- |
 | IB Gateway | /root/Jts | /root/Jts/jts.ini  | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
 | IBC | /root/ibc | /root/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
-To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
-run-script.
+Sample settings
+
+```yaml
+...
+    environment:
+      - CUSTOM_CONFIG: yes
+...
+    volumes:
+      - ${PWD}/config.ini:/root/ibc/config.ini
+      - ${PWD}/jts.ini:/root/Jts/jts.ini
+...
+```
 
 ### Preserve settings across containers
 
@@ -240,41 +253,56 @@ additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 
 ### SSH Tunnel
 
-You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The container DOES NOT run an SSH server (sshd), what it does is to create a remote tunnel using ssh client. So basically it will connect to an ssh server and expose IB Gateway port.
+You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The container DOES NOT run an SSH server (sshd), what it does is to create a [remote tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) using ssh client. So basically it will connect to an ssh server and expose IB Gateway port there.
 
-An example setup would be to run ib-gateway-docker with a sidecar ssh bastion and a jupyter container. In simple terms ib gateway open a **remote** port on bastion and listen to connection on it. While jupyter will open a **local** port that is tunneled into bastion on the same port opened by ib-gateway-
+An example setup would be to run [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a [jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which would provide a fully working algorithmic trading enviroment. In simple terms ib gateway opens a **remote** port on ssh bastion and listen to connections on it. While jupyter will open a **local** port that is tunneled into bastion on the same port opened by ib-gateway-docker
 
 ```bash
-# on ib gateway
+# on ib gateway - this is managed by the container
 ssh -NR 4001:localhost:4001 ibgateway@bastion
-# on juypter
-ssh -NL 4001:localhost:4001 
+# on juypter-quant container
+ssh -NL 4001:localhost:4001 jupyter@bastion
 ```
 
+This would look like this
+
 ```
- _____________
-|  IB Gateway | \   :4001
- -------------   |
-                 |
- _____________   |
-| SSH Bastion | /   :4001
- -------------   \
-                  |
-                  |
- _______________  |
-| Jupyter Quant |/  :4001
- ---------------
+       _____________
+      |  IB Gateway | \   :4001
+       -------------  |
+                      |
+      _____________   |
+      | SSH Bastion | /   :4001
+      -------------   \
+                       |
+                       |
+      _______________  |
+     | Jupyter Quant |/  :4001
+      ---------------
 ```
 
 ib-gateway-docker is using `ServerAliveInterval` and `ServerAliveCountMax` ssh settings to keep the tunnel open. Additionally it will restart the tunnel automatically if it's stopped, and will keep trying to restart it.
 
-**Minimal setup**:
+**Minimal ssh tunnel setup**:
 
 - `SSH_TUNNEL`: set it to `yes`. This will NOT start `socat` and only start an ssh tunnel.
 - `SSH_USER_TUNNEL`: The user name that ssh should use. It should be in the form `user@server`
 - `SSH_PASSPHRASE`: Not mandatory, but strongly recommended. If set it will start `ssh-agend` and it will add ssh keys.
 
+In addition to the environment variables listed above you need to pass ssh keys to the container. This is achived through a volume.
 
+```yaml
+...
+    volumes:
+      - ${PWD}/ssh:/root/.ssh
+...
+```
+
+Make sure that:
+
+- you copy ssh keys with a standard name, ex ~/.ssh/id_rsa, ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk, or ~/.ssh/id_dsa
+- keys should have proper permissions. ex `chmod 600 -R $PWD/ssh/*`
+- you would need a `$PWD/ssh/known_hosts` file. or pass `SSH_OPTIONS=-o StrictHostKeyChecking=no`, although this is **NOT recommented**.
 
 ### Credentials
 
