@@ -20,7 +20,7 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
   while true
   do
     echo "> ssh sock: $SSH_AUTH_SOCK"
-    bash -c "ssh ${SSH_OPTIONS} -TNR 127.0.0.1:${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT} ${SSH_VNC_TUNNEL:-} ${SSH_USER_TUNNEL}"
+    bash -c "ssh ${SSH_ALL_OPTIONS} -TNR 127.0.0.1:${SSH_LOCAL_PORT}:localhost:${SSH_REMOTE_PORT} ${SSH_VNC_TUNNEL:-} ${SSH_USER_TUNNEL}"
     sleep "${SSH_RESTART:-5}"
   done
 

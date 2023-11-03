@@ -44,10 +44,10 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
   _SSH_OPTIONS+=" -o ServerAliveCountMax=${SSH_ALIVE_COUNT:-3}"
 
   if [ -n "$SSH_OPTIONS" ]; then
-    _SSH_OPTIONS+="$SSH_OPTIONS"
+    _SSH_OPTIONS+=" $SSH_OPTIONS"
   fi
-  SSH_OPTIONS=" $_SSH_OPTIONS"
-  export SSH_OPTIONS
+  SSH_ALL_OPTIONS="$_SSH_OPTIONS"
+  export SSH_ALL_OPTIONS
 
   if [ -n "$SSH_PASSPHRASE" ]; then
     echo "> Starting ssh-agent."
@@ -61,7 +61,7 @@ fi
 # start VNC server
 if [ -n "$VNC_SERVER_PASSWORD" ]; then
   echo "> Starting VNC server"
-  /root/scripts/run_x11_vnc.sh &
+  /home/ibgateway/scripts/run_x11_vnc.sh &
 fi
 
 # apply settings
@@ -88,10 +88,10 @@ if [ "$CUSTOM_CONFIG" != "yes" ]; then
 fi
 
 # forward ports, socat or ssh
-/root/scripts/port_forwarding.sh &
+/home/ibgateway/scripts/port_forwarding.sh &
 
 # start IBC
-/root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
+/home/ibgateway/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
      "--tws-path=${TWS_PATH}" \
      "--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
      "--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \

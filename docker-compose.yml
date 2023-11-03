@@ -6,8 +6,8 @@ services:
     build:
       context: ./latest
       tags:
-        - "ghcr.io/gnzsnz/ib-gateway:sshclient"
-    image: ghcr.io/gnzsnz/ib-gateway:sshclient
+        - "ghcr.io/gnzsnz/ib-gateway:latest"
+    image: ghcr.io/gnzsnz/ib-gateway:latest
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -30,11 +30,11 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
-    volumes:
-#      - ${PWD}/jts.ini:/root/Jts/jts.ini
-#      - ${PWD}/config.ini:/root/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
-      - ${PWD}/ssh/:/root/.ssh
+#    volumes:
+#      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
+#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
+#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
+#      - ${PWD}/ssh/:/home/ibgateway/.ssh
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"
