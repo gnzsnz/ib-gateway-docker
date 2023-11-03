@@ -2,9 +2,42 @@
 
 export DISPLAY=:1
 
+stop() {
+  echo "> 😘 Received SIGINT or SIGTERM. Shutting down IB Gateway."
+
+  #
+  if [ -n "$VNC_SERVER_PASSWORD" ]; then
+    echo "> Stopping x11vnc."
+    pkill x11vnc
+  fi
+  #
+  echo "> Stopping Xvfb."
+  pkill Xvfb
+  #
+  if [ -n "$SSH_TUNNEL" ]; then
+    echo "> Stopping ssh."
+    pkill ssh
+  else
+    echo "> Stopping socat."
+    pkill socat
+  fi
+  # Get PID
+  local pid
+  pid=$(</tmp/pid)
+  # Set TERM
+  echo "> Stopping IBC."
+  kill -SIGTERM "${pid}"
+  # Wait for exit
+  wait "${pid}"
+  # All done.
+  echo "> Done... $?"
+}
+
+# start Xvfb
 rm -f /tmp/.X1-lock
 Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
 
+# setup SSH Tunnel
 if [ "$SSH_TUNNEL" = "yes" ]; then
 
   _SSH_OPTIONS="-o ServerAliveInterval=${SSH_ALIVE_INTERVAL:-20}"
@@ -25,11 +58,13 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
   fi
 fi
 
+# start VNC server
 if [ -n "$VNC_SERVER_PASSWORD" ]; then
   echo "> Starting VNC server"
   /root/scripts/run_x11_vnc.sh &
 fi
 
+# apply settings
 if [ "$CUSTOM_CONFIG" != "yes" ]; then
   # replace env variables
   envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
@@ -52,10 +87,18 @@ if [ "$CUSTOM_CONFIG" != "yes" ]; then
   fi
 fi
 
-/root/scripts/fork_ports_delayed.sh &
+# forward ports, socat or ssh
+/root/scripts/port_forwarding.sh &
 
+# start IBC
 /root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
      "--tws-path=${TWS_PATH}" \
      "--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
      "--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
-     "--tws-settings-path=${TWS_SETTINGS_PATH:-}"
+     "--tws-settings-path=${TWS_SETTINGS_PATH:-}" &
+
+pid="$!"
+echo "$pid" > /tmp/pid
+trap stop SIGINT SIGTERM
+wait "${pid}"
+exit $?
