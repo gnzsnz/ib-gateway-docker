@@ -48,6 +48,7 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
   fi
   SSH_ALL_OPTIONS="$_SSH_OPTIONS"
   export SSH_ALL_OPTIONS
+  echo "> SSH options: $SSH_ALL_OPTIONS"
 
   if [ -n "$SSH_PASSPHRASE" ]; then
     echo "> Starting ssh-agent."
