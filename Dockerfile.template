@@ -19,7 +19,7 @@ RUN apt-get update -y && \
   DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
   curl \
   ca-certificates \
-  unzip && \
+    unzip && \
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
@@ -59,6 +59,7 @@ RUN apt-get update -y && \
   socat \
   xvfb \
   x11vnc \
+  libgtk-3-0 -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy files

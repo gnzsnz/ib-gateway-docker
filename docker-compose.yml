@@ -20,6 +20,7 @@ services:
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      GATEWAY_OR_TWS: ${GATEWAY_OR_TWS:-g}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
 #    volumes:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
@@ -29,3 +30,4 @@ services:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
       - "127.0.0.1:5900:5900"
+    # command: tail -F anything

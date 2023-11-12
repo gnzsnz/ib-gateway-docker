@@ -10,6 +10,20 @@ if [ -n "$VNC_SERVER_PASSWORD" ]; then
   /root/scripts/run_x11_vnc.sh &
 fi
 
+# Start either TWS or IB Gateway
+if [ -z "$GATEWAY_OR_TWS" ]; then
+    # Start TWS by default if not specified
+    GATEWAY_OR_TWS=tws
+    command=
+elif [ "$GATEWAY_OR_TWS" = "gateway" ]; then
+    command='-g'
+elif [ "$GATEWAY_OR_TWS" = "tws" ]; then
+    command=
+else
+    printf "GATEWAY_OR_TWS must be either 'gateway' or 'tws': got '%s'\n" "$GATEWAY_OR_TWS"
+    exit 1
+fi
+
 if [ "$CUSTOM_CONFIG" != "YES" ]; then
   # replace env variables
   envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
@@ -31,7 +45,7 @@ fi
 
 /root/scripts/fork_ports_delayed.sh &
 
-/root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
+/root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" $command \
      "--tws-path=${TWS_PATH}" \
      "--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
      "--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
