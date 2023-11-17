@@ -20,7 +20,7 @@ It includes:
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.26.1f`  | `3.18.0` | `latest` `10.26` `10.26.1f` |
+| `latest` | `10.26.1g`  | `3.18.0` | `latest` `10.26` `10.26.1g` |
 | `stable` | `10.19.2g`  | `3.18.0` | `stable` `10.19` `10.19.2g` |
 
 All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository.
