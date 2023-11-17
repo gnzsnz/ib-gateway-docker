@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export DISPLAY=:1
+export COMMANDSERVERPORT=3999 # this is used later to enable API in TWS
 
 rm -f /tmp/.X1-lock
 Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
@@ -43,7 +44,12 @@ if [ "$CUSTOM_CONFIG" != "YES" ]; then
 
 fi
 
+# start ssh server
+/root/scripts/ssh_start.sh
+
 /root/scripts/fork_ports_delayed.sh &
+
+/root/scripts/enable_api.sh & # starts in the background and wait for 300 seconds before running a server command to enable API
 
 /root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" $command \
      "--tws-path=${TWS_PATH}" \

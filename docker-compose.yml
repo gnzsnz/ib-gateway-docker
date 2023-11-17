@@ -17,17 +17,21 @@ services:
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
       AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME}
+      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       GATEWAY_OR_TWS: ${GATEWAY_OR_TWS:-g}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+      SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
 #    volumes:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
 #      - ${PWD}/config.ini:/root/ibc/config.ini
 #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
     ports:
-      - "127.0.0.1:4001:4001"
-      - "127.0.0.1:4002:4002"
-      - "127.0.0.1:5900:5900"
+      # - "127.0.0.1:4001:4001"
+      # - "127.0.0.1:4002:4002"
+      # - "127.0.0.1:5900:5900"
+      - "127.0.0.1:22:22" # SSH is protecting all the communications
     # command: tail -F anything

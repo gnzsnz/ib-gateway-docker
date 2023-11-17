@@ -59,6 +59,8 @@ RUN apt-get update -y && \
   socat \
   xvfb \
   x11vnc \
+  openssh-server \
+  telnet \
   libgtk-3-0 -y \
   && rm -rf /var/lib/apt/lists/*
 
