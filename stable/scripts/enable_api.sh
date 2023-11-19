@@ -10,5 +10,5 @@
 
 # but before wait that IBC has started TWS
 
-sleep 180
+sleep 120 # wait for IBC to start TWS
 (echo "ENABLEAPI"; sleep 1; echo "quit" ) | telnet "127.0.0.1" ${COMMANDSERVERPORT}
