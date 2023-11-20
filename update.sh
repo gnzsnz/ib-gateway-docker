@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-if [ $# -ne 2 ] ; then
+if [ $# -ne 2 ]; then
 	echo "Usage: ./update.sh <channel> <version>"
 	exit 1
 fi
@@ -18,6 +18,7 @@ fi
 
 cp -r image-files/. "$channel/."
 rm -f "$channel/Dockerfile"
-VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' < "Dockerfile.template" > "$channel/Dockerfile"
+# shellcheck disable=SC2016
+VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.template" >"$channel/Dockerfile"
 
 echo "Done"
