@@ -1,7 +1,7 @@
 ##############################################################################
 # Setup Stage: install apps
 #
-# This is a dedicated stage so that donwload archives don't end up on 
+# This is a dedicated stage so that donwload archives don't end up on
 # production image and consume unnecessary space.
 ##############################################################################
 
