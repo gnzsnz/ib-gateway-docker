@@ -10,22 +10,22 @@ It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - [IBC](https://github.com/IbcAlpha/IBC) - to control IB Gateway (simulates user input).
-- [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11 virtual framebuffer to run IB Gateway Application without graphics hardware.
-- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
+[Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - an X11 virtual framebuffer to run IB Gateway without graphics hardware.
+- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact with the IB Gateway user interface (optional, for development/maintenance purposes).
 - [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to container's 127.0.0.1 by default).
-- Optional remote [ssh tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
+Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
 
 ## Supported Tags
 
-| Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
-| -------- | ------------------ | ----------- | --------------------------- |
+| Channel  | IB Gateway Version | IBC Version | Docker Tags       |
+| -------- | ------------------ | ----------- | ----------------- |
 | `latest` | `10.26.1g`  | `3.18.0` | `latest` `10.26` `10.26.1g` |
 | `stable` | `10.19.2g`  | `3.18.0` | `stable` `10.19` `10.19.2g` |
 
 All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository.
 
-## How to use?
+## How to use it?
 
 Create a `docker-compose.yml` (or include ib-gateway services on your existing one)
 
@@ -75,31 +75,7 @@ services:
 ```
 
 The image can be configured with the following environment variables:
-
-| Variable | Description | Default  |
-| -------- | ----------- | -------- |
-| `TWS_USERID`          | The TWS **username**. |  |
-| `TWS_PASSWORD`        | The TWS **password**. |  |
-| `TRADING_MODE`        | **live** or **paper** | **paper**                  |
-| `READ_ONLY_API`       | **yes** or **no**. [See IBC documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) | **not defined**  |
-| `VNC_SERVER_PASSWORD` | VNC server password. If not defined, then VNC server will NOT start. | **not defined** (VNC disabled)|
-| `TWOFA_TIMEOUT_ACTION` | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'exit' |
-| `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
-| `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
-| `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
-| `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. |  |
-| `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
-| `SSH_TUNNEL` | If set to `yes` then `socat` won't start and a remote ssh tunnel is started. SSH keys should be provided to container through ~/.ssh volume. | **not defined** |
-| `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
-| `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behaviour is undefined. | 20 |
-| `SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behaviour is undefined. | 3 |
-| `SSH_PASSPHRASE` | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys | **not defined** |
-| `SSH_REMOTE_PORT` | Remote port for ssh tunnel. | Same port than IB gateway 4001/4002 |
-| `SSH_USER_TUNNEL` | `user@server` to connect to | **not defined** |
-| `SSH_RESTART` | Number of seconds to wait before restarting tunnel in case of disconnection. | 5 |
-| `SSH_VNC_PORT` | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT` | **not defined** |
-
-Create an .env on root directory. Example .env file:
+Create a .env on the root directory. Example .env file:
 
 ```text
 TWS_USERID=myTwsAccountName
@@ -130,7 +106,7 @@ Once `docker-compose.yml` and `.env` are in place you can start the container wi
 docker compose up
 ```
 
-After image is downloaded, container is started + 30s, the following ports will be ready for usage on the container and docker host:
+After the image is downloaded, the container is started + 30s, the following ports will be ready for usage on the container and docker host:
 
 | Port | Description            |
 | ---- | ---------------------------------- |
@@ -138,7 +114,7 @@ After image is downloaded, container is started + 30s, the following ports will 
 | 4004 | TWS API port for paper accounts. Through socat, internal TWS API port 4002. Mapped **externally** to 4002 in sample `docker-compose.yml`. |
 | 5900 | When `VNC_SERVER_PASSWORD` was defined, the VNC server port. |
 
-Utiliy [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports.
+Utility [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
@@ -146,7 +122,7 @@ Note that with the above `docker-compose.yml`, ports are only exposed to the doc
 
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
 
-However, if you need to go beyend what's avaiable, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
+However, if you need to go beyond what's available, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set the environment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
 
 Image IB Gateway and IBC config file locations:
 
@@ -197,8 +173,8 @@ your IB account via the IB Gateway.
 Because of this, the default `docker-compose.yml` only exposes the IB API port
 to the **localhost** on the docker host, but not to the whole network.
 
-If you want to connect to IB Gateway from a remote device, consider adding an
-additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
+If you want to connect to IB Gateway from a remote device, consider adding a
+layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 'plain text' TCP sockets against unauthorized access or manipulation.
 
 #### Possible IB API port configurations
@@ -207,7 +183,7 @@ Some examples of possible configurations
 
 - Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml). Suitable for testing. It does not expose API port to host network, host must be trusted.
 - Available to the host network. Unsecure configuration, suitable for short tests in a secure network. **Not recommented**.
-  
+
   ```yaml
   ports:
     - "4001:4003"
@@ -216,7 +192,7 @@ Some examples of possible configurations
   ```
 
 - Available for other services in same docker network. Services with access to `trader` network can access IB Gateway through hostname `ib-gateway`(same than service name). Secure setup, altough host should be trusted.
-  
+
   ```yaml
   services:
     ib-gateway:
@@ -254,7 +230,7 @@ ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=3 -NL 5900:localhost:5900 t
 
 It would look like this
 
-```
+```text
        _____________
       |  IB Gateway | \   :4001
        -------------  |

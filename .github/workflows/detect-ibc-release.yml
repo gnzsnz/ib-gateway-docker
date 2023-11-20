@@ -23,7 +23,7 @@ jobs:
         run: |
           CURRENT_IBC="$(grep 'ENV IBC_VERSION' Dockerfile.template|cut -d '=' -f 2)"
           echo "CURRENT_IBC=$CURRENT_IBC" >> $GITHUB_OUTPUT
-      
+
       - name: Get IBC latest version
         id: ibc_version
         run: |
@@ -76,7 +76,7 @@ jobs:
           git config user.email github-actions@github.com
           git pull
           git checkout -b "$branch" origin/master
-          
+
           # update Dockerfile.template, but don't run update.sh
           # next ib gateway release will run update.sh
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
@@ -85,5 +85,4 @@ jobs:
           git commit -m "Update IBC from ${ver} to ${latest}"
           git push --set-upstream origin "$branch"
 
-          gh pr create --base master --fill          
-
+          gh pr create --base master --fill

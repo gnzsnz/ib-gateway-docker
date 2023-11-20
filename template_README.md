@@ -11,9 +11,9 @@ It includes:
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - [IBC](https://github.com/IbcAlpha/IBC) - to control IB Gateway (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11 virtual framebuffer to run IB Gateway Application without graphics hardware.
-- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
+- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
 - [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to container's 127.0.0.1 by default).
-- Optional remote [ssh tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
+- Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
 
 ## Supported Tags
@@ -91,8 +91,8 @@ The image can be configured with the following environment variables:
 | `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start and a remote ssh tunnel is started. SSH keys should be provided to container through ~/.ssh volume. | **not defined** |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
-| `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behaviour is undefined. | 20 |
-| `SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behaviour is undefined. | 3 |
+| `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 20 |
+| `SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 3 |
 | `SSH_PASSPHRASE` | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys | **not defined** |
 | `SSH_REMOTE_PORT` | Remote port for ssh tunnel. | Same port than IB gateway 4001/4002 |
 | `SSH_USER_TUNNEL` | `user@server` to connect to | **not defined** |
@@ -138,7 +138,7 @@ After image is downloaded, container is started + 30s, the following ports will 
 | 4004 | TWS API port for paper accounts. Through socat, internal TWS API port 4002. Mapped **externally** to 4002 in sample `docker-compose.yml`. |
 | 5900 | When `VNC_SERVER_PASSWORD` was defined, the VNC server port. |
 
-Utiliy [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports.
+Utility [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
@@ -146,7 +146,7 @@ Note that with the above `docker-compose.yml`, ports are only exposed to the doc
 
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
 
-However, if you need to go beyend what's avaiable, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
+However, if you need to go beyond what's available, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set environment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
 
 Image IB Gateway and IBC config file locations:
 
@@ -206,8 +206,8 @@ additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 Some examples of possible configurations
 
 - Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml). Suitable for testing. It does not expose API port to host network, host must be trusted.
-- Available to the host network. Unsecure configuration, suitable for short tests in a secure network. **Not recommented**.
-  
+- Available to the host network. Unsecure configuration, suitable for short tests in a secure network. **Not recommended**.
+
   ```yaml
   ports:
     - "4001:4003"
@@ -215,8 +215,8 @@ Some examples of possible configurations
     - "5900:5900"
   ```
 
-- Available for other services in same docker network. Services with access to `trader` network can access IB Gateway through hostname `ib-gateway`(same than service name). Secure setup, altough host should be trusted.
-  
+- Available for other services in same docker network. Services with access to `trader` network can access IB Gateway through hostname `ib-gateway`(same than service name). Secure setup, although host should be trusted.
+
   ```yaml
   services:
     ib-gateway:
@@ -230,13 +230,13 @@ Some examples of possible configurations
     trader:
   ```
 
-- SSH Tunnel, enable ssh tunnel as explained in [ssh tunnel](#ssh-tunnel) section. This will only make IB API port avaible through a secure SSH tunnel. Secure option if utilized correctly.
+- SSH Tunnel, enable ssh tunnel as explained in [ssh tunnel](#ssh-tunnel) section. This will only make IB API port available through a secure SSH tunnel. Secure option if utilized correctly.
 
 ### SSH Tunnel
 
 You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The container DOES NOT run an SSH server (sshd), what it does is to create a [remote tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) using ssh client. So basically it will connect to an ssh server and expose IB Gateway port there.
 
-An example setup would be to run [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a [jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which provides a fully working algorithmic trading enviroment. In simple terms ib gateway opens a **remote** port on ssh bastion and listen to connections on it. While [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) will open a **local** port that is tunneled into bastion on the same port opened by ib-gateway-docker. This combination of tunnels will expose IB API port into [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) making it available for use with [ib_insync](https://github.com/erdewit/ib_insync). The only port available to the outside world is the [ssh bastion](https://github.com/gnzsnz/docker-bastion) port, which has hardened security defaults and cryptographic key authentication.
+An example setup would be to run [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a [jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which provides a fully working algorithmic trading environment. In simple terms ib gateway opens a **remote** port on ssh bastion and listen to connections on it. While [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) will open a **local** port that is tunneled into bastion on the same port opened by ib-gateway-docker. This combination of tunnels will expose IB API port into [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) making it available for use with [ib_insync](https://github.com/erdewit/ib_insync). The only port available to the outside world is the [ssh bastion](https://github.com/gnzsnz/docker-bastion) port, which has hardened security defaults and cryptographic key authentication.
 
 Sample ssh tunnels for reference.
 
@@ -254,7 +254,7 @@ ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=3 -NL 5900:localhost:5900 t
 
 It would look like this
 
-```
+```text
        _____________
       |  IB Gateway | \   :4001
        -------------  |
@@ -269,15 +269,21 @@ It would look like this
       ---------------
 ```
 
-`ib-gateway-docker` is using `ServerAliveInterval` and `ServerAliveCountMax` ssh settings to keep the tunnel open. Additionally it will restart the tunnel automatically if it's stopped, and will keep trying to restart it.
+`ib-gateway-docker` is using `ServerAliveInterval` and `ServerAliveCountMax`
+ssh settings to keep the tunnel open. Additionally it will restart the tunnel
+automatically if it's stopped, and will keep trying to restart it.
 
 **Minimal ssh tunnel setup**:
 
-- `SSH_TUNNEL`: set it to `yes`. This will NOT start `socat` and only start an ssh tunnel.
-- `SSH_USER_TUNNEL`: The user name that ssh should use. It should be in the form `user@server`
-- `SSH_PASSPHRASE`: Not mandatory, but strongly recommended. If set it will start `ssh-agend` and add ssh keys to agent. `ssh` will use `ssh-agent`.
+- `SSH_TUNNEL`: set it to `yes`. This will NOT start `socat` and only start an
+  ssh tunnel.
+- `SSH_USER_TUNNEL`: The user name that ssh should use. It should be in the
+  form `user@server`
+- `SSH_PASSPHRASE`: Not mandatory, but strongly recommended. If set it will
+  start `ssh-agent` and add ssh keys to agent. `ssh` will use `ssh-agent`.
 
-In addition to the environment variables listed above you need to pass ssh keys to `ib-gateway-docker` container. This is achived through a volume mount
+In addition to the environment variables listed above you need to pass ssh keys
+to `ib-gateway-docker` container. This is achieved through a volume mount
 
 ```yaml
 ...
@@ -288,9 +294,11 @@ In addition to the environment variables listed above you need to pass ssh keys 
 
 Make sure that:
 
-- you copy ssh keys with a standard name, ex ~/.ssh/id_rsa, ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk, or ~/.ssh/id_dsa
+- you copy ssh keys with a standard name, ex ~/.ssh/id_rsa, ~/.ssh/id_ecdsa,
+  ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk, or ~/.ssh/id_dsa
 - keys should have proper permissions. ex `chmod 600 -R $PWD/ssh/*`
-- you would need a `$PWD/ssh/known_hosts` file. Or pass `SSH_OPTIONS=-o StrictHostKeyChecking=no`, although this last option is **NOT recommented** for a production environment.
+- you would need a `$PWD/ssh/known_hosts` file. Or pass `SSH_OPTIONS=-o
+  StrictHostKeyChecking=no`, although this last option is **NOT recommended** for a production environment.
 - and please make sure that you are familiar with [ssh tunnels](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
 
 ### Credentials
@@ -303,19 +311,28 @@ the host is responsible to properly protect it (e.g. use
 
 ## IB Gateway installation files
 
-Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+Note that the
+[Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
 **does not download IB Gateway installer files from IB homepage but from the
-[github-releases](https://github.com/gnzsnz/ib-gateway-docker/releases) of this project**.
+[github-releases](https://github.com/gnzsnz/ib-gateway-docker/releases) of this
+project**.
 
-This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
-but IB only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
+This is because it shall be possible to (re-)build the image, targeting a
+specific Gateway version,
+but IB only provide download links for the `latest` or `stable` version (there
+is no 'old version' download archive).
 
-The installer files stored on [releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been downloaded from IB homepage and renamed to reflect the version.
+The installer files stored on
+[releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been
+downloaded from IB homepage and renamed to reflect the version.
 
-IF you feel adventurous and you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
+IF you feel adventurous and you want to download Gateway installer from IB
+homepage directly, or use your local installation file, change this line
 on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
-`RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
---output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
+`RUN curl -sSL
+https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+--output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download
+(or copy) the file from the source you prefer.
 
 **Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
 
@@ -327,8 +344,9 @@ on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfi
       git clone https://github.com/gnzsnz/ib-gateway-docker
     ```
 
-1. Change docker file to use your local IB Gateway installer file, instead of loading it from this project releases:
-Open `Dockerfile` on editor and replace this lines:
+1. Change docker file to use your local IB Gateway installer file, instead of
+   Loading it from this project releases: Open `Dockerfile` on editor and
+   replace this lines:
 
    ```docker
    RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
@@ -343,7 +361,13 @@ Open `Dockerfile` on editor and replace this lines:
    COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
    ```
 
-1. Remove `RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from Dockerfile (unless you want to keep checksum-check)
-1. Download IB Gateway and name the file `ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile (first line)
-1. Download IBC and name the file `IBCLinux-{IBC_VERSION}.zip`, where `{IBC_VERSION}` must match the version as configured on Dockerfile (second line)
+1. Remove `RUN sha256sum --check
+   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from
+   Dockerfile (unless you want to keep checksum-check)
+1. Download IB Gateway and name the file
+   `ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
+   `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
+   (first line)
+1. Download IBC and name the file `IBCLinux-{IBC_VERSION}.zip`, where
+   `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
