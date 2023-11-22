@@ -25,13 +25,11 @@ services:
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       GATEWAY_OR_TWS: ${GATEWAY_OR_TWS:-gateway}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
-      SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
 #    volumes:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
 #      - ${PWD}/config.ini:/root/ibc/config.ini
 #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
     ports:
-      # - "127.0.0.1:4001:4001"
-      # - "127.0.0.1:4002:4002"
-      # - "127.0.0.1:5900:5900"
-      - "127.0.0.1:22:22" # SSH is protecting all the communications
+      - "127.0.0.1:4001:4001"
+      - "127.0.0.1:4002:4002"
+      - "127.0.0.1:5900:5900"
