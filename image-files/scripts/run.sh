@@ -89,7 +89,6 @@ if [ "$CUSTOM_CONFIG" != "yes" ]; then
 	fi
 fi
 
-
 # forward ports, socat or ssh
 /home/ibgateway/scripts/port_forwarding.sh &
 
