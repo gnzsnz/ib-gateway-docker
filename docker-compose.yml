@@ -4,10 +4,10 @@ services:
   ib-gateway:
     restart: always
     build:
-      context: ./stable
+      context: ./latest
       tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+        - "ghcr.io/gnzsnz/ib-gateway:latest"
+    image: ghcr.io/gnzsnz/ib-gateway:latest
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -25,11 +25,21 @@ services:
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       GATEWAY_OR_TWS: ${GATEWAY_OR_TWS:-gateway}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+      SSH_TUNNEL: ${SSH_TUNNEL:-}
+      SSH_OPTIONS: ${SSH_OPTIONS:-}
+      SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
+      SSH_ALIVE_COUNT: ${SSH_ALIVE_COUNT:-}
+      SSH_PASSPHRASE: ${SSH_PASSPHRASE:-}
+      SSH_REMOTE_PORT: ${SSH_REMOTE_PORT:-}
+      SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
+      SSH_RESTART: ${SSH_RESTART:-}
+      SSH_VNC_PORT: ${SSH_VNC_PORT:-}
 #    volumes:
-#      - ${PWD}/jts.ini:/root/Jts/jts.ini
-#      - ${PWD}/config.ini:/root/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/root/Jts}
+#      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
+#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
+#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
+#      - ${PWD}/ssh/:/home/ibgateway/.ssh
     ports:
-      - "127.0.0.1:4001:4001"
-      - "127.0.0.1:4002:4002"
+      - "127.0.0.1:4001:4003"
+      - "127.0.0.1:4002:4004"
       - "127.0.0.1:5900:5900"
