@@ -17,8 +17,15 @@ if [ "$channel" != "stable" ] && [ "$channel" != "latest" ]; then
 fi
 
 cp -r image-files/. "$channel/."
+
+# Dockerfile
 rm -f "$channel/Dockerfile"
 # shellcheck disable=SC2016
 VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.template" >"$channel/Dockerfile"
+
+# Dockerfile tws
+rm -f "$channel/Dockerfile.tws"
+# shellcheck disable=SC2016
+VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.tws.template" >"$channel/Dockerfile.tws"
 
 echo "Done"
