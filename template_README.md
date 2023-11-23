@@ -32,6 +32,7 @@ Create a `docker-compose.yml` (or include ib-gateway services on your existing o
 ```yaml
 version: "3.4"
 
+name: algo-trader
 services:
   ib-gateway:
     restart: always
@@ -55,6 +56,7 @@ services:
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
@@ -110,12 +112,16 @@ Create an .env on root directory. Example .env file:
 ```text
 TWS_USERID=myTwsAccountName
 TWS_PASSWORD=myTwsPassword
+#TWS_SETTINGS_PATH=/home/ibgateway/Jts
 TWS_SETTINGS_PATH=
 TRADING_MODE=paper
 READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
 TWOFA_TIMEOUT_ACTION=restart
+BYPASS_WARNING=
 AUTO_RESTART_TIME=11:59 PM
+AUTO_LOGOFF_TIME=
+SAVE_TWS_SETTINGS
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
 CUSTOM_CONFIG=
