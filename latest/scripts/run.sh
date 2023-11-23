@@ -54,7 +54,6 @@ start_vnc() {
 	fi
 }
 
-
 # start Xvfb
 start_xvfb
 

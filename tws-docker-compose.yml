@@ -1,5 +1,6 @@
 version: "3.4"
 
+name: algo-trader
 services:
   tws:
     restart: unless-stopped
@@ -36,9 +37,10 @@ services:
       SSH_REMOTE_PORT: ${SSH_REMOTE_PORT:-}
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
+      SSH_RDP_PORT: ${SSH_RDP_PORT:-}
     volumes:
       - ./config:/config #optional
     ports:
       #- "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper
-      - "3370:3389" # xrdp
+      - "127.0.0.1:3370:3389" # xrdp

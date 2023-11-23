@@ -73,7 +73,7 @@ RUN apt-get update -y && \
   rm -rf /var/lib/apt/lists/* && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
-  chmod a+x${HOME}/scripts/*.sh
+  chmod a+x ${SCRIPT_PATH}/*.sh
 
 USER ${USER_ID}:${USER_GID}
 WORKDIR ${HOME}
