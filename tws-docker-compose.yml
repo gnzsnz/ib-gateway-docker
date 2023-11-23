@@ -15,17 +15,18 @@ services:
     environment:
       PUID: 1000
       PGID: 1000
+      PASSWD: ${PASSWD:-}
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
-      VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
       AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
@@ -35,10 +36,9 @@ services:
       SSH_REMOTE_PORT: ${SSH_REMOTE_PORT:-}
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
-      SSH_VNC_PORT: ${SSH_VNC_PORT:-}
     volumes:
       - ./config:/config #optional
     ports:
-      - "127.0.0.1:4001:4003"
-      - "127.0.0.1:4002:4004"
-      - "3370:3389"
+      #- "127.0.0.1:7496:7498" # live
+      - "127.0.0.1:7497:7499" # paper
+      - "3370:3389" # xrdp
