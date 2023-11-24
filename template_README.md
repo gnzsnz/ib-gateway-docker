@@ -109,7 +109,7 @@ The image can be configured with the following environment variables:
 
 Create an .env on root directory. Example .env file:
 
-```text
+```bash
 TWS_USERID=myTwsAccountName
 TWS_PASSWORD=myTwsPassword
 #TWS_SETTINGS_PATH=/home/ibgateway/Jts
@@ -121,7 +121,7 @@ TWOFA_TIMEOUT_ACTION=restart
 BYPASS_WARNING=
 AUTO_RESTART_TIME=11:59 PM
 AUTO_LOGOFF_TIME=
-SAVE_TWS_SETTINGS
+SAVE_TWS_SETTINGS=
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
 CUSTOM_CONFIG=
