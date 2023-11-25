@@ -29,7 +29,7 @@ jobs:
 
       ###############################################################
       #   Login container registry
-      ###############################################################        
+      ###############################################################
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -99,4 +99,3 @@ jobs:
             push: true
             tags: ${{ steps.meta-tws.outputs.tags }}
             labels: ${{ steps.meta-tws.outputs.labels }}
-

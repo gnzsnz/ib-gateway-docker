@@ -8,7 +8,7 @@ echo "*************************************************************************"
 # source common functions
 source "${SCRIPT_PATH}/common.sh"
 
-disable_agents(){
+disable_agents() {
 	## disable ssh and gpg agent
 	# https://docs.xfce.org/xfce/xfce4-session/advanced
 	if [ ! -f /config/.config/disable_agents ]; then
