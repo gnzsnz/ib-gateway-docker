@@ -8,6 +8,17 @@ echo "*************************************************************************"
 # source common functions
 source "${SCRIPT_PATH}/common.sh"
 
+disable_agents(){
+	## disable ssh and gpg agent
+	# https://docs.xfce.org/xfce/xfce4-session/advanced
+	if [ ! -f /config/.config/disable_agents ]; then
+		echo ".> Disabling ssh-agent and gpg-agent"
+		xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled -n -t bool -s false
+		xfconf-query -c xfce4-session -p /startup/gpg-agent/enabled -n -t bool -s false
+		touch /config/.config/disable_agents
+	fi
+}
+
 # set display
 export DISPLAY=:10
 
@@ -15,6 +26,8 @@ export DISPLAY=:10
 echo ".> Running as user"
 id
 
+# disable agents
+disable_agents
 # SSH
 setup_ssh
 # set ports
