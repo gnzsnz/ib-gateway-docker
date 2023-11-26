@@ -13,6 +13,9 @@ defaults:
 jobs:
   detect-release:
     runs-on: ubuntu-latest
+    outputs:
+      update: ${{ steps.check-update.outputs.has_update }}
+      channel: ${{ matrix.channel }}
     strategy:
       fail-fast: true
       matrix:
@@ -113,33 +116,11 @@ jobs:
 
           gh pr create --base master --fill
 
-      # build new release
-      - name: Set up Docker Buildx
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        uses: docker/setup-buildx-action@v3
 
-      - name: Docker meta
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/gnzsnz/ib-gateway
-            gnzsnz/ib-gateway
-          flavor: |
-            latest=false
-          tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
-
-      - name: Build, NO push
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.channel }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+  build:
+    name: Call build workflow
+    needs: detect-release
+    if: needs.detect-release.outputs.update == 'true'
+    uses: gnzsnz/ib-gateway-docker/.github/workflows/build.yml@master
+    with:
+        channel: ${{ needs.detect-release.outputs.channel }}
