@@ -8,6 +8,12 @@ fi
 
 if [ "$SSH_TUNNEL" = "yes" ]; then
 
+	if [ -n "$(pgrep -x ssh)" ]; then
+		# if this script is already running don't start it
+		echo ".> SSH tunnel already active. Not starting a new one"
+		exit 0
+	fi
+
 	if [ -z "$SSH_REMOTE_PORT" ]; then
 		# by default remote port is same than API_PORT
 		SSH_REMOTE_PORT="$API_PORT"
@@ -29,7 +35,7 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
 	fi
 
 	while true; do
-		echo ".> ssh sock: $SSH_AUTH_SOCK"
+		echo ".> Starting ssh tunnel with ssh sock: $SSH_AUTH_SOCK"
 		bash -c "ssh ${SSH_ALL_OPTIONS} -TNR 127.0.0.1:${API_PORT}:localhost:${SSH_REMOTE_PORT} ${SSH_SCREEN:-} ${SSH_USER_TUNNEL}"
 		sleep "${SSH_RESTART:-5}"
 	done

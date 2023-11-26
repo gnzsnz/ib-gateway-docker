@@ -17,6 +17,11 @@ echo ".> Setting user password"
 echo "abc:$_PASS" | chpasswd
 id
 
+if [ -n "${TZ}" ]; then
+	echo ".> Setting timezone to: ${TZ}"
+	echo "${TZ}" >/etc/timezone
+fi
+
 # open xfce session
 echo ".> Openning Xrdp session"
 echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc
