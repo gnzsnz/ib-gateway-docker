@@ -76,7 +76,7 @@ jobs:
           push: false
           load: true
           context: ${{ env.CHANNEL }}
-          file: Dockerfile.tws
+          file: ${{ env.CHANNEL }}/Dockerfile.tws
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta-tws.outputs.tags }}

@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: ['*', '!update-*-to-*', '!IBC-update*']
+    tags-ignore:
+      - 'v*'
   pull_request:
     branches: ['master', '!update-*-to-*', '!IBC-update*']
 
