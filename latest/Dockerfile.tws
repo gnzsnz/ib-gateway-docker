@@ -7,8 +7,6 @@
 ARG IB_VERSION=10.26.1g
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
 
-WORKDIR /
-
 ##############################################################################
 # Build Stage: build production image
 ##############################################################################
@@ -33,7 +31,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN \
   apt-get update -y && \
-  apt-get install --no-install-recommends --yes socat sshpass gettext-base && \
+  apt-get install --no-install-recommends --yes socat sshpass gettext-base \
+  libnspr4 libnss3 && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* # end
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 
 setup_ssh() {
 	# setup SSH Tunnel
@@ -16,13 +17,19 @@ setup_ssh() {
 		echo ".> SSH options: $SSH_ALL_OPTIONS"
 
 		if [ -n "$SSH_PASSPHRASE" ]; then
-			if [ -z "${SSH_AUTH_SOCK}" ]; then
+			if ! pgrep ssh-agent >/dev/null; then
 				# start agent if it's not already running
+				# https://wiki.archlinux.org/title/SSH_keys#SSH_agents
 				echo ".> Starting ssh-agent."
-				eval "$(ssh-agent -s)"
+				ssh-agent >"/config/.ssh-agent.env"
+				source "/config/.ssh-agent.env"
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			else
 				echo ".> ssh-agent already running"
+				if [ -z "${SSH_AUTH_SOCK}" ]; then
+					echo ".> Loading agent environment"
+					source "/config/.ssh-agent.env"
+				fi
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			fi
 

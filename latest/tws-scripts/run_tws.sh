@@ -1,10 +1,10 @@
 #!/bin/bash
 # shellcheck shell=bash
+# shellcheck disable=SC1091,SC2317
 
 echo "*************************************************************************"
 echo ".> Starting IBC/TWS"
 echo "*************************************************************************"
-# shellcheck disable=SC1091
 # source common functions
 source "${SCRIPT_PATH}/common.sh"
 
@@ -13,9 +13,15 @@ disable_agents() {
 	# https://docs.xfce.org/xfce/xfce4-session/advanced
 	if [ ! -f /config/.config/disable_agents ]; then
 		echo ".> Disabling ssh-agent and gpg-agent"
+		# disable xfce
 		xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled -n -t bool -s false
 		xfconf-query -c xfce4-session -p /startup/gpg-agent/enabled -n -t bool -s false
+		# kill ssh-agent and gpg-agent
+		pkill -x ssh-agent
+		pkill -x gpg-agent
 		touch /config/.config/disable_agents
+	else
+		echo ".> Found '/config/.config/disable_agents' agents already disabled"
 	fi
 }
 
@@ -37,9 +43,6 @@ apply_settings
 
 # forward ports, socat or ssh
 "${SCRIPT_PATH}/port_forwarding.sh" &
-
-# settings
-apply_settings
 
 # start IBC
 echo ".> Starting IBC with params:"

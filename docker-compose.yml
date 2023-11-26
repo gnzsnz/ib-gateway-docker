@@ -3,7 +3,7 @@ version: "3.4"
 name: algo-trader
 services:
   ib-gateway:
-    restart: unless-stopped
+    restart: always
     build:
       context: ./latest
       tags:

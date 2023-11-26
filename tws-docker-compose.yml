@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri:/dev/dri #optional
-    shm_size: "2gb" #optional
+    shm_size: "4gb" #optional
     build:
       context: ./latest
       dockerfile: Dockerfile.tws
@@ -23,7 +23,10 @@ services:
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
+      BYPASS_WARNING: ${BYPASS_WARNING:-}
       AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
+      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
@@ -39,7 +42,7 @@ services:
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_RDP_PORT: ${SSH_RDP_PORT:-}
     volumes:
-      - ./config:/config #optional
+      - ./config:/config # optional
     ports:
       #- "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper
