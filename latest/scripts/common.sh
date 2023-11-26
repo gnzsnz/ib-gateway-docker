@@ -21,14 +21,14 @@ setup_ssh() {
 				# start agent if it's not already running
 				# https://wiki.archlinux.org/title/SSH_keys#SSH_agents
 				echo ".> Starting ssh-agent."
-				ssh-agent >"${HOME}/.ssh-agent.env"
-				source "${HOME}/.ssh-agent.env"
+				ssh-agent >"/config/.ssh-agent.env"
+				source "/config/.ssh-agent.env"
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			else
 				echo ".> ssh-agent already running"
 				if [ -z "${SSH_AUTH_SOCK}" ]; then
 					echo ".> Loading agent environment"
-					source "${HOME}/.ssh-agent.env"
+					source "/config/.ssh-agent.env"
 				fi
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			fi

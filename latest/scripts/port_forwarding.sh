@@ -44,11 +44,6 @@ else
 		echo ".> SOCAT_PORT not set, port: ${SOCAT_PORT}"
 		exit 1
 	fi
-	if [ -n "$(pgrep -x socat)" ]; then
-		# if this script is already running don't start it
-		echo ".> socat already active. Not starting a new one"
-		exit 0
-	fi
 	# no ssh tunnel, start socat
 	echo ".> Waiting for socat to start"
 	sleep 30

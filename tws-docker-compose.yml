@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri:/dev/dri #optional
-    shm_size: "4gb" #optional
+    shm_size: "2gb" #optional
     build:
       context: ./latest
       dockerfile: Dockerfile.tws
