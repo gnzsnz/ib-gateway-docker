@@ -16,9 +16,19 @@ if [ "$channel" != "stable" ] && [ "$channel" != "latest" ]; then
 	exit 1
 fi
 
+echo ".> Setting channle: $channel and version: $version for ibgateway"
 cp -r image-files/. "$channel/."
+
+# Dockerfile
 rm -f "$channel/Dockerfile"
 # shellcheck disable=SC2016
 VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.template" >"$channel/Dockerfile"
 
-echo "Done"
+echo ".> Setting channle: $channel and version: $version for tws"
+
+# Dockerfile tws
+rm -f "$channel/Dockerfile.tws"
+# shellcheck disable=SC2016
+VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.tws.template" >"$channel/Dockerfile.tws"
+
+echo ".> Done"
