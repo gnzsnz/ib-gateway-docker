@@ -33,6 +33,8 @@ jobs:
 
       - name: Get IBC latest version
         id: ibc_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           IBC_LATEST="$(gh release list -R ${{ env.IBC_REPO }} --exclude-drafts --exclude-pre-releases |grep 'Latest'|cut -f1)"
           if [ -n ${IBC_LATEST} ]
