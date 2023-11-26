@@ -45,7 +45,7 @@ jobs:
       #   Build ibgateway
       ###############################################################
 
-      - name: Docker meta
+      - name: Docker meta ibgateway
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -59,7 +59,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+),group=1
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
-      - name: Build and push
+      - name: Build and push ibgateway
         uses: docker/build-push-action@v5
         with:
           context: ${{ steps.channel.outputs.channel }}
@@ -73,7 +73,7 @@ jobs:
       #   Build tws
       ###############################################################
 
-      - name: Docker meta
+      - name: Docker meta TWS
         id: meta-tws
         uses: docker/metadata-action@v5
         with:
@@ -87,11 +87,11 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+),group=1
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
-      - name: Build and push
+      - name: Build and push TWS
         uses: docker/build-push-action@v5
         with:
             context: ${{ steps.channel.outputs.channel }}
-            file: Dockerfile.tws
+            file: ${{ steps.channel.outputs.channel }}/Dockerfile.tws
             cache-from: type=gha
             cache-to: type=gha,mode=max
             push: true
