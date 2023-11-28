@@ -7,6 +7,8 @@ services:
     devices:
       - /dev/dri:/dev/dri #optional
     shm_size: "2gb" #optional
+    security_opt:
+      - seccomp:unconfined #optional
     build:
       context: ./latest
       dockerfile: Dockerfile.tws
