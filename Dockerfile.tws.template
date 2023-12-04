@@ -34,7 +34,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN \
   apt-get update -y && \
   apt-get install --no-install-recommends --yes socat sshpass gettext-base \
-    libnspr4 libnss3 libcrypto++8 xdg-utils && \
+    libnspr4 libnss3 libcrypto++8 xdg-utils xfce4-cpugraph-plugin \
+    xfce4-netload-plugin xfce4-taskmanager xfce4-xkb-plugin xfce4-notes \
+    gvfs gvfs-backends gvfs-fuse && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* # end
 
