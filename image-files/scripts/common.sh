@@ -120,7 +120,7 @@ set_ports() {
 set_java_heap() {
 	if [ -n "${JAVA_HEAP_SIZE}" ]; then
 		_vmpath="${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}"
-		_string="s/-Xmx768m/-Xmx${TWS_HEAP_SIZE}m/g"
+		_string="s/-Xmx768m/-Xmx${JAVA_HEAP_SIZE}m/g"
 		sed -i "${_string}" "${_vmpath}/ibgateway.vmoptions"
 		echo ".> Java heap size set to ${JAVA_HEAP_SIZE}m"
 	else
