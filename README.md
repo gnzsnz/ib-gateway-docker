@@ -21,7 +21,7 @@ It includes:
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.26.1h`  | `3.18.0` | `latest` `10.26` `10.26.1h` |
+| `latest` | `10.26.1i`  | `3.18.0` | `latest` `10.26` `10.26.1i` |
 | `stable` | `10.19.2g`  | `3.18.0` | `stable` `10.19` `10.19.2g` |
 
 All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository. IB Gateway and TWS share the same version numers and tags, TWS tags are available on it's [container repository](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
@@ -401,6 +401,6 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
    `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
    (first line)
-1. Download IBC and name the file `IBCLinux-${IBC_VERSION}.zip`, where
+1. Download IBC and name the file `IBCLinux-3.18.0.zip`, where
    `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
