@@ -59,6 +59,7 @@ services:
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+      JAVA_HEAP_SIZE: ${JAVA_HEAP_SIZE:-}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
       SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
@@ -100,6 +101,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. |  |
 | `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
+| `JAVA_HEAP_SIZE` | Set Java heap, default 768MB, TWS might need more. Proposed value 1024. Enter just the number, don't enter units, ex mb. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm) | **not defined** |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. SSH keys should be provided to container through ~/.ssh volume. | **not defined** |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
 | `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 20 |
@@ -132,6 +134,7 @@ SAVE_TWS_SETTINGS=
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
 CUSTOM_CONFIG=
+JAVA_HEAP_SIZE=
 SSH_TUNNEL=
 SSH_OPTIONS=
 SSH_ALIVE_INTERVAL=
