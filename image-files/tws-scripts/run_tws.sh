@@ -44,7 +44,7 @@ apply_settings
 # Java heap size
 set_java_heap
 
-# forward ports, socat or ssh
+# forward ports, socat/ssh
 "${SCRIPT_PATH}/port_forwarding.sh" &
 
 # start IBC
