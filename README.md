@@ -21,7 +21,7 @@ It includes:
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.26.1j`  | `3.18.0` | `latest` `10.26` `10.26.1j` |
+| `latest` | `10.26.1k`  | `3.18.0` | `latest` `10.26` `10.26.1k` |
 | `stable` | `10.19.2h`  | `3.18.0` | `stable` `10.19` `10.19.2h` |
 
 All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository. IB Gateway and TWS share the same version numers and tags, TWS tags are available on it's [container repository](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
@@ -102,7 +102,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. |  |
 | `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 | `JAVA_HEAP_SIZE` | Set Java heap, default 768MB, TWS might need more. Proposed value 1024. Enter just the number, don't enter units, ex mb. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm) | **not defined** |
-| `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. SSH keys should be provided to container through ~/.ssh volume. | **not defined** |
+| `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. if set to `both` then `socat` and remote ssh tunnel are started. SSH keys should be provided to container through ~/.ssh volume. | **not defined** |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) client | **not defined** |
 | `SSH_ALIVE_INTERVAL` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 20 |
 | `SSH_ALIVE_COUNT` | [ssh](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 3 |

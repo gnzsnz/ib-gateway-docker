@@ -3,7 +3,7 @@
 
 setup_ssh() {
 	# setup SSH Tunnel
-	if [ "$SSH_TUNNEL" = "yes" ]; then
+	if [ "$SSH_TUNNEL" = "yes" ] || [ "$SSH_TUNNEL" = "both" ]; then
 		echo ".> Setting SSH tunnel"
 
 		_SSH_OPTIONS="-o ServerAliveInterval=${SSH_ALIVE_INTERVAL:-20}"
