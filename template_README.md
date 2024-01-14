@@ -242,7 +242,8 @@ Sample settings:
 
 ### Preserve settings across containers
 
-You can preserve IB Gateway configuration by setting environment variable `$TWS_SETTINGS_PATH` and setting a volume
+You can preserve IB Gateway configuration by setting environment variable
+`$TWS_SETTINGS_PATH` and setting a volume
 
 ```yaml
 ...
@@ -257,9 +258,13 @@ You can preserve IB Gateway configuration by setting environment variable `$TWS_
 
 ```
 
-For TWS it's recommended to use `TWS_SETTINGS_PATH`, as there is a good amount of data writen to disk.
+For TWS it's recommended to use `TWS_SETTINGS_PATH`, as there is a good amount
+of data writen to disk.
 
-**Important**: when you save your config in a volume, file `jts.ini` will be saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not exists (first run) but not once the file exists. This is to avoid overwriting your settings.
+**Important**: when you save your config in a volume, file `jts.ini` will be
+saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not
+exists (first run) but not once the file exists. This is to avoid overwriting
+your settings.
 
 ## Security Considerations
 
@@ -281,8 +286,10 @@ additional layer of security (e.g. TLS/SSL or SSH tunnel) to protect the
 
 Some examples of possible configurations
 
-- Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml). Suitable for testing. It does not expose API port to host network, host must be trusted.
-- Available to the host network. Unsecure configuration, suitable for short tests in a secure network. **Not recommended**.
+- Available to `localhost`, this is the default setup provided in [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml).
+Suitable for testing. It does not expose API port to host network, host must be trusted.
+- Available to the host network. Unsecure configuration, suitable for short
+  tests in a secure network. **Not recommended**.
 
   ```yaml
   ports:
@@ -291,7 +298,9 @@ Some examples of possible configurations
     - "5900:5900"
   ```
 
-- Available for other services in same docker network. Services with access to `trader` network can access IB Gateway through hostname `ib-gateway`(same than service name). Secure setup, although host should be trusted.
+- Available for other services in same docker network. Services with access to
+  `trader` network can access IB Gateway through hostname `ib-gateway` (same
+  than service name). Secure setup, although host should be trusted.
 
   ```yaml
   services:
@@ -312,7 +321,20 @@ Some examples of possible configurations
 
 You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The container DOES NOT run an SSH server (sshd), what it does is to create a [remote tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) using ssh client. So basically it will connect to an ssh server and expose IB Gateway port there.
 
-An example setup would be to run [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a [jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which provides a fully working algorithmic trading environment. In simple terms ib gateway opens a **remote** port on ssh bastion and listen to connections on it. While [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) will open a **local** port that is tunneled into bastion on the same port opened by ib-gateway-docker. This combination of tunnels will expose IB API port into [jupyter-quant](https://github.com/gnzsnz/jupyter-quant) making it available for use with [ib_insync](https://github.com/erdewit/ib_insync). The only port available to the outside world is the [ssh bastion](https://github.com/gnzsnz/docker-bastion) port, which has hardened security defaults and cryptographic key authentication.
+An example setup would be to run
+[ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a
+sidecar [ssh bastion](https://github.com/gnzsnz/docker-bastion) and a
+[jupyter-quant](https://github.com/gnzsnz/jupyter-quant), which provides a
+fully working algorithmic trading environment. In simple terms ib gateway opens
+a **remote** port on ssh bastion and listen to connections on it. While
+[jupyter-quant](https://github.com/gnzsnz/jupyter-quant) will open a **local**
+port that is tunneled into bastion on the same port opened by
+ib-gateway-docker. This combination of tunnels will expose IB API port into
+[jupyter-quant](https://github.com/gnzsnz/jupyter-quant) making it available
+for use with [ib_insync](https://github.com/erdewit/ib_insync). The only port
+available to the outside world is the
+[ssh bastion](https://github.com/gnzsnz/docker-bastion) port, which has hardened
+security defaults and cryptographic key authentication.
 
 Sample ssh tunnels for reference.
 
@@ -377,8 +399,10 @@ Make sure that:
   ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk, or ~/.ssh/id_dsa
 - keys should have proper permissions. ex `chmod 600 -R $PWD/ssh/*`
 - you would need a `$PWD/ssh/known_hosts` file. Or pass `SSH_OPTIONS=-o
-  StrictHostKeyChecking=no`, although this last option is **NOT recommended** for a production environment.
-- and please make sure that you are familiar with [ssh tunnels](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
+  StrictHostKeyChecking=no`, although this last option is **NOT recommended**
+  for a production environment.
+- and please make sure that you are familiar with
+  [ssh tunnels](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
 
 ### Credentials
 
@@ -387,6 +411,26 @@ This image does not contain nor store any user credentials.
 They are provided as environment variable during the container startup and
 the host is responsible to properly protect it (e.g. use
 [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) or similar).
+
+## Troubleshooting socat and ssh
+
+In case you experience problems with the API connection, you can restart the `socat` process
+
+```bash
+docker exec -it algo-trader-ib-gateway-1 pkill -x socat
+```
+
+After `SSH_RESTART` seconds socat will restart the connection. If `SSH_RESTART`
+is not set, by default the restart period will be 5 seconds.
+
+For ssh tunnel,
+
+```bash
+docker exec -it algo-trader-ib-gateway-1 pkill -x ssh
+```
+
+The ssh tunnel will restart after 5 seconds if `SSH_RESTART` is not set, of the
+value in seconds defined in `SSH_RESTART`.
 
 ## IB Gateway installation files
 
