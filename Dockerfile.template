@@ -57,8 +57,10 @@ ENV HOME=/home/ibgateway
 ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
 ENV TWS_PATH=${HOME}/Jts
 ENV TWS_INI=jts.ini
+ENV TWS_INI_TMPL=${TWS_INI}.tmpl
 ENV IBC_PATH=${HOME}/ibc
 ENV IBC_INI=${HOME}/ibc/config.ini
+ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
 # Copy files
