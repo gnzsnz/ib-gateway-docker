@@ -112,7 +112,7 @@ start_vnc
 #####		Paper, Live or both start process
 ###############################################################################
 
-if [ "$TRADING_MODE" == "both" ]; then
+if [ "$TRADING_MODE" == "both" ] || [ "$DUAL_MODE" == "yes" ]; then
 	# start live and paper
 	DUAL_MODE=yes
 	export DUAL_MODE
@@ -140,14 +140,15 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	# running dual mode, start paper
 	TRADING_MODE=paper
 	TWS_USERID="${TWS_USERID_PAPER}"
+	export TWS_USERID
 	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
+	export TWS_PASSWORD
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
-	SSH_RDP_PORT=
+	export SSH_VNC_PORT
 	# in dual mode, ssh remote always == api port
 	SSH_REMOTE_PORT=
-	#
-	export TWS_USERID TWS_PASSWORD SSH_VNC_PORT SSH_RDP_PORT SSH_REMOTE_PORT
+	export SSH_REMOTE_PORT
 	#
 	IBC_INI="${_IBC_INI}_${TRADING_MODE}"
 	TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${TRADING_MODE}"
