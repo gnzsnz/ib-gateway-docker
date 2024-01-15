@@ -69,6 +69,7 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
 RUN apt-get update -y && \
+  apt-get upgrade -y && \
   DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
   gettext-base socat xvfb x11vnc sshpass openssh-client && \
   apt-get clean && \
