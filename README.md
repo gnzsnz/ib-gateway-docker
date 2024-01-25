@@ -25,7 +25,7 @@ Images are provided for [IB gateway](https://github.com/users/gnzsnz/packages/co
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.27.1b`  | `3.18.0` | `latest` `10.27` `10.27.1b` |
+| `latest` | `10.27.1c`  | `3.18.0` | `latest` `10.27` `10.27.1c` |
 | `stable` | `10.19.2h`  | `3.18.0` | `stable` `10.19` `10.19.2h` |
 
 All tags are available in the [container repository](https://github.com/gnzsnz?tab=packages&repo_name=ib-gateway-docker). IB Gateway and TWS share the same version numers and tags.
