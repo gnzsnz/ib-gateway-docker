@@ -5,8 +5,13 @@ apply_settings() {
 	# apply env variables into IBC and gateway/TWS config files
 	if [ "$CUSTOM_CONFIG" != "yes" ]; then
 		echo ".> Appling settings to IBC's config.ini"
+
+		file_env 'TWS_PASSWORD'
 		# replace env variables
 		envsubst <"${IBC_INI_TMPL}" >"${IBC_INI}"
+		unset_env 'TWS_PASSWORD'
+		# set config.ini readable by user only
+		chmod 600 "${IBC_INI}"
 
 		# where are settings stored
 		if [ -n "$TWS_SETTINGS_PATH" ]; then
@@ -30,6 +35,38 @@ apply_settings() {
 		fi
 	else
 		echo ".> Using CUSTOM_CONFIG, (value:${CUSTOM_CONFIG})"
+	fi
+}
+
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	local def="${2:-}"
+	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+		printf >&2 'error: both %s and %s are set (but are exclusive)\n' "$var" "$fileVar"
+		exit 1
+	fi
+	local val="$def"
+	if [ "${!var:-}" ]; then
+		val="${!var}"
+	elif [ "${!fileVar:-}" ]; then
+		val="$(<"${!fileVar}")"
+	fi
+	export "$var"="$val"
+	#unset "$fileVar"
+}
+
+# usage: unset_env VAR
+#	ie: unset_env 'XYZ_DB_PASSWORD'
+unset_env() {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	if [ "${!fileVar:-}" ]; then
+		unset "$var"
 	fi
 }
 
@@ -125,6 +162,7 @@ setup_ssh() {
 		export SSH_ALL_OPTIONS
 		echo ".> SSH options: $SSH_ALL_OPTIONS"
 
+		file_env 'SSH_PASSPHRASE'
 		if [ -n "$SSH_PASSPHRASE" ]; then
 			if ! pgrep ssh-agent >/dev/null; then
 				# start agent if it's not already running
@@ -145,6 +183,7 @@ setup_ssh() {
 			echo ".> Adding keys to ssh-agent."
 			export SSH_ASKPASS_REQUIRE=never
 			SSHPASS="${SSH_PASSPHRASE}" sshpass -e -P "passphrase" ssh-add
+			unset_env 'SSH_PASSPHRASE'
 			echo ".> ssh-agent identities: $(ssh-add -l)"
 		fi
 	else

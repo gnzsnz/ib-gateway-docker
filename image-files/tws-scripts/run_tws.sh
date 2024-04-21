@@ -2,6 +2,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC1091,SC2317,SC2034
 
+set -Eeo pipefail
+
 echo "*************************************************************************"
 echo ".> Starting IBC/TWS"
 echo "*************************************************************************"
@@ -60,7 +62,6 @@ start_process() {
 	apply_settings
 	# forward ports, socat/ssh
 	port_forwarding
-
 	start_IBC
 }
 
@@ -114,8 +115,11 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	TRADING_MODE=paper
 	TWS_USERID="${TWS_USERID_PAPER}"
 	export TWS_USERID
+
+	file_env 'TWS_PASSWORD_PAPER'
 	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
 	export TWS_PASSWORD
+	unset_env 'TWS_PASSWORD_PAPER'
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
 	export SSH_VNC_PORT

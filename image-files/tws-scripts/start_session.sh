@@ -1,5 +1,6 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
+set -Eeo pipefail
 
 echo "*************************************************************************"
 echo ".> Launching IBC/TWS service"
@@ -29,5 +30,10 @@ echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc
 # setting permissions
 echo ".> Setting permissions for ${TWS_PATH} and ${IBC_PATH}"
 chown abc:abc -R /opt "${TWS_PATH}" "${IBC_PATH}"
+
+if [ -d "/run/secrets" ]; then
+	echo ".> Setting permissions for /run/secrets"
+	chown abc:abc -R /run/secrets/*
+fi
 
 sudo -EH -u abc "${SCRIPT_PATH}/run_tws.sh"
