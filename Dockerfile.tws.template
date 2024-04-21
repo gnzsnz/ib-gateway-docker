@@ -4,6 +4,9 @@
 # This is a dedicated stage used as source for needed files.
 #
 ##############################################################################
+
+# hadolint global ignore=DL3008
+
 ARG IB_VERSION=$VERSION
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
 
