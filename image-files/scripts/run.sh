@@ -145,8 +145,11 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	TRADING_MODE=paper
 	TWS_USERID="${TWS_USERID_PAPER}"
 	export TWS_USERID
+
+	file_env 'TWS_PASSWORD_PAPER'
 	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
 	export TWS_PASSWORD
+	unset_env 'TWS_PASSWORD_PAPER'
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
 	export SSH_VNC_PORT
