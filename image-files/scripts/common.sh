@@ -180,11 +180,15 @@ setup_ssh() {
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			fi
 
-			echo ".> Adding keys to ssh-agent."
-			export SSH_ASKPASS_REQUIRE=never
-			SSHPASS="${SSH_PASSPHRASE}" sshpass -e -P "passphrase" ssh-add
-			unset_env 'SSH_PASSPHRASE'
-			echo ".> ssh-agent identities: $(ssh-add -l)"
+			if ls /config/.ssh/id_* >/dev/null; then
+				echo ".> Adding keys to ssh-agent."
+				export SSH_ASKPASS_REQUIRE=never
+				SSHPASS="${SSH_PASSPHRASE}" sshpass -e -P "passphrase" ssh-add
+				unset_env 'SSH_PASSPHRASE'
+				echo ".> ssh-agent identities: $(ssh-add -l)"
+			else
+				echo ".> SSH keys not found, ssh-agent not started"
+			fi
 		fi
 	else
 		echo ".> SSH tunnel disabled"
@@ -195,6 +199,10 @@ start_ssh() {
 	if [ -n "$(pgrep -f "127.0.0.1:${API_PORT}:localhost:")" ]; then
 		# if this script is already running don't start it
 		echo ".> SSH tunnel already active. Not starting a new one"
+		return 0
+	elif ! pgrep ssh-agent >/dev/null; then
+		# if ssh-agent is not running don't start tunnel
+		echo ".> ssh-agent is NOT running. Not starting a tunnel"
 		return 0
 	fi
 

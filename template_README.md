@@ -427,7 +427,7 @@ services:
     ...
     TWS_PASSWORD_FILE: /run/secrets/tws_password
     SSH_PASSPHRASE_FILE: /run/secrets/ssh_passphrase
-    VNC_PASSWORD_FILE: /run/secrets/vnc_password
+    VNC_SERVER_PASSWORD_FILE: /run/secrets/vnc_password
     ...
   secrets:
     - tws_password
@@ -435,12 +435,12 @@ services:
     - vnc_password
   ...
 secrets:
-tws_password:
-  file: tws_password.txt
-ssh_passphrase:
-  file: ssh_password.txt
-vnc_password:
-  file: vnc_password.txt
+  tws_password:
+    file: tws_password.txt
+  ssh_passphrase:
+    file: ssh_password.txt
+  vnc_password:
+    file: vnc_password.txt
 
 ```
 

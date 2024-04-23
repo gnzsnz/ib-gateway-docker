@@ -13,6 +13,7 @@ source "${SCRIPT_PATH}/common.sh"
 disable_agents() {
 	## disable ssh and gpg agent
 	# https://docs.xfce.org/xfce/xfce4-session/advanced
+
 	if [ ! -f /config/.config/disable_agents ]; then
 		echo ".> Disabling ssh-agent and gpg-agent"
 		# disable xfce
@@ -31,7 +32,8 @@ disable_compositing() {
 	# disable compositing
 	# https://github.com/gnzsnz/ib-gateway-docker/issues/55
 	echo ".> Disabling xfce compositing"
-	xfconf-query --channel=xfwm4 --property=/general/use_compositing --type=bool --set=false --create
+	xfconf-query --channel=xfwm4 --property=/general/use_compositing \
+		--type=bool --set=false --create
 }
 
 start_IBC() {
@@ -68,8 +70,6 @@ start_process() {
 ###############################################################################
 #####		Common Start
 ###############################################################################
-# set display
-export DISPLAY=:10
 
 # user id
 echo ".> Running as user"
@@ -110,16 +110,17 @@ fi
 
 start_process
 
+# do it outside if dual mode, so the clean up is done anyway
+file_env 'TWS_PASSWORD_PAPER'
+
 if [ "$DUAL_MODE" == "yes" ]; then
 	# running dual mode, start paper
 	TRADING_MODE=paper
 	TWS_USERID="${TWS_USERID_PAPER}"
 	export TWS_USERID
 
-	file_env 'TWS_PASSWORD_PAPER'
 	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
 	export TWS_PASSWORD
-	unset_env 'TWS_PASSWORD_PAPER'
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
 	export SSH_VNC_PORT
@@ -135,6 +136,8 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	sleep 15
 	start_process
 fi
+# outside if dual mode, to ensure cleanup/unset
+unset_env 'TWS_PASSWORD_PAPER'
 
 wait "${pid[@]}"
 _wait="$?"
