@@ -146,10 +146,14 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	TWS_USERID="${TWS_USERID_PAPER}"
 	export TWS_USERID
 
-	file_env 'TWS_PASSWORD_PAPER'
-	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
-	export TWS_PASSWORD
-	unset_env 'TWS_PASSWORD_PAPER'
+	# handle password for dual mode
+	if [ -n "${TWS_PASSWORD_PAPER_FILE}" ]; then
+		TWS_PASSWORD_FILE="${TWS_PASSWORD_PAPER_FILE}"
+		export TWS_PASSWORD_FILE
+	else
+		TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
+		export TWS_PASSWORD
+	fi
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
 	export SSH_VNC_PORT

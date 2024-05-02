@@ -17,6 +17,7 @@ It includes:
 - [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to container's 127.0.0.1 by default).
 - Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
+- [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
 - Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
 
 ## Supported Tags
@@ -414,7 +415,9 @@ This image does not contain nor store any user credentials.
 They are provided as environment variable during the container startup and
 the host is responsible to properly protect it.
 
-From `10.28.1i` and `10.19.2m` it's possible to use `docker secrets`. If the `_FILE` environment variable is defined, then that file will be used to get credentials.
+From `10.29.1e` and `10.19.2m` it's possible to use `docker secrets`. If the
+`_FILE` environment variable is defined, then that file will be used to get
+credentials.
 
 Sample `docker-compose.yml`:
 
