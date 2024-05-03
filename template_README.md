@@ -182,11 +182,11 @@ TWS image uses the following ports
 
 | Port | Description   |
 | ---- | --- |
-| 7498 | TWS API port for live accounts. Through socat, internal TWS API port 4001. Mapped **externally** to 7497 in sample `tws-docker-compose.yml`.  |
-| 7499 | TWS API port for paper accounts. Through socat, internal TWS API port 4002. Mapped **externally** to 7498 in sample `tws-docker-compose.yml`. |
+| 7498 | TWS API port for live accounts. Through socat, internal TWS API port 7496. Mapped **externally** to 7496 in sample `tws-docker-compose.yml`.  |
+| 7499 | TWS API port for paper accounts. Through socat, internal TWS API port 7497. Mapped **externally** to 7497 in sample `tws-docker-compose.yml`. |
 | 3389 | Port for RDP server. Mapped **externally** to 3370 in sample `tws-docker-compose.yml`.  |
 
-Utility [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports. For TWS `127.0.0.1:7497/7498` to container's `0.0.0.0:7498/7499`, and `tws-docker-file.yml` will map ports to host back to `7497/7498`.
+Utility [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports. For TWS `127.0.0.1:7496/7497` to container's `0.0.0.0:7498/7499`, and `tws-docker-file.yml` will map ports to host back to `7496/7497`.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
