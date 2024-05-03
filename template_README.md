@@ -253,17 +253,17 @@ You can preserve IB Gateway configuration by setting environment variable
 ...
     environment:
       - TWS_SETTINGS_PATH: /home/ibgateway/tws_settings # IB Gateway
-      - TWS_SETTINGS_PATH: /config/tws_settings # IB Gateway
+      - TWS_SETTINGS_PATH: /config/tws_settings # tws rdesktop
 ...
     volumes:
       - ${PWD}/tws_settings:/home/ibgateway/tws_settings # IB Gateway
-      - ${PWD}/config:/config # for TWS we can use linuxserver /config volume
+      - ${PWD}/config:/config # for TWS we use linuxserver /config volume
 ...
 
 ```
 
 For TWS it's recommended to use `TWS_SETTINGS_PATH`, as there is a good amount
-of data writen to disk.
+of data written to disk.
 
 **Important**: when you save your config in a volume, file `jts.ini` will be
 saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not
@@ -319,11 +319,17 @@ Suitable for testing. It does not expose API port to host network, host must be 
     trader:
   ```
 
-- SSH Tunnel, enable ssh tunnel as explained in [ssh tunnel](#ssh-tunnel) section. This will only make IB API port available through a secure SSH tunnel. Secure option if utilized correctly.
+- SSH Tunnel, enable ssh tunnel as explained in [ssh tunnel](#ssh-tunnel)
+  section. This will only make IB API port available through a secure SSH
+  tunnel. Secure option if utilized correctly.
 
 ### SSH Tunnel
 
-You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The container DOES NOT run an SSH server (sshd), what it does is to create a [remote tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) using ssh client. So basically it will connect to an ssh server and expose IB Gateway port there.
+You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The
+container DOES NOT run an SSH server (sshd), what it does is to create a
+[remote tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
+using ssh client. So basically it will connect to an ssh server and expose IB
+Gateway port there.
 
 An example setup would be to run
 [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) with a
