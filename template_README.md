@@ -472,6 +472,12 @@ secrets:
 
 In "dicussions" section you will find full examples for [ibgateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
 
+### RDP
+
+With [tws-rdesktop][2] you will need an rdp-client, rdesktop will create a new
+TLS certificate every time the container starts. You can create your own
+certificate following this [instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
+
 ## Troubleshooting socat and ssh
 
 In case you experience problems with the API connection, you can restart the `socat` process
