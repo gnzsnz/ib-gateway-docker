@@ -66,7 +66,7 @@ jobs:
           prefix=${{ env.BRANCH_PREFIX }}
           search=${prefix}-${latest}
 
-          if [ -n $(git branch --list | grep "$search") ]; then
+          if [ "$(git branch --list | grep ${search})" ]; then
             echo "BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
           else
             echo "BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
