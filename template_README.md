@@ -474,9 +474,11 @@ In "dicussions" section you will find full examples for [ibgateway](https://gith
 
 ### RDP
 
-With [tws-rdesktop][2] you will need an rdp-client, rdesktop will create a new
-TLS certificate every time the container starts. You can create your own
-certificate following this [instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
+[tws-rdesktop][2] will create a new TLS certificate every time the container
+starts. You can create your own certificate following this
+[instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
+Once this steps are put in place the same TLS certificate will be used every
+time, which will allow you to trust it in your RDP client.
 
 ## Troubleshooting socat and ssh
 
