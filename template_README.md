@@ -470,6 +470,8 @@ secrets:
 
 ```
 
+In "dicussions" section you will find full examples for [ibgateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
+
 ## Troubleshooting socat and ssh
 
 In case you experience problems with the API connection, you can restart the `socat` process
