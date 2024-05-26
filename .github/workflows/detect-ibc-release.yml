@@ -88,9 +88,12 @@ jobs:
 
           # update Dockerfile.template, but don't run update.sh
           # next ib gateway release will run update.sh
+          echo ".> updating Dockerfile.template"
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
+          echo ".> updating Dockerfile.tws.template"
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws.template
 
-          git add Dockerfile.template
+          git add Dockerfile.template Dockerfile.tws.template
           git commit -m "Update IBC from ${ver} to ${latest}"
           git push --set-upstream origin "$branch"
 
