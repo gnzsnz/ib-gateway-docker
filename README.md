@@ -4,21 +4,30 @@
 
 ## What is it?
 
-A docker image to run Interactive Brokers Gateway and TWS without any human interaction on a docker container
+A docker image to run Interactive Brokers Gateway and TWS without any human
+interaction on a docker container
 
 It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
-- [IBC](https://github.com/IbcAlpha/IBC) - to control IB Gateway (simulates user input).
-- [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11 virtual framebuffer to run IB Gateway Application without graphics hardware.
-- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
+- [IBC](https://github.com/IbcAlpha/IBC) - to control TWS/IB Gateway (simulates user input).
+- [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
+  virtual framebuffer to run IB Gateway Application without graphics hardware.
+- [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact
+  with the IB Gateway user interface (optional, for development / maintenance purpose).
 - xrdp/xfce enviroment for TWS. Build on top of [linuxserver/rdesktop](https://github.com/linuxserver/docker-rdesktop/).
-- [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to container's 127.0.0.1 by default).
-- Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html) to provide secure connections for both IB Gateway and VNC. Only available for `10.19.2g-stable` and `10.25.1o-latest` or greater.
+- [socat](https://manpages.ubuntu.com/manpages/jammy/en/man1/socat.1.html) a
+  tool to accept TCP connection from non-localhost and relay it to IB Gateway
+  from localhost (IB Gateway restricts connections to container's 127.0.0.1 by
+  default).
+- Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/jammy/en/man1/ssh.1.html)
+  to provide secure connections for both IB Gateway and VNC. Only available for
+  `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
+- Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant)
+  docker image.
 
 ## Supported Tags
 
@@ -26,10 +35,10 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.29.1g` | `3.18.0` | `latest` `10.29` `10.29.1g` |
-| [ib-gateway][1] |`stable` | `10.19.2n` | `3.18.0` | `stable` `10.19` `10.19.2n` |
-| [tws-rdesktop][2] | `latest` | `10.29.1g` | `3.18.0` | `latest` `10.29` `10.29.1g` |
-| [tws-rdesktop][2] |`stable` | `10.19.2n` | `3.18.0` | `stable` `10.19` `10.19.2n` |
+| [ib-gateway][1] | `latest` | `10.29.1h` | `3.19.0` | `latest` `10.29` `10.29.1h` |
+| [ib-gateway][1] |`stable` | `10.19.2n` | `3.19.0` | `stable` `10.19` `10.19.2n` |
+| [tws-rdesktop][2] | `latest` | `10.29.1h` | `3.19.0` | `latest` `10.29` `10.29.1h` |
+| [tws-rdesktop][2] |`stable` | `10.19.2n` | `3.19.0` | `stable` `10.19` `10.19.2n` |
 
 All tags are available in the container repository for [ib-gateway][1] and [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
 
@@ -56,12 +65,14 @@ services:
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
+      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
       BYPASS_WARNING: ${BYPASS_WARNING:-}
       AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
       AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
+      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
       SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
@@ -108,10 +119,12 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing TWS/Gateway configuration is unchanged  | **not defined**                                      |
 | `AUTO_RESTART_TIME`  | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined**  |
 | `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
+| `TWS_COLD_RESTART` | IBC >= 3.19 set this value to <hh:mm> | **not defined** |
 | `SAVE_TWS_SETTINGS`  | automatically save its settings on a schedule of your choosing. You can specify one or more specific times, ex `SaveTwsSettingsAt=08:00   12:30 17:30`  | **not defined**  |
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
 | `TIME_ZONE`  | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. If `TRADING_MODE=both` this will be the prefix four your settings. ex `/config/tws_settings_live` and `/config/tws_settings_paper`. |  |
+| `TWS_ACCEPT_INCOMING` | See IBC documentation, possible values `accept`, `reject`, `manual` | `manual` |
 | `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 | `JAVA_HEAP_SIZE` | Set Java heap, default 768MB, TWS might need more. Proposed value 1024. Enter just the number, don't enter units, ex mb. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm) | **not defined**  |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. if set to `both` then `socat` AND remote ssh tunnel are started. SSH keys should be provided to container through ~/.ssh volume.  | **not defined**                                      |
@@ -140,6 +153,7 @@ TWS_PASSWORD=myTwsPassword
 # tws
 #TWS_SETTINGS_PATH=/config/tws_settings
 TWS_SETTINGS_PATH=
+TWS_ACCEPT_INCOMING=
 TRADING_MODE=paper
 READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
@@ -147,6 +161,7 @@ TWOFA_TIMEOUT_ACTION=restart
 BYPASS_WARNING=
 AUTO_RESTART_TIME=11:59 PM
 AUTO_LOGOFF_TIME=
+TWS_COLD_RESTART=
 SAVE_TWS_SETTINGS=
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Zurich
@@ -455,6 +470,16 @@ secrets:
 
 ```
 
+In "dicussions" section you will find full examples for [ibgateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
+
+### RDP
+
+[tws-rdesktop][2] will create a new TLS certificate every time the container
+starts. You can create your own certificate following this
+[instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
+Once this steps are put in place the same TLS certificate will be used every
+time, which will allow you to trust it in your RDP client.
+
 ## Troubleshooting socat and ssh
 
 In case you experience problems with the API connection, you can restart the `socat` process
@@ -534,7 +559,7 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
    `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
    (first line)
-1. Download IBC and name the file `IBCLinux-3.18.0.zip`, where
+1. Download IBC and name the file `IBCLinux-3.19.0.zip`, where
    `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
 
