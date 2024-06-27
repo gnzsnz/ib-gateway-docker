@@ -7,7 +7,7 @@
 
 # hadolint global ignore=DL3008
 
-ARG IB_VERSION=10.29.1h
+ARG IB_VERSION=10.30.1c
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
 
 WORKDIR /
@@ -18,7 +18,7 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.29.1h
+ENV IB_GATEWAY_VERSION=10.30.1c
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.19.0
 
