@@ -15,15 +15,15 @@ repos:
     hooks:
       - id: shellcheck
       - id: shfmt
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.1-beta
-    hooks:
-      - id: hadolint-docker
+  # - repo: https://github.com/hadolint/hadolint
+  #   rev: v2.12.1-beta
+  #   hooks:
+  #     - id: hadolint-docker
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.39.0
     hooks:
       - id: markdownlint
   - repo: https://github.com/wemake-services/dotenv-linter
-    rev: 0.5.0  # Use the ref you want to point at
+    rev: 0.5.0 # Use the ref you want to point at
     hooks:
       - id: dotenv-linter
