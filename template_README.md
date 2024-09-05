@@ -26,7 +26,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant)
+- Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
 
 ## Supported Tags
