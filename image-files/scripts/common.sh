@@ -180,7 +180,7 @@ setup_ssh() {
 				echo ".> ssh-agent sock: ${SSH_AUTH_SOCK}"
 			fi
 
-			if ls /config/.ssh/id_* >/dev/null; then
+			if ls "${HOME}"/.ssh/id_* >/dev/null; then
 				echo ".> Adding keys to ssh-agent."
 				export SSH_ASKPASS_REQUIRE=never
 				SSHPASS="${SSH_PASSPHRASE}" sshpass -e -P "passphrase" ssh-add
@@ -213,7 +213,7 @@ start_ssh() {
 	echo ".> SSH_REMOTE_PORT set to :${SSH_REMOTE_PORT}"
 
 	# set vnc ssh tunnel
-	if [ "$GATEWAY_OR_TWS" = "gateway" ] && [ -n "$SSH_VNC_PORT" ] && [ -n "$VNC_SERVER_PASSWORD" ]; then
+	if [ "$GATEWAY_OR_TWS" = "gateway" ] && [ -n "$SSH_VNC_PORT" ] && pgrep x11vnc >/dev/null; then
 		# set ssh tunnel for vnc
 		SSH_SCREEN="-R 127.0.0.1:5900:localhost:$SSH_VNC_PORT"
 		echo ".> SSH_VNC_TUNNEL set to :${SSH_SCREEN}"
