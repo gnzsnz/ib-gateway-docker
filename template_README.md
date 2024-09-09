@@ -76,6 +76,7 @@ services:
       SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TWOFA_DEVICE: ${TWOFA_DEVICE:-}
       EXISTING_SESSION_DETECTED_ACTION: ${EXISTING_SESSION_DETECTED_ACTION:-primary}
       ALLOW_BLIND_TRADING: ${ALLOW_BLIND_TRADING:-no}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
@@ -118,6 +119,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
 | `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
 | `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
+| `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
 | `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing TWS/Gateway configuration is unchanged  | **not defined**                                      |
 | `AUTO_RESTART_TIME`  | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined**  |
 | `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
@@ -162,6 +164,7 @@ TRADING_MODE=paper
 READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
 TWOFA_TIMEOUT_ACTION=restart
+TWOFA_DEVICE=
 BYPASS_WARNING=
 AUTO_RESTART_TIME=11:59 PM
 AUTO_LOGOFF_TIME=
