@@ -1,5 +1,5 @@
 #!/bin/bash
-set -Eeo pipefail
+set -Eo pipefail
 
 LOCAL_PORT="$API_PORT"
 # shellcheck disable=SC2153
