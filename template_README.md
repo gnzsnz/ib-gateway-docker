@@ -125,7 +125,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
 | `TWS_COLD_RESTART` | IBC >= 3.19 set this value to <hh:mm> | **not defined** |
 | `SAVE_TWS_SETTINGS`  | automatically save its settings on a schedule of your choosing. You can specify one or more specific times, ex `SaveTwsSettingsAt=08:00   12:30 17:30`  | **not defined**  |
-| `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
+| `RELOGIN_AFTER_TWOFA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
 | `EXISTING_SESSION_DETECTED_ACTION` | Set Existing Session Detected Action. See IBC [documentation](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl#L296-L329) | primary |
 | `ALLOW_BLIND_TRADING` | TWS displays a dialog to warn you against blind trading.See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L702)| no |
 | `TIME_ZONE`  | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
@@ -143,7 +143,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `SSH_USER_TUNNEL`   | `user@server` to connect to    | **not defined**   |
 | `SSH_RESTART`  | Number of seconds to wait before restarting tunnel in case of disconnection.  | 5  |
 | `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`. Specific to ibgateway, ignored by TWS.  | **not defined**   |
-| `SSH_DRP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_DRP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
+| `SSH_RDP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_RDP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
 | `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
 | `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
 | `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
@@ -170,7 +170,7 @@ AUTO_RESTART_TIME=11:59 PM
 AUTO_LOGOFF_TIME=
 TWS_COLD_RESTART=
 SAVE_TWS_SETTINGS=
-RELOGIN_AFTER_2FA_TIMEOUT=yes
+RELOGIN_AFTER_TWOFA_TIMEOUT=yes
 EXISTING_SESSION_DETECTED_ACTION=primary
 ALLOW_BLIND_TRADING=no
 TIME_ZONE=Europe/Zurich
