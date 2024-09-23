@@ -266,7 +266,7 @@ Sample settings:
       - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
       - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini # for IB Gateway
       - ${PWD}/jts.ini:/opt/ibkr/jts.ini # for TWS
-      - ${PWD}/config.ini:/opt/ibc/ibc/config.ini # for TWS
+      - ${PWD}/config.ini:/opt/ibc/config.ini # for TWS
 ...
 ```
 
@@ -506,7 +506,7 @@ For ssh tunnel,
 docker exec -it algo-trader-ib-gateway-1 pkill -x ssh
 ```
 
-The ssh tunnel will restart after 5 seconds if `SSH_RESTART` is not set, of the
+The ssh tunnel will restart after 5 seconds if `SSH_RESTART` is not set, or the
 value in seconds defined in `SSH_RESTART`.
 
 ## IB Gateway installation files
