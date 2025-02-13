@@ -10,7 +10,7 @@ FROM ubuntu:24.04 AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
-ENV IBC_VERSION=3.20.0
+ENV IBC_VERSION=3.21.0-beta.1
 
 WORKDIR /tmp/setup
 
@@ -31,7 +31,8 @@ RUN apt-get update -y && \
   chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} &&\
   # Install IBC
-  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
+  #curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
+  curl -sSOL https://github.com/user-attachments/files/18775028/IBCLinux-${IBC_VERSION}.zip && \
   mkdir /root/ibc && \
   unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \

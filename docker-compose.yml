@@ -5,8 +5,8 @@ services:
     build:
       context: ./latest
       tags:
-        - "ghcr.io/gnzsnz/ib-gateway:latest"
-    image: ghcr.io/gnzsnz/ib-gateway:latest
+        - "ghcr.io/gnzsnz/ib-gateway:ibc_beta"
+    image: ghcr.io/gnzsnz/ib-gateway:ibc_beta
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
