@@ -4,13 +4,9 @@ services:
     restart: always
     build:
       context: ./latest
-      platforms:
-        - "linux/arm64"
       tags:
-      - "gnzsnz/ib-gateway:latest"
-        #- "ghcr.io/gnzsnz/ib-gateway:latest"
-    #image: ghcr.io/gnzsnz/ib-gateway:latest
-    image: gnzsnz/ib-gateway:latest
+        - "ghcr.io/gnzsnz/ib-gateway:latest"
+    image: ghcr.io/gnzsnz/ib-gateway:latest
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -53,5 +49,4 @@ services:
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"
-      #- "127.0.0.1:5900:5900"
-      - "5900:5900"
+      - "127.0.0.1:5900:5900"
