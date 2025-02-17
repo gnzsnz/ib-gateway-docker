@@ -5,7 +5,7 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
-# hadolint global ignore=DL3008,SC2016
+# hadolint global ignore=DL3008
 FROM ubuntu:24.04 AS setup
 
 ENV IB_GATEWAY_VERSION=10.34.1c
@@ -22,16 +22,6 @@ RUN apt-get update -y && \
   unzip && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  if [ "$(uname -m)" = "aarch64" ]; then \
-    export URL="https://download.bell-sw.com/java/11.0.22+12/bellsoft-jre11.0.22+12-linux-aarch64-full.tar.gz" ; \
-    export ARCHIVE_NAME="bellsoft-jre11.0.22+12-linux-aarch64-full.tar.gz" ; \
-    export JVM_DIR="jre-11.0.22-full" ; \
-    curl -sSOL $URL ; \
-    tar -xvzf $ARCHIVE_NAME; \
-    mv $JVM_DIR /opt/java ; \
-    export JAVA_HOME=/opt/java ; \
-    export PATH=$JAVA_HOME/bin:$PATH ; \
-    fi && \
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
@@ -39,12 +29,7 @@ RUN apt-get update -y && \
   curl -sSOL https://github.com/gnzsnz/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 && \
   sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 && \
   chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
-  if [ "$(uname -m)" = "aarch64" ]; then \
-    sed -i 's/-Djava.ext.dirs="$app_java_home\/lib\/ext:$app_java_home\/jre\/lib\/ext"/--add-modules=ALL-MODULE-PATH/g' "ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh" ; \
-    app_java_home=/opt/java ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
-  else \
-    ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
-  fi && \
+  ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} &&\
   # Install IBC
   curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
   mkdir /root/ibc && \
@@ -80,11 +65,8 @@ ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
 # Copy files
-COPY --from=setup /usr/local /usr/local
+COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
 COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
-# if aarch64 java is there get it
-COPY --from=setup /opt /opt
-
 
 # Prepare system
 RUN apt-get update -y && \
