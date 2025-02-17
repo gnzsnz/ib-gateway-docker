@@ -1,0 +1,83 @@
+name: Docker Image Build - ibgateway/TWS build
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+
+env:
+  CHANNEL: ${{ inputs.channel }}
+
+jobs:
+  build:
+    name: Build ibgateway & TWS
+
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      ###############################################################
+      #   Build ibgateway
+      ###############################################################
+      - name: Docker metadata ibgateway
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/gnzsnz/ib-gateway
+            gnzsnz/ib-gateway
+          flavor: |
+            latest=false
+          tags: |
+            type=match,pattern=v(\d+.\d+),group=1
+            type=match,pattern=v(\d+.\d+.\w+),group=1
+            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+
+      - name: Build ibgateway Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          load: true
+          context: ./${{ env.CHANNEL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      ###############################################################
+      #   Build tws
+      ###############################################################
+      - name: Docker metadata tws
+        id: meta-tws
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/gnzsnz/tws-rdesktop
+            gnzsnz/tws-rdesktop
+          flavor: |
+            latest=false
+          tags: |
+            type=match,pattern=v(\d+.\d+),group=1
+            type=match,pattern=v(\d+.\d+.\w+),group=1
+            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+
+      - name: Build TWS Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          load: true
+          context: ${{ env.CHANNEL }}
+          file: ${{ env.CHANNEL }}/Dockerfile.tws
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta-tws.outputs.tags }}
+          labels: ${{ steps.meta-tws.outputs.labels }}

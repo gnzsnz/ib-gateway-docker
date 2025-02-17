@@ -1,0 +1,63 @@
+##############################################################################
+# Setup Stage: install apps
+#
+# This is a dedicated stage used as source for needed files.
+#
+##############################################################################
+
+# hadolint global ignore=DL3008
+
+ARG IB_VERSION=10.30.1t
+FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
+
+WORKDIR /
+
+##############################################################################
+# Build Stage: build production image
+##############################################################################
+
+FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
+
+ENV IB_GATEWAY_VERSION=10.30.1t
+ENV IB_GATEWAY_RELEASE_CHANNEL=stable
+ENV IBC_VERSION=3.20.0
+
+# IB Gateway user constants
+# IBC env vars
+ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
+ENV TWS_PATH=/opt/ibkr
+ENV TWS_INI=jts.ini
+ENV TWS_INI_TMPL=${TWS_INI}.tmpl
+ENV IBC_PATH=/opt/ibc
+ENV IBC_INI=${IBC_PATH}/config.ini
+ENV IBC_INI_TMPL=${IBC_INI}.tmpl
+ENV SCRIPT_PATH=/defaults
+ENV GATEWAY_OR_TWS=tws
+ENV NO_AT_BRIDGE=1
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN \
+  apt-get update -y && \
+  apt-get upgrade -y && \
+  apt-get install --no-install-recommends --yes socat sshpass gettext-base \
+    libnspr4 libnss3 libcrypto++8 xdg-utils xfce4-cpugraph-plugin \
+    xfce4-netload-plugin xfce4-taskmanager xfce4-xkb-plugin xfce4-notes \
+    gvfs gvfs-backends gvfs-fuse && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* # end
+
+# Copy files
+COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
+COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
+COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
+COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
+COPY ./tws-scripts/run_tws.sh ${SCRIPT_PATH}
+COPY ./scripts/* ${SCRIPT_PATH}
+
+# labels
+LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop
+LABEL org.opencontainers.image.description="Docker image with XFCE, TWS & IBC"
+LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
+LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

@@ -1,0 +1,65 @@
+name: algo-trader
+services:
+  tws:
+    restart: unless-stopped
+    devices:
+      - /dev/dri:/dev/dri #recomended
+    shm_size: "1gb" #recomended
+    security_opt:
+      - seccomp:unconfined #recomended
+    build:
+      context: ./latest
+      dockerfile: Dockerfile.tws
+      tags:
+        - "ghcr.io/gnzsnz/tws-rdesktop:latest"
+    image: ghcr.io/gnzsnz/tws-rdesktop:latest
+    environment:
+      PUID: 1000
+      PGID: 1000
+      PASSWD: ${PASSWD:-}
+      TWS_USERID: ${TWS_USERID}
+      TWS_PASSWORD: ${TWS_PASSWORD}
+      TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_USERID_PAPER: ${TWS_USERID_PAPER:-}
+      TWS_PASSWORD_PAPER: ${TWS_PASSWORD_PAPER:-}
+      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
+      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-manual}
+      READ_ONLY_API: ${READ_ONLY_API:-}
+      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
+      BYPASS_WARNING: ${BYPASS_WARNING:-}
+      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
+      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
+      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
+      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
+      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TWOFA_DEVICE: ${TWOFA_DEVICE:-}
+      EXISTING_SESSION_DETECTED_ACTION: ${EXISTING_SESSION_DETECTED_ACTION:-primary}
+      ALLOW_BLIND_TRADING: ${ALLOW_BLIND_TRADING:-no}
+      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      TZ: ${TIME_ZONE:-Etc/UTC}
+      CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+      JAVA_HEAP_SIZE: ${JAVA_HEAP_SIZE:-}
+      SSH_TUNNEL: ${SSH_TUNNEL:-}
+      SSH_OPTIONS: ${SSH_OPTIONS:-}
+      SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
+      SSH_ALIVE_COUNT: ${SSH_ALIVE_COUNT:-}
+      SSH_PASSPHRASE: ${SSH_PASSPHRASE:-}
+      SSH_REMOTE_PORT: ${SSH_REMOTE_PORT:-}
+      SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
+      SSH_RESTART: ${SSH_RESTART:-}
+      SSH_RDP_PORT: ${SSH_RDP_PORT:-}
+    volumes:
+      - ./config:/config # optional
+      - tws_tmp:/tmp # recommended for performance
+    # custom certificate and key
+    #- ${PWD}/keylock:/keylock # required to avoid key generation by container
+    #- ${PWD/key.pem:/etc/xrdp/key.pem # key
+    #- ${PWD}/cert.pem:/etc/xrdp/cert.pem # cert
+    ports:
+      - "127.0.0.1:7496:7498" # live
+      - "127.0.0.1:7497:7499" # paper
+      - "127.0.0.1:3370:3389" # xrdp
+
+volumes:
+  tws_tmp:
