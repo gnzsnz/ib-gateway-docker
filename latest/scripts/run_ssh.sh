@@ -1,4 +1,5 @@
 #!/bin/bash
+set -Eo pipefail
 
 _OPTIONS="$SSH_ALL_OPTIONS"
 _LOCAL_PORT="$API_PORT"

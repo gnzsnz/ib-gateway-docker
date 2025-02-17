@@ -1,5 +1,3 @@
-version: "3.4"
-
 name: algo-trader
 services:
   ib-gateway:
@@ -20,15 +18,20 @@ services:
       TWS_USERID_PAPER: ${TWS_USERID_PAPER:-}
       TWS_PASSWORD_PAPER: ${TWS_PASSWORD_PAPER:-}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
+      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-manual}
       READ_ONLY_API: ${READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
       BYPASS_WARNING: ${BYPASS_WARNING:-}
       AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
       AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
+      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
       SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TWOFA_DEVICE: ${TWOFA_DEVICE:-}
+      EXISTING_SESSION_DETECTED_ACTION: ${EXISTING_SESSION_DETECTED_ACTION:-primary}
+      ALLOW_BLIND_TRADING: ${ALLOW_BLIND_TRADING:-no}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
@@ -42,11 +45,11 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
-#    volumes:
-#      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
-#      - ${PWD}/ssh/:/home/ibgateway/.ssh
+    #    volumes:
+    #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
+    #      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
+    #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
+    #      - ${PWD}/ssh/:/home/ibgateway/.ssh
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"

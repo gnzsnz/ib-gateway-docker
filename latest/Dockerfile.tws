@@ -4,8 +4,11 @@
 # This is a dedicated stage used as source for needed files.
 #
 ##############################################################################
-ARG IB_VERSION=10.27.1c
-FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
+
+# hadolint global ignore=DL3008
+
+ARG IB_VERSION=10.34.1c
+FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
 
@@ -15,9 +18,9 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.27.1c
+ENV IB_GATEWAY_VERSION=10.34.1c
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
-ENV IBC_VERSION=3.18.0
+ENV IBC_VERSION=3.21.0
 
 # IB Gateway user constants
 # IBC env vars

@@ -5,11 +5,12 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
-FROM ubuntu:22.04 as setup
+# hadolint global ignore=DL3008,SC2016
+FROM ubuntu:24.04 AS setup
 
-ENV IB_GATEWAY_VERSION=10.27.1c
+ENV IB_GATEWAY_VERSION=10.34.1c
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
-ENV IBC_VERSION=3.18.0
+ENV IBC_VERSION=3.21.0
 
 WORKDIR /tmp/setup
 
@@ -45,7 +46,7 @@ RUN apt-get update -y && \
     ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
   fi && \
   # Install IBC
-  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}-Update.1/IBCLinux-${IBC_VERSION}.zip && \
+  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
   mkdir /root/ibc && \
   unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
@@ -61,9 +62,9 @@ COPY ./scripts /root/scripts
 # Build Stage: build production image
 ##############################################################################
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-ENV IB_GATEWAY_VERSION=10.27.1c
+ENV IB_GATEWAY_VERSION=10.34.1c
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
@@ -92,6 +93,9 @@ RUN apt-get update -y && \
   gettext-base socat xvfb x11vnc sshpass openssh-client && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
+  if id ubuntu; then \
+    userdel -rf ubuntu \
+  ;fi && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
   chmod a+x ${SCRIPT_PATH}/*.sh
