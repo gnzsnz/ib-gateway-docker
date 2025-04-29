@@ -35,10 +35,10 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.36.1c` | `3.21.2` | `latest` `10.36` `10.36.1c` |
-| [ib-gateway][1] |`stable` | `10.30.1u` | `3.21.2` | `stable` `10.30` `10.30.1u` |
-| [tws-rdesktop][2] | `latest` | `10.36.1c` | `3.21.2` | `latest` `10.36` `10.36.1c` |
-| [tws-rdesktop][2] |`stable` | `10.30.1u` | `3.21.2` | `stable` `10.30` `10.30.1u` |
+| [ib-gateway][1] | `latest` | `10.36.1c` | `3.22.0` | `latest` `10.36` `10.36.1c` |
+| [ib-gateway][1] |`stable` | `10.30.1v` | `3.22.0` | `stable` `10.30` `10.30.1v` |
+| [tws-rdesktop][2] | `latest` | `10.36.1c` | `3.22.0` | `latest` `10.36` `10.36.1c` |
+| [tws-rdesktop][2] |`stable` | `10.30.1v` | `3.22.0` | `stable` `10.30` `10.30.1v` |
 
 All tags are available in the container repository for [ib-gateway][1] and [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
 
@@ -568,7 +568,7 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
    `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
    (first line)
-1. Download IBC and name the file `IBCLinux-3.21.2.zip`, where
+1. Download IBC and name the file `IBCLinux-3.22.0.zip`, where
    `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
 
