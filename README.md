@@ -61,9 +61,13 @@ services:
         - "ghcr.io/gnzsnz/ib-gateway:stable"
     image: ghcr.io/gnzsnz/ib-gateway:stable
     environment:
+      TRADING_MODE: ${TRADING_MODE:-paper}
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
-      TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_PASSWORD_FILE: ${TWS_PASSWORD_FILE}
+      TWS_USERID_PAPER: ${TWS_USERID_PAPER:-}
+      TWS_PASSWORD_PAPER: ${TWS_PASSWORD_PAPER:-}
+      TWS_PASSWORD_PAPER_FILE: ${TWS_PASSWORD_PAPER_FILE:-}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
