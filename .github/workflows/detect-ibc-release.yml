@@ -1,0 +1,112 @@
+name: Detect IBC Releases
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: "bash -Eeuo pipefail -x {0}"
+
+env:
+  IBC_REPO: https://github.com/IbcAlpha/IBC.git
+  BRANCH_PREFIX: IBC-update
+jobs:
+  detect-release:
+    name: Detect Release
+    runs-on: ubuntu-latest
+    outputs:
+      update: ${{ steps.verify_latest.outputs.update }}
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Current Version
+        id: version
+        run: |
+          CURRENT_IBC="$(grep 'ENV IBC_VERSION' Dockerfile.template|cut -d '=' -f 2)"
+          echo "CURRENT_IBC=$CURRENT_IBC" >> $GITHUB_OUTPUT
+
+      - name: Get IBC latest version
+        id: ibc_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IBC_LATEST="$(gh release list -R ${{ env.IBC_REPO }} --exclude-drafts --exclude-pre-releases |grep 'Latest'|cut -f1)"
+          if [ -n ${IBC_LATEST} ]
+          then
+            echo "IBC_LATEST=$IBC_LATEST" >> $GITHUB_OUTPUT
+          else
+          echo "IBC_LATEST=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify latest version
+        id: verify_latest
+        run: |
+          current=${{ steps.version.outputs.CURRENT_IBC }}
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
+
+          if [[ "$current" = "$latest" ]]; then
+            update="false"
+          else
+            update="true"
+          fi
+
+          echo "update=$update" >> $GITHUB_OUTPUT
+
+      - name: Check if branch already exists
+        id: verify_branch
+        if: ${{ steps.verify_latest.outputs.update == 'true' }}
+        run: |
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
+          prefix=${{ env.BRANCH_PREFIX }}
+          search=${prefix}-${latest}
+
+          if [ "$(git branch --list | grep ${search})" ]; then
+            echo "BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: ${{ steps.verify_branch.outputs.BRANCH_EXISTS == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver=${{ steps.version.outputs.CURRENT_IBC }}
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST}}
+          prefix=${{ env.BRANCH_PREFIX }}
+          branch="${prefix}-${latest}"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git pull
+          git checkout -b "$branch" origin/master
+
+          # update Dockerfile.template, but don't run update.sh
+          # next ib gateway release will run update.sh
+          echo ".> updating Dockerfile.template"
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
+          echo ".> updating Dockerfile.tws.template"
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws.template
+
+          git add Dockerfile.template Dockerfile.tws.template
+          git commit -m "Update IBC from ${ver} to ${latest}"
+          git push --set-upstream origin "$branch"
+
+          gh pr create --base master --fill
+
+
+  build:
+    name: Call build workflow
+    needs: detect-release
+    if: needs.detect-release.outputs.update == 'true'
+    strategy:
+      matrix:
+        channel: ['stable', 'latest']
+    uses: gnzsnz/ib-gateway-docker/.github/workflows/build.yml@master
+    with:
+        channel: ${{ matrix.channel }}
