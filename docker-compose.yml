@@ -6,8 +6,8 @@ services:
     build:
       context: ./stable
       tags:
-        - "ib-gateway:stable"
-    image: ib-gateway:stable
+        - "ghcr.io/gnzsnz/ib-gateway:stable"
+    image: ghcr.io/gnzsnz/ib-gateway:stable
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
