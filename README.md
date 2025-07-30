@@ -25,8 +25,8 @@ Images are provided for [IB gateway](https://github.com/users/gnzsnz/packages/co
 
 | Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| `latest` | `10.28.1f` | `3.18.0` | `latest` `10.28` `10.28.1f` |
-| `stable` | `10.19.2k` | `3.18.0` | `stable` `10.19` `10.19.2k` |
+| `latest` | `10.28.1g` | `3.18.0` | `latest` `10.28` `10.28.1g` |
+| `stable` | `10.19.2l` | `3.18.0` | `stable` `10.19` `10.19.2l` |
 
 All tags are available in the container repository for [ib-gateway](https://github.com/users/gnzsnz/packages/container/package/ib-gateway) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop). IB Gateway and TWS share the same version numbers and tags.
 
@@ -37,8 +37,6 @@ There are two images available, [ib-gateway](https://github.com/users/gnzsnz/pac
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing one). There are sample files provided for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and for [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
 
 ```yaml
-version: "3.4"
-
 name: algo-trader
 services:
   ib-gateway:
