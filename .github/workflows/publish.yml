@@ -19,7 +19,7 @@ jobs:
         id: channel
         run: |
           channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
-          echo "::set-output name=channel::$channel"
+          echo "channel=$channel" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
