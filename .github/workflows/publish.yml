@@ -44,5 +44,7 @@ jobs:
         with:
           context: ${{ steps.channel.outputs.channel }}
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

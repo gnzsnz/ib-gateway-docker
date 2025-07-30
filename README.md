@@ -1,6 +1,6 @@
 # Interactive Brokers Gateway Docker
 
-<img src="https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/logo.png" height="300" />
+<img src="https://github.com/gnzsnz/ib-gateway-docker/blob/master/logo.png" height="300" />
 
 ## What is it?
 
@@ -16,16 +16,16 @@ a X11 virtual framebuffer to run IB Gateway Application without graphics hardwar
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) -
 a VNC server that allows to interact with the IB Gateway user interface (optional, for development / maintenance purpose).
 - [socat](https://linux.die.net/man/1/socat) a tool to accept TCP connection from non-localhost and relay it to IB Gateway from localhost (IB Gateway restricts connections to 127.0.0.1 by default).
+- Works well together with [Jupyter Quant](https://github.com/gnzsnz/jupyter-quant) docker image.
 
 ## Supported Tags
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.24.1b`         | `3.18.0`    | `latest` `10.22` `10.24.1b` |
-| `stable` | `10.19.2b`         | `3.18.0`    | `stable` `10.19` `10.19.2b` |
+| `latest` | `10.24.1d`         | `3.18.0`    | `latest` `10.24` `10.24.1d` |
+| `stable` | `10.19.2c`         | `3.18.0`    | `stable` `10.19` `10.19.2c` |
 
-
-See all available tags [here](https://github.com/UnusualAlpha/ib-gateway-docker/pkgs/container/ib-gateway/).
+This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/117795730?tag=stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/120858613?tag=latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
 
 ## How to use?
 
@@ -36,7 +36,7 @@ version: "3.4"
 
 services:
   ib-gateway:
-    image: ghcr.io/unusualalpha/ib-gateway:latest
+    image: ghcr.io/gnzsnz/ib-gateway:latest
     restart: always
     environment:
       TWS_USERID: ${TWS_USERID}
@@ -64,10 +64,10 @@ Create an .env on root directory or set the following environment variables:
 | `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
 | `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not defined**            |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | **not defined** (VNC disabled)|
-| TWOFA_TIMEOUT_ACTION | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME` | 'exit' |
-| AUTO_RESTART_TIME | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM | **not defined** |
-| RELOGIN_AFTER_2FA_TIMEOUT | support relogin after timeout | 'no' |
-| TIME_ZONE | Support for timezone, see your TWS jts.ini file for valid values | "Etc/UTC" |
+| `TWOFA_TIMEOUT_ACTION` | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'exit' |
+| `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
+| `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
+| `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) or a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
 
 Example .env file:
 
@@ -87,8 +87,7 @@ Run:
 
   $ docker-compose up
 
-After image is downloaded, container is started + 30s, the following ports will be ready for usage on the 
-container and docker host:
+After image is downloaded, container is started + 30s, the following ports will be ready for usage on the container and docker host:
 
 | Port | Description                                                  |
 | ---- | ------------------------------------------------------------ |
@@ -106,16 +105,16 @@ the whole network change the port mappings on accordingly (remove the
 1. Clone this repo
 
    ```bash
-      git clone https://github.com/UnusualAlpha/ib-gateway-docker
+      git clone https://github.com/gnzsnz/ib-gateway-docker
    ```
 
 2. Change docker file to use your local IB Gateway installer file, instead of loading it from this project releases:
 Open `Dockerfile` on editor and replace this lines:
 
    ```docker
-   RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
+   RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
        --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-   RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
+   RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
        --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
    ```
 
@@ -138,19 +137,19 @@ See [Supported tags](#supported-tags)
 
 ### IB Gateway installation files
 
-Note that the [Dockerfile](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/Dockerfile)
+Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
 **does not download IB Gateway installer files from IB homepage but from the
-[github-pages](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases) of this project**.
+[github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) of this project**.
 
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
 but IB does only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
 
-The installer files stored on [github-pages](https://github.com/UnusualAlpha/ib-gateway-docker/tree/gh-pages/ibgateway-releases) have been downloaded from
+The installer files stored on [github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) have been downloaded from
 IB homepage and renamed to reflect the version.
 
 If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
-on [Dockerfile](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/Dockerfile)
-`RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+`RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
 
 **Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
@@ -164,8 +163,8 @@ Apps and config file locations:
 
 | App        |  Folder   | Config file               | Default                                                                                           |
 | ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
-| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/UnusualAlpha/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
+| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
