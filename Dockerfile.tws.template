@@ -1,0 +1,59 @@
+##############################################################################
+# Setup Stage: install apps
+#
+# This is a dedicated stage used as source for needed files.
+#
+##############################################################################
+ARG IB_VERSION=$VERSION
+FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
+
+WORKDIR /
+
+##############################################################################
+# Build Stage: build production image
+##############################################################################
+
+FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
+
+ENV IB_GATEWAY_VERSION=$VERSION
+ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
+ENV IBC_VERSION=3.18.0
+
+# IB Gateway user constants
+# IBC env vars
+ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
+ENV TWS_PATH=/opt/ibkr
+ENV TWS_INI=jts.ini
+ENV IBC_PATH=/opt/ibc
+ENV IBC_INI=${IBC_PATH}/config.ini
+ENV SCRIPT_PATH=/defaults
+ENV GATEWAY_OR_TWS=tws
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN \
+  apt-get update -y && \
+  apt-get install --no-install-recommends --yes socat sshpass gettext-base \
+    libnspr4 libnss3 libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 \
+    libc6 libcairo2 libcrypto++8 libcups2 libdbus-1-3 libdrm2 libexpat1 \
+    libfontconfig1 libgbm1 libgcc-s1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 \
+    libpango-1.0-0 libpulse0 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
+    libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxshmfence1 libxtst6 \
+    xdg-utils && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* # end
+
+# Copy files
+COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
+COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
+COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
+COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
+COPY ./tws-scripts/run_tws.sh ${SCRIPT_PATH}
+COPY ./scripts/* ${SCRIPT_PATH}
+
+# labels
+LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop
+LABEL org.opencontainers.image.description="Docker image with XFCE, TWS & IBC"
+LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
+LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

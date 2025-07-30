@@ -1,105 +1,99 @@
 #!/bin/bash
+# shellcheck disable=SC2317
+# Don't warn about unreachable commands in this file
 
-export DISPLAY=:1
+echo "*************************************************************************"
+echo ".> Starting IBC/IB gateway"
+echo "*************************************************************************"
 
-stop() {
-  echo "> 😘 Received SIGINT or SIGTERM. Shutting down IB Gateway."
+# shellcheck disable=SC1091
+source "${SCRIPT_PATH}/common.sh"
 
-  #
-  if [ -n "$VNC_SERVER_PASSWORD" ]; then
-    echo "> Stopping x11vnc."
-    pkill x11vnc
-  fi
-  #
-  echo "> Stopping Xvfb."
-  pkill Xvfb
-  #
-  if [ -n "$SSH_TUNNEL" ]; then
-    echo "> Stopping ssh."
-    pkill ssh
-  else
-    echo "> Stopping socat."
-    pkill socat
-  fi
-  # Get PID
-  local pid
-  pid=$(</tmp/pid)
-  # Set TERM
-  echo "> Stopping IBC."
-  kill -SIGTERM "${pid}"
-  # Wait for exit
-  wait "${pid}"
-  # All done.
-  echo "> Done... $?"
+stop_ibc() {
+	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down IB Gateway."
+
+	#
+	if [ -n "$VNC_SERVER_PASSWORD" ]; then
+		echo ".> Stopping x11vnc."
+		pkill x11vnc
+	fi
+	#
+	echo ".> Stopping Xvfb."
+	pkill Xvfb
+	#
+	if [ -n "$SSH_TUNNEL" ]; then
+		echo ".> Stopping ssh."
+		pkill ssh
+	else
+		echo ".> Stopping socat."
+		pkill socat
+	fi
+	# Get PID
+	local pid
+	pid=$(</tmp/pid)
+	# Set TERM
+	echo ".> Stopping IBC."
+	kill -SIGTERM "${pid}"
+	# Wait for exit
+	wait "${pid}"
+	# All done.
+	echo ".> Done... $?"
+}
+
+start_xvfb() {
+	# start Xvfb
+	echo ".> Starting Xvfb server"
+	DISPLAY=:1
+	export DISPLAY
+	rm -f /tmp/.X1-lock
+	Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
+}
+
+start_vnc() {
+	# start VNC server
+	if [ -n "$VNC_SERVER_PASSWORD" ]; then
+		echo ".> Starting VNC server"
+		"${SCRIPT_PATH}/run_x11_vnc.sh" &
+	else
+		echo ".> VNC server disabled"
+	fi
 }
 
 # start Xvfb
-rm -f /tmp/.X1-lock
-Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
+start_xvfb
 
 # setup SSH Tunnel
-if [ "$SSH_TUNNEL" = "yes" ]; then
-
-  _SSH_OPTIONS="-o ServerAliveInterval=${SSH_ALIVE_INTERVAL:-20}"
-  _SSH_OPTIONS+=" -o ServerAliveCountMax=${SSH_ALIVE_COUNT:-3}"
-
-  if [ -n "$SSH_OPTIONS" ]; then
-    _SSH_OPTIONS+=" $SSH_OPTIONS"
-  fi
-  SSH_ALL_OPTIONS="$_SSH_OPTIONS"
-  export SSH_ALL_OPTIONS
-  echo "> SSH options: $SSH_ALL_OPTIONS"
-
-  if [ -n "$SSH_PASSPHRASE" ]; then
-    echo "> Starting ssh-agent."
-    export SSH_ASKPASS_REQUIRE="never"
-    eval "$(ssh-agent)"
-    SSHPASS="${SSH_PASSPHRASE}" sshpass -e -P "passphrase" ssh-add
-    echo "> ssh-agent identities: $(ssh-add -l)"
-  fi
-fi
+setup_ssh
 
 # start VNC server
-if [ -n "$VNC_SERVER_PASSWORD" ]; then
-  echo "> Starting VNC server"
-  /home/ibgateway/scripts/run_x11_vnc.sh &
-fi
+start_vnc
 
 # apply settings
-if [ "$CUSTOM_CONFIG" != "yes" ]; then
-  # replace env variables
-  envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
+apply_settings
 
-  # where are settings stored
-  if [ -n "$TWS_SETTINGS_PATH" ]; then
-    _JTS_PATH=$TWS_SETTINGS_PATH
-    if [ ! -d "$TWS_SETTINGS_PATH" ]; then
-      # if TWS_SETTINGS_PATH does not exists, create it
-      echo "> Creating directory: $TWS_SETTINGS_PATH"
-      mkdir "$TWS_SETTINGS_PATH"
-    fi
-  else
-    _JTS_PATH=$TWS_PATH
-  fi
-  # only if jts.ini does not exists
-  if [ ! -f "$_JTS_PATH/$TWS_INI" ]; then
-    echo "Setting timezone in ${_JTS_PATH}/${TWS_INI}"
-    envsubst < "${TWS_PATH}/${TWS_INI}.tmpl" > "${_JTS_PATH}/${TWS_INI}"
-  fi
-fi
+# set API and socat ports
+set_ports
 
 # forward ports, socat or ssh
-/home/ibgateway/scripts/port_forwarding.sh &
+"${SCRIPT_PATH}/port_forwarding.sh" &
 
-# start IBC
-/home/ibgateway/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
-     "--tws-path=${TWS_PATH}" \
-     "--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
-     "--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
-     "--tws-settings-path=${TWS_SETTINGS_PATH:-}" &
+echo ".> Starting IBC with params:"
+echo ".>		Version: ${TWS_MAJOR_VRSN}"
+echo ".>		program: ${IBC_COMMAND:-gateway}"
+echo ".>		tws-path: ${TWS_PATH}"
+echo ".>		ibc-path: ${IBC_PATH}"
+echo ".>		ibc-init: ${IBC_INI}"
+echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
+echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
+# start IBC -g for gateway
+"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" -g \
+	"--tws-path=${TWS_PATH}" \
+	"--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
+	"--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
+	"--tws-settings-path=${TWS_SETTINGS_PATH:-}" &
 
 pid="$!"
-echo "$pid" > /tmp/pid
-trap stop SIGINT SIGTERM
+echo "$pid" >/tmp/pid
+trap stop_ibc SIGINT SIGTERM
 wait "${pid}"
 exit $?
