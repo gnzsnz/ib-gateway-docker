@@ -4,7 +4,10 @@ services:
   ib-gateway:
     restart: always
     build:
-      context: ./latest
+      context: ./stable
+      tags:
+        - "ib-gateway:stable"
+    image: ib-gateway:stable
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
