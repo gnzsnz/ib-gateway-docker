@@ -1,13 +1,6 @@
 #!/bin/bash
 
-# validate API port
-if [ -z "${API_PORT}" ]; then
-	echo ".> API_PORT not set, port: ${API_PORT}"
-	exit 1
-fi
-
-if [ "$SSH_TUNNEL" = "yes" ]; then
-
+start_ssh() {
 	if [ -n "$(pgrep -x ssh)" ]; then
 		# if this script is already running don't start it
 		echo ".> SSH tunnel already active. Not starting a new one"
@@ -34,12 +27,18 @@ if [ "$SSH_TUNNEL" = "yes" ]; then
 		echo ".> SSH_RDP_TUNNEL set to :${SSH_SCREEN}"
 	fi
 
+	if [ "$SSH_TUNNEL" = "both" ]; then
+		start_socat
+	fi
+
 	while true; do
 		echo ".> Starting ssh tunnel with ssh sock: $SSH_AUTH_SOCK"
 		bash -c "ssh ${SSH_ALL_OPTIONS} -TNR 127.0.0.1:${API_PORT}:localhost:${SSH_REMOTE_PORT} ${SSH_SCREEN:-} ${SSH_USER_TUNNEL}"
 		sleep "${SSH_RESTART:-5}"
 	done
-else
+}
+
+start_socat() {
 	if [ -z "${SOCAT_PORT}" ]; then
 		echo ".> SOCAT_PORT not set, port: ${SOCAT_PORT}"
 		exit 1
@@ -56,5 +55,17 @@ else
 	#
 	printf "Forking :::%d onto 0.0.0.0:%d > trading mode %s \n" \
 		"${API_PORT}" "${SOCAT_PORT}" "${TRADING_MODE}"
-	socat TCP-LISTEN:"${SOCAT_PORT}",fork TCP:127.0.0.1:"${API_PORT}"
+	socat TCP-LISTEN:"${SOCAT_PORT}",fork TCP:127.0.0.1:"${API_PORT}" &
+}
+
+# validate API port
+if [ -z "${API_PORT}" ]; then
+	echo ".> API_PORT not set, port: ${API_PORT}"
+	exit 1
+fi
+
+if [ "$SSH_TUNNEL" = "yes" ] || [ "$SSH_TUNNEL" = "both" ]; then
+	start_ssh
+else
+	start_socat
 fi

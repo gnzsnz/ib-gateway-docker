@@ -25,6 +25,13 @@ disable_agents() {
 	fi
 }
 
+disable_compositing() {
+	# disable compositing
+	# https://github.com/gnzsnz/ib-gateway-docker/issues/55
+	echo ".> Disabling xfce compositing"
+	xfconf-query --channel=xfwm4 --property=/general/use_compositing --type=bool --set=false --create
+}
+
 # set display
 export DISPLAY=:10
 
@@ -34,6 +41,8 @@ id
 
 # disable agents
 disable_agents
+# disable compositing
+disable_compositing
 # SSH
 setup_ssh
 # set ports
@@ -44,7 +53,7 @@ apply_settings
 # Java heap size
 set_java_heap
 
-# forward ports, socat or ssh
+# forward ports, socat/ssh
 "${SCRIPT_PATH}/port_forwarding.sh" &
 
 # start IBC
