@@ -24,7 +24,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/unusualalpha/ib-gateway
+          images: ghcr.io/gnzsnz/ib-gateway
           flavor: |
             latest=false
           tags: |

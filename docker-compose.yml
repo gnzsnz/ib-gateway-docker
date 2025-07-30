@@ -4,13 +4,21 @@ services:
   ib-gateway:
     restart: always
     build:
-      context: ./latest
+      context: ./stable
+      tags:
+        - "ib-gateway:stable"
+    image: ib-gateway:stable
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
       READ_ONLY_API: ${READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
+      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
+      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
+      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
+      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
+      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
