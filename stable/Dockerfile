@@ -6,11 +6,11 @@
 ##############################################################################
 
 # hadolint global ignore=DL3008
-FROM ubuntu:24.04 AS setup
+FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.30.1x
+ENV IB_GATEWAY_VERSION=10.19.2o
 ENV IB_GATEWAY_RELEASE_CHANNEL=stable
-ENV IBC_VERSION=3.22.0
+ENV IBC_VERSION=3.19.0
 
 WORKDIR /tmp/setup
 
@@ -47,9 +47,9 @@ COPY ./scripts /root/scripts
 # Build Stage: build production image
 ##############################################################################
 
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.30.1x
+ENV IB_GATEWAY_VERSION=10.19.2o
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
@@ -75,9 +75,6 @@ RUN apt-get update -y && \
   gettext-base socat xvfb x11vnc sshpass openssh-client && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  if id ubuntu; then \
-    userdel -rf ubuntu \
-  ;fi && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
   chmod a+x ${SCRIPT_PATH}/*.sh

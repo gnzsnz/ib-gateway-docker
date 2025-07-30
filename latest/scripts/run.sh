@@ -15,7 +15,7 @@ stop_ibc() {
 	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down IB Gateway."
 
 	#
-	if pgrep x11vnc >/dev/null; then
+	if [ -n "$VNC_SERVER_PASSWORD" ]; then
 		echo ".> Stopping x11vnc."
 		pkill x11vnc
 	fi
