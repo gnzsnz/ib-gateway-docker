@@ -66,14 +66,14 @@ jobs:
           prefix=${{ env.BRANCH_PREFIX }}
           search=${prefix}-${latest}
 
-          if [ -n $(git branch --list | grep "$search") ]; then
+          if [ "$(git branch --list | grep ${search})" ]; then
             echo "BRANCH_EXISTS=true" >> $GITHUB_OUTPUT
           else
             echo "BRANCH_EXISTS=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Pull Request
-        if: ${{ steps.verify_branch.outputs.update == 'false' }}
+        if: ${{ steps.verify_branch.outputs.BRANCH_EXISTS == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -88,9 +88,12 @@ jobs:
 
           # update Dockerfile.template, but don't run update.sh
           # next ib gateway release will run update.sh
+          echo ".> updating Dockerfile.template"
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
+          echo ".> updating Dockerfile.tws.template"
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws.template
 
-          git add Dockerfile.template
+          git add Dockerfile.template Dockerfile.tws.template
           git commit -m "Update IBC from ${ver} to ${latest}"
           git push --set-upstream origin "$branch"
 
