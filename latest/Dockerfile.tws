@@ -4,11 +4,8 @@
 # This is a dedicated stage used as source for needed files.
 #
 ##############################################################################
-
-# hadolint global ignore=DL3008
-
-ARG IB_VERSION=10.39.1c
-FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
+ARG IB_VERSION=10.26.1i
+FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
 
 WORKDIR /
 
@@ -18,28 +15,24 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.39.1c
+ENV IB_GATEWAY_VERSION=10.26.1i
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
-ENV IBC_VERSION=3.23.0
+ENV IBC_VERSION=3.18.0
 
 # IB Gateway user constants
 # IBC env vars
 ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
 ENV TWS_PATH=/opt/ibkr
 ENV TWS_INI=jts.ini
-ENV TWS_INI_TMPL=${TWS_INI}.tmpl
 ENV IBC_PATH=/opt/ibc
 ENV IBC_INI=${IBC_PATH}/config.ini
-ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=/defaults
 ENV GATEWAY_OR_TWS=tws
-ENV NO_AT_BRIDGE=1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN \
   apt-get update -y && \
-  apt-get upgrade -y && \
   apt-get install --no-install-recommends --yes socat sshpass gettext-base \
     libnspr4 libnss3 libcrypto++8 xdg-utils xfce4-cpugraph-plugin \
     xfce4-netload-plugin xfce4-taskmanager xfce4-xkb-plugin xfce4-notes \

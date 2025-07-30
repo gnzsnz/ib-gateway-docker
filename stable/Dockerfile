@@ -1,13 +1,13 @@
 ##############################################################################
 # Setup Stage: install apps
 #
-# This is a dedicated stage so that donwload archives don't end up on 
+# This is a dedicated stage so that donwload archives don't end up on
 # production image and consume unnecessary space.
 ##############################################################################
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.19.2g
+ENV IB_GATEWAY_VERSION=10.19.2h
 ENV IB_GATEWAY_RELEASE_CHANNEL=stable
 ENV IBC_VERSION=3.18.0
 
@@ -48,19 +48,22 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.19.2g
+ENV IB_GATEWAY_VERSION=10.19.2h
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
 # IBC env vars
+ENV HOME=/home/ibgateway
 ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
-ENV TWS_PATH=/home/ibgateway/Jts
+ENV TWS_PATH=${HOME}/Jts
 ENV TWS_INI=jts.ini
-ENV IBC_PATH=/home/ibgateway/ibc
-ENV IBC_INI=/home/ibgateway/ibc/config.ini
+ENV IBC_PATH=${HOME}/ibc
+ENV IBC_INI=${HOME}/ibc/config.ini
+ENV SCRIPT_PATH=${HOME}/scripts
+ENV GATEWAY_OR_TWS=gateway
 # Copy files
 COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
-COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ /home/ibgateway/
+COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
 RUN apt-get update -y && \
@@ -70,10 +73,10 @@ RUN apt-get update -y && \
   rm -rf /var/lib/apt/lists/* && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
-  chmod a+x /home/ibgateway/scripts/*.sh
+  chmod a+x ${SCRIPT_PATH}/*.sh
 
 USER ${USER_ID}:${USER_GID}
-WORKDIR /home/ibgateway/
+WORKDIR ${HOME}
 
 # Start run script
 CMD ["/home/ibgateway/scripts/run.sh"]
