@@ -26,8 +26,8 @@ jobs:
           res=$(curl -s https://download2.interactivebrokers.com/installers/tws/${{ matrix.channel }}-standalone/version.json | sed 's/tws${{ matrix.channel }}_callback(//g;s/);//g')
           build_version=$(jq -r '.buildVersion' <<< "$res")
           #build_dateTime=$(jq -r '.buildDateTime' <<< "$res")
-          echo "::set-output name=build_version::$build_version"
-          #echo "::set-output name=build_dateTime::$build_dateTime"
+          echo "build_version=$build_version" >> $GITHUB_OUTPUT
+          #echo "build_dateTime=$build_dateTime" >> $GITHUB_OUTPUT
 
       - name: Check if there is an update
         id: check-update
@@ -37,9 +37,9 @@ jobs:
           gh release list > /tmp/ibgateway-releases
           if grep -qF '${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
           then
-            echo "::set-output name=has_update::false"
+            echo "has_update=false" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=has_update::true"
+            echo "has_update=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Download
