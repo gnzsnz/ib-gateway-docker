@@ -119,7 +119,7 @@ SecondFactorDevice=
 # and you fail to complete the process before the time limit imposed
 # by IBKR, this setting tells IBC whether to automatically restart
 # the login sequence, giving you another opportunity to complete
-# second factor authentication. 
+# second factor authentication.
 #
 # Permitted values are 'yes' and 'no'.
 #
@@ -218,7 +218,7 @@ AcceptNonBrokerageAccountWarning=yes
 # This setting controls how long (in seconds) IBC waits for the login
 # dialog to appear before restarting TWS.
 #
-# Note that in normal circumstances with a reasonably specified 
+# Note that in normal circumstances with a reasonably specified
 # computer the time to displaying the login dialog is typically less
 # than 20 seconds, and frequently much less. However many factors can
 # influence this, and it is unwise to set this value too low.
@@ -329,13 +329,13 @@ ExistingSessionDetectedAction=primary
 # Override TWS API Port Number
 # ----------------------------
 #
-# If OverrideTwsApiPort is set to an integer, IBC changes the 
-# 'Socket port' in TWS's API configuration to that number shortly 
+# If OverrideTwsApiPort is set to an integer, IBC changes the
+# 'Socket port' in TWS's API configuration to that number shortly
 # after startup (but note that for the FIX Gateway, this setting is
 # actually stored in jts.ini rather than the Gateway's settings
-# file). Leaving the setting blank will make no change to 
-# the current setting. This setting is only intended for use in 
-# certain specialized situations where the port number needs to 
+# file). Leaving the setting blank will make no change to
+# the current setting. This setting is only intended for use in
+# certain specialized situations where the port number needs to
 # be set dynamically at run-time, and for the FIX Gateway: most
 # non-FIX users will never need it, so don't use it unless you know
 # you need it.
@@ -347,9 +347,9 @@ OverrideTwsApiPort=
 # -----------------------------
 #
 # If OverrideTwsMasterClientID is set to an integer, IBC changes the
-# 'Master Client ID' value in TWS's API configuration to that 
+# 'Master Client ID' value in TWS's API configuration to that
 # value shortly after startup. Leaving the setting blank will make
-# no change to the current setting. This setting is only intended 
+# no change to the current setting. This setting is only intended
 # for use in certain specialized situations where the value needs to
 # be set dynamically at run-time: most users will never need it,
 # so don't use it unless you know you need it.
@@ -364,7 +364,7 @@ OverrideTwsMasterClientID=
 # account security programme, the user will not be asked to perform
 # the second factor authentication action, and login to TWS will
 # occur automatically in read-only mode: in this mode, placing or
-# managing orders is not allowed. 
+# managing orders is not allowed.
 #
 # If set to 'no', and the user is enrolled in IB's account security
 # programme, the second factor authentication process is handled
@@ -395,7 +395,7 @@ ReadOnlyApi=${READ_ONLY_API}
 
 # API Precautions
 # ---------------
-# 
+#
 # These settings relate to the corresponding 'Precautions' checkboxes in the
 # API section of the Global Configuration dialog.
 #
@@ -411,23 +411,23 @@ ReadOnlyApi=${READ_ONLY_API}
 # should use the Global Configuration to set the relevant checkboxes and not
 # provide values for these settings.
 
-BypassOrderPrecautions=
+BypassOrderPrecautions=${BYPASS_WARNING}
 
-BypassBondWarning=
+BypassBondWarning=${BYPASS_WARNING}
 
-BypassNegativeYieldToWorstConfirmation=
+BypassNegativeYieldToWorstConfirmation=${BYPASS_WARNING}
 
-BypassCalledBondWarning=
+BypassCalledBondWarning=${BYPASS_WARNING}
 
-BypassSameActionPairTradeWarning=
+BypassSameActionPairTradeWarning=${BYPASS_WARNING}
 
-BypassPriceBasedVolatilityRiskWarning=
+BypassPriceBasedVolatilityRiskWarning=${BYPASS_WARNING}
 
-BypassUSStocksMarketDataInSharesWarning=
+BypassUSStocksMarketDataInSharesWarning=${BYPASS_WARNING}
 
-BypassRedirectOrderWarning=
+BypassRedirectOrderWarning=${BYPASS_WARNING}
 
-BypassNoOverfillProtectionPrecaution=
+BypassNoOverfillProtectionPrecaution=${BYPASS_WARNING}
 
 
 # Market data size for US stocks - lots or shares
@@ -440,7 +440,7 @@ BypassNoOverfillProtectionPrecaution=
 # accessed. The user can request that the dialog not be shown again.
 #
 # It is recommended that the user should handle this dialog manually
-# rather than using these settings, which are provided for situations 
+# rather than using these settings, which are provided for situations
 # where the user interface is not easily accessible, or where user
 # settings are not preserved between sessions (eg some Docker images).
 #
@@ -527,13 +527,13 @@ ResetOrderIdsAtStart=
 # 'Reset API order ID sequence' button in the API configuration. Each value
 # must be one of the following:
 #
-#    'confirm' 
+#    'confirm'
 #        order ids will be reset
 #
-#    'reject' 
+#    'reject'
 #        order ids will not be reset
 #
-#    'ignore' 
+#    'ignore'
 #        IBC will ignore the dialog. The user must take action.
 #
 #    The default setting is ignore/ignore
@@ -547,7 +547,7 @@ ResetOrderIdsAtStart=
 #                       and confirm user-initiated requests
 #
 #    'reject/ignore'  - reject order id reset if  ResetOrderIdsAtStart=yes but
-#                       allow user to handle user-initiated requests 
+#                       allow user to handle user-initiated requests
 
 ConfirmOrderIdReset=
 
@@ -558,7 +558,7 @@ ConfirmOrderIdReset=
 # =============================================================================
 #
 # TWS and Gateway insist on being restarted every day. Two alternative
-# automatic options are offered: 
+# automatic options are offered:
 #
 #    - Auto-Logoff: at a specified time, TWS shuts down tidily, without
 #      restarting.
@@ -605,7 +605,7 @@ ConfirmOrderIdReset=
 # AutoRestartTime to your desired value before running IBC. NB: this does not
 # apply to TWS from version 1018 onwards.
 
-AutoLogoffTime=
+AutoLogoffTime=${AUTO_LOGOFF_TIME}
 
 AutoRestartTime=${AUTO_RESTART_TIME}
 
@@ -719,7 +719,7 @@ AllowBlindTrading=no
 # To save every 90 minutes starting at 08:00 up to and including 17:43
 #SaveTwsSettingsAt=Every 90 08:00 17:43
 
-SaveTwsSettingsAt=
+SaveTwsSettingsAt=${SAVE_TWS_SETTINGS}
 
 
 # Confirm Crypto Currency Orders Automatically
@@ -847,7 +847,7 @@ SuppressInfoMessages=yes
 #
 # IBC can log information about the structure of windows
 # displayed by TWS. This information is useful when adding
-# new features to IBC or when behaviour is not as expected. 
+# new features to IBC or when behaviour is not as expected.
 #
 # The logged information shows the hierarchical organisation
 # of all the components of the window, and includes the
@@ -923,5 +923,3 @@ LogStructureWhen=never
 # of LogStructureScope and LogStructureWhen are honoured.
 
 #LogComponents=
-
-
