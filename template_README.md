@@ -222,8 +222,8 @@ For TWS image config file locations are:
 
 | App     | Config file    | Default          |
 | ------- | -------------- | ---------------- |
-| TWS | /opt/ibkr/jts.ini | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibgateway/jts.ini.tmpl) |
-| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl) |
+| TWS | /opt/ibkr/jts.ini | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
+| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
 
 Sample settings:
 

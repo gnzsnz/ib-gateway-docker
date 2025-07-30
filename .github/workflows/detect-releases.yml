@@ -88,7 +88,7 @@ jobs:
             export STABLE_MINOR=$(echo $STABLE_VERSION | cut -d '.' -f1,2)
             # set LATEST
             export LATEST_VERSION=$(grep 'ENV IB_GATEWAY_VERSION=' $_latest_dockerfile | head -1 | cut -d '=' -f2)
-            export LATEST_MINOR=$(echo $STABLE_VERSION| cut -d '.' -f1,2)
+            export LATEST_MINOR=$(echo $LATEST_VERSION| cut -d '.' -f1,2)
           else
             echo "invalid channel: ${{ matrix.channel }}"
             exit 1
