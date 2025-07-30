@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri:/dev/dri #recomended
-    shm_size: "2gb" #recomended
+    shm_size: "1gb" #recomended
     security_opt:
       - seccomp:unconfined #recomended
     build:
