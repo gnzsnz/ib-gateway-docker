@@ -8,7 +8,7 @@
 # hadolint global ignore=DL3008
 
 ARG IB_VERSION=$VERSION
-FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
+FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
 
