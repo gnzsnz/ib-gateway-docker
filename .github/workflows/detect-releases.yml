@@ -38,7 +38,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release list > /tmp/ibgateway-releases
-          if grep -qF '${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
+          if grep -qF '${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
           then
             echo "has_update=false" >> $GITHUB_OUTPUT
           else
