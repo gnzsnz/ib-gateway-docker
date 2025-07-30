@@ -10,7 +10,7 @@ FROM ubuntu:24.04 AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
-ENV IBC_VERSION=3.21.0
+ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_URL="https://github.com/gnzsnz/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
 ARG IBC_URL="https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip"
