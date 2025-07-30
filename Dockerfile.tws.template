@@ -20,7 +20,7 @@ FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
-ENV IBC_VERSION=3.23.0
+ENV IBC_VERSION=3.21.0
 
 # IB Gateway user constants
 # IBC env vars
@@ -48,7 +48,7 @@ RUN \
   rm -rf /var/lib/apt/lists/* # end
 
 # Copy files
-COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
+COPY --from=setup /usr/local/ /usr/local/
 COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
 COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
 COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
