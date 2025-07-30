@@ -8,37 +8,34 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.22.1m
+ENV IB_GATEWAY_VERSION=10.24.1c
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
-ENV IBC_VERSION=3.16.0
-
-# Prepare system
-RUN apt-get update -y
-RUN apt-get install --no-install-recommends --yes \
-  curl \
-  ca-certificates \
-  unzip
+ENV IBC_VERSION=3.18.0
 
 WORKDIR /tmp/setup
 
+# Prepare system
+RUN apt-get update -y && \
+  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
+  curl \
+  ca-certificates \
+  unzip && \
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
-RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
-  --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-RUN curl -sSL https://github.com/UnusualAlpha/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
-  --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
-RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
-RUN chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-RUN ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION}
-COPY ./config/ibgateway/jts.ini /root/Jts/jts.ini
+  curl -sSOL https://github.com/gnzsnz/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
+  curl -sSOL https://github.com/gnzsnz/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 && \
+  sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 && \
+  chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
+  ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} &&\
+  # Install IBC
+  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
+  mkdir /root/ibc && \
+  unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
+  chmod -R u+x /root/ibc/*.sh && \
+  chmod -R u+x /root/ibc/scripts/*.sh
 
-# Install IBC
-RUN curl -sSL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip --output IBCLinux-${IBC_VERSION}.zip
-RUN mkdir /root/ibc
-RUN unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc
-RUN chmod -R u+x /root/ibc/*.sh 
-RUN chmod -R u+x /root/ibc/scripts/*.sh
+COPY ./config/ibgateway/jts.ini.tmpl /root/Jts/jts.ini.tmpl
 COPY ./config/ibc/config.ini.tmpl /root/ibc/config.ini.tmpl
 
 # Copy scripts
@@ -50,34 +47,30 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.22.1m
+ENV IB_GATEWAY_VERSION=10.24.1c
 
 WORKDIR /root
+COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
 
 # Prepare system
-RUN apt-get update -y
-RUN apt-get install --no-install-recommends --yes \
-  gettext \
-  xvfb \
-  libxslt-dev \
-  libxrender1 \
-  libxtst6 \
-  libxi6 \
-  libgtk2.0-bin \
+RUN apt-get update -y && \
+  apt-get install --no-install-recommends --yes \
+  gettext-base  \
   socat \
-  x11vnc
+  xvfb \
+  x11vnc \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy files
 COPY --from=setup /root/ .
 RUN chmod a+x /root/scripts/*.sh
-COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
 
 # IBC env vars
 ENV TWS_MAJOR_VRSN ${IB_GATEWAY_VERSION}
 ENV TWS_PATH /root/Jts
+ENV TWS_INI /root/Jts/jts.ini
 ENV IBC_PATH /root/ibc
 ENV IBC_INI /root/ibc/config.ini
-ENV TWOFA_TIMEOUT_ACTION exit
 
 # Start run script
 CMD ["/root/scripts/run.sh"]
