@@ -8,9 +8,9 @@
 # hadolint global ignore=DL3008
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.29.1g
+ENV IB_GATEWAY_VERSION=10.29.1h
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
-ENV IBC_VERSION=3.18.0
+ENV IBC_VERSION=3.19.0
 
 WORKDIR /tmp/setup
 
@@ -31,7 +31,7 @@ RUN apt-get update -y && \
   chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} &&\
   # Install IBC
-  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}-Update.1/IBCLinux-${IBC_VERSION}.zip && \
+  curl -sSOL https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip && \
   mkdir /root/ibc && \
   unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
@@ -49,7 +49,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.29.1g
+ENV IB_GATEWAY_VERSION=10.29.1h
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
