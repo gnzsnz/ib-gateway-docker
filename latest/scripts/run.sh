@@ -10,7 +10,10 @@ if [ -n "$VNC_SERVER_PASSWORD" ]; then
   /root/scripts/run_x11_vnc.sh &
 fi
 
+# replace env variables
 envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
+envsubst < "${TWS_PATH}/jts.ini.tmpl" > "${TWS_PATH}/jts.ini"
+
 
 /root/scripts/fork_ports_delayed.sh &
 
