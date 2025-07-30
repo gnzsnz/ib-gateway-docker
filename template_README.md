@@ -26,6 +26,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
+- Execution of custom scripts during [star-up process](#start-up-scripts).
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
 
@@ -92,11 +93,15 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
+      START_SCRIPTS: ${START_SCRIPTS:-}
+      X_SCRIPTS: ${X_SCRIPTS:-}
+      IBC_SCRIPTS: ${IBC_SCRIPTS:-}
 #    volumes:
 #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
 #      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
 #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
 #      - ${PWD}/ssh/:/home/ibgateway/.ssh
+#      - ${PWD}/init-scripts:/home/ibgateway/init-scripts
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"
@@ -148,6 +153,9 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
 | `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
 | `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
+| `START_SCRIPTS` | Directory with bash scripts to run **before** X environment is up. See [start-up scripts](#start-up-scripts) | **not defined** |
+| `X_SCRIPTS` | Directory with bash scripts to run **after** X environment is running. See [start-up scripts](#start-up-scripts) | **not defined** |
+| `IBC_SCRIPTS` | Directory with bash scripts to run **after** IBC is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 
 Create an .env on root directory. Example .env file:
 
@@ -184,6 +192,10 @@ SSH_REMOTE_PORT=
 SSH_USER_TUNNEL=
 SSH_RESTART=
 SSH_VNC_PORT=
+#START_SCRIPTS=init-scripts/start_scripts
+#X_SCRIPTS=init-scripts/x_scripts
+#IBC_SCRIPTS=init-scripts/ibc_scripts
+
 ```
 
 Once `docker-compose.yml` and `.env` are in place you can start the container with:
@@ -295,6 +307,44 @@ of data written to disk.
 saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not
 exists (first run) but not once the file exists. This is to avoid overwriting
 your settings.
+
+## Start-up scripts
+
+You can run scripts during start up to automate tasks or install additional
+tools. This can be done by setting environment variables `START_SCRIPTS`,
+`X_SCRIPTS` and `IBC_SCRIPTS` with a path containing start-up scripts.
+Scripts files should have `.sh` extension. Files will be executed in
+order, so `00-script.sh` will be executed before that `99-other-script.sh`.
+Start-up directory should be available in the container through a volume.
+
+For example for `ibgateway`:
+
+```bash
+# .env file
+START_SCRIPTS=init-scripts/start_scripts
+X_SCRIPTS=init-scripts/x_scripts
+IBC_SCRIPTS=init-scripts/ibc_scripts
+```
+
+and a volume in `docker-compose.yml`
+
+```yaml
+  volume:
+    - ${PWD}/init-scripts:/home/ibgateway/init-scripts
+```
+
+For TWS you can set your `.env` file as in the example and create a directory
+with your scripts in `/config/init-scripts/`. In TWS `$HOME=/config/`, while
+ib-gateway uses `$HOME=/home/ibgateway`.
+
+The start up process will search for start-up scripts in `$HOME/START_SCRIPTS`,
+`$HOME/X_SCRIPTS` and `$HOME/IBC_SCRIPTS`.
+
+Scripts in directory `$HOME/START_SCRIPTS` will run before the X environment is
+up. Scripts in `$HOME/X_SCRIPTS` will run once X environment is up, and
+`$HOME/IBC_SCRIPTS` once IBC runs. Take into account that scripts will run as
+soon as possible, so you might need to wait for X environment to be fully up or
+IBC to complete ibgateway/TWS start-up process.
 
 ## Security Considerations
 

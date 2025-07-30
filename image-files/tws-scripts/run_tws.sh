@@ -74,6 +74,12 @@ start_process() {
 # user id
 echo ".> Running as user"
 id
+
+# run scripts once X environment is up
+if [ -n "$X_SCRIPTS" ]; then
+	run_scripts "$HOME/$X_SCRIPTS"
+fi
+
 # disable agents
 disable_agents
 # disable compositing
@@ -144,6 +150,11 @@ if [ "$DUAL_MODE" == "yes" ]; then
 fi
 # outside if dual mode, to ensure cleanup/unset
 unset_env 'TWS_PASSWORD_PAPER'
+
+# run scripts once IBC is running
+if [ -n "$IBC_SCRIPTS" ]; then
+	run_scripts "$HOME/$IBC_SCRIPTS"
+fi
 
 wait "${pid[@]}"
 _wait="$?"

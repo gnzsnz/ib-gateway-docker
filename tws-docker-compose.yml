@@ -49,6 +49,9 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_RDP_PORT: ${SSH_RDP_PORT:-}
+      START_SCRIPTS: ${START_SCRIPTS:-}
+      X_SCRIPTS: ${X_SCRIPTS:-}
+      IBC_SCRIPTS: ${IBC_SCRIPTS:-}
     volumes:
       - ./config:/config # optional
       - tws_tmp:/tmp # recommended for performance
