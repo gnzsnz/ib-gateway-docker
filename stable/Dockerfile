@@ -7,7 +7,7 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.19.2h
+ENV IB_GATEWAY_VERSION=10.19.2i
 ENV IB_GATEWAY_RELEASE_CHANNEL=stable
 ENV IBC_VERSION=3.18.0
 
@@ -48,7 +48,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.19.2h
+ENV IB_GATEWAY_VERSION=10.19.2i
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
@@ -57,8 +57,10 @@ ENV HOME=/home/ibgateway
 ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
 ENV TWS_PATH=${HOME}/Jts
 ENV TWS_INI=jts.ini
+ENV TWS_INI_TMPL=${TWS_INI}.tmpl
 ENV IBC_PATH=${HOME}/ibc
 ENV IBC_INI=${HOME}/ibc/config.ini
+ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
 # Copy files
@@ -67,6 +69,7 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
 RUN apt-get update -y && \
+  apt-get upgrade -y && \
   DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
   gettext-base socat xvfb x11vnc sshpass openssh-client && \
   apt-get clean && \
