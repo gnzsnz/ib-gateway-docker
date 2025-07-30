@@ -28,6 +28,6 @@ echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc
 
 # setting permissions
 echo ".> Setting permissions for ${TWS_PATH} and ${IBC_PATH}"
-chown abc:abc -R "${TWS_PATH}" "${IBC_PATH}"
+chown abc:abc -R /opt "${TWS_PATH}" "${IBC_PATH}"
 
 sudo -EH -u abc "${SCRIPT_PATH}/run_tws.sh"

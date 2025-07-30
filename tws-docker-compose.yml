@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     devices:
       - /dev/dri:/dev/dri #recomended
-    shm_size: "2gb" #recomended
+    shm_size: "1gb" #recomended
     security_opt:
       - seccomp:unconfined #recomended
     build:
@@ -22,6 +22,8 @@ services:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
+      TWS_USERID_PAPER: ${TWS_USERID_PAPER:-}
+      TWS_PASSWORD_PAPER: ${TWS_PASSWORD_PAPER:-}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
       TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
@@ -55,7 +57,6 @@ services:
       - "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper
       - "127.0.0.1:3370:3389" # xrdp
-      #- 3370:3389 # xrdp
 
 volumes:
   tws_tmp:
