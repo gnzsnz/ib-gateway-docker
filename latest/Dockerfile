@@ -8,7 +8,7 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.25.1m
+ENV IB_GATEWAY_VERSION=10.25.1n
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.18.0
 
@@ -47,7 +47,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.25.1m
+ENV IB_GATEWAY_VERSION=10.25.1n
 
 WORKDIR /root
 COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
