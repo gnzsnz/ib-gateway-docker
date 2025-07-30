@@ -2,6 +2,8 @@
 # shellcheck disable=SC2317
 # Don't warn about unreachable commands in this file
 
+set -Eeo pipefail
+
 echo "*************************************************************************"
 echo ".> Starting IBC/IB gateway"
 echo "*************************************************************************"
@@ -53,9 +55,11 @@ start_xvfb() {
 
 start_vnc() {
 	# start VNC server
+	file_env 'VNC_SERVER_PASSWORD'
 	if [ -n "$VNC_SERVER_PASSWORD" ]; then
 		echo ".> Starting VNC server"
 		x11vnc -ncache_cr -display :1 -forever -shared -bg -noipv6 -passwd "$VNC_SERVER_PASSWORD" &
+		unset_env 'VNC_SERVER_PASSWORD'
 	else
 		echo ".> VNC server disabled"
 	fi
@@ -141,8 +145,15 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	TRADING_MODE=paper
 	TWS_USERID="${TWS_USERID_PAPER}"
 	export TWS_USERID
-	TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
-	export TWS_PASSWORD
+
+	# handle password for dual mode
+	if [ -n "${TWS_PASSWORD_PAPER_FILE}" ]; then
+		TWS_PASSWORD_FILE="${TWS_PASSWORD_PAPER_FILE}"
+		export TWS_PASSWORD_FILE
+	else
+		TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
+		export TWS_PASSWORD
+	fi
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
 	export SSH_VNC_PORT
