@@ -4,7 +4,7 @@
 # This is a dedicated stage used as source for needed files.
 #
 ##############################################################################
-ARG IB_VERSION=10.27.1e
+ARG IB_VERSION=10.27.1f
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} as setup
 
 WORKDIR /
@@ -15,7 +15,7 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.27.1e
+ENV IB_GATEWAY_VERSION=10.27.1f
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.18.0
 
