@@ -41,6 +41,9 @@ set_ports
 # apply settings
 apply_settings
 
+# Java heap size
+set_java_heap
+
 # forward ports, socat or ssh
 "${SCRIPT_PATH}/port_forwarding.sh" &
 
