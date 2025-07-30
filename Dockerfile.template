@@ -5,6 +5,7 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
+# hadolint global ignore=DL3008
 FROM ubuntu:22.04 as setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
