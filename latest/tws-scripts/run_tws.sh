@@ -20,8 +20,8 @@ disable_agents() {
 		xfconf-query -c xfce4-session -p /startup/ssh-agent/enabled -n -t bool -s false
 		xfconf-query -c xfce4-session -p /startup/gpg-agent/enabled -n -t bool -s false
 		# kill ssh-agent and gpg-agent
-		pkill -x ssh-agent
-		pkill -x gpg-agent
+		pkill -x ssh-agent || echo ".> ssh-agent was not running."
+		pkill -x gpg-agent || echo ".> gpg-agent was not running."
 		touch /config/.config/disable_agents
 	else
 		echo ".> Found '/config/.config/disable_agents' agents already disabled"
