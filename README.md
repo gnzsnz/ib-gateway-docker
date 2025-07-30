@@ -26,10 +26,10 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.29.1e` | `3.18.0` | `latest` `10.29` `10.29.1e` |
-| [ib-gateway][1] |`stable` | `10.19.2m` | `3.18.0` | `stable` `10.19` `10.19.2m` |
-| [tws-rdesktop][2] | `latest` | `10.29.1e` | `3.18.0` | `latest` `10.29` `10.29.1e` |
-| [tws-rdesktop][2] |`stable` | `10.19.2m` | `3.18.0` | `stable` `10.19` `10.19.2m` |
+| [ib-gateway][1] | `latest` | `10.29.1g` | `3.18.0` | `latest` `10.29` `10.29.1g` |
+| [ib-gateway][1] |`stable` | `10.19.2n` | `3.18.0` | `stable` `10.19` `10.19.2n` |
+| [tws-rdesktop][2] | `latest` | `10.29.1g` | `3.18.0` | `latest` `10.29` `10.29.1g` |
+| [tws-rdesktop][2] |`stable` | `10.19.2n` | `3.18.0` | `stable` `10.19` `10.19.2n` |
 
 All tags are available in the container repository for [ib-gateway][1] and [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
 
@@ -38,6 +38,8 @@ All tags are available in the container repository for [ib-gateway][1] and [tws-
 For the two images available, [ib-gateway][1] and [tws-rdesktop][2], you can use the sample docker compose files as a starting point.
 
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing one). The sample files provided can be used as starting point, [ib-gateway compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and [tws-rdesktop compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml).
+
+Looking for help? Please go to [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common problems and solutions.
 
 ```yaml
 name: algo-trader
