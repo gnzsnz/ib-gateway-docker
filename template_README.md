@@ -37,8 +37,6 @@ There are two images available, [ib-gateway](https://github.com/users/gnzsnz/pac
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing one). There are sample files provided for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and for [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
 
 ```yaml
-version: "3.4"
-
 name: algo-trader
 services:
   ib-gateway:
