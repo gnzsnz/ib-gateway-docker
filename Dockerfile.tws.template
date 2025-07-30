@@ -20,7 +20,7 @@ FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
-ENV IBC_VERSION=3.21.2
+ENV IBC_VERSION=3.22.0
 
 # IB Gateway user constants
 # IBC env vars
