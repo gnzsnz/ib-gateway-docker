@@ -8,7 +8,7 @@
 
 FROM ubuntu:22.04 as setup
 
-ENV IB_GATEWAY_VERSION=10.25.1k
+ENV IB_GATEWAY_VERSION=10.25.1m
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.18.0
 
@@ -47,7 +47,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:22.04
 
-ENV IB_GATEWAY_VERSION=10.25.1k
+ENV IB_GATEWAY_VERSION=10.25.1m
 
 WORKDIR /root
 COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
@@ -68,7 +68,7 @@ RUN chmod a+x /root/scripts/*.sh
 # IBC env vars
 ENV TWS_MAJOR_VRSN ${IB_GATEWAY_VERSION}
 ENV TWS_PATH /root/Jts
-ENV TWS_INI /root/Jts/jts.ini
+ENV TWS_INI jts.ini
 ENV IBC_PATH /root/ibc
 ENV IBC_INI /root/ibc/config.ini
 

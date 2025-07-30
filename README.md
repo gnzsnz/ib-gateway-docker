@@ -22,10 +22,10 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.25.1k`  | `3.18.0` | `latest` `10.25` `10.25.1k` |
-| `stable` | `10.19.2d`  | `3.18.0` | `stable` `10.19` `10.19.2d` |
+| `latest` | `10.25.1m`  | `3.18.0` | `latest` `10.25` `10.25.1m` |
+| `stable` | `10.19.2e`  | `3.18.0` | `stable` `10.19` `10.19.2e` |
 
-This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
+All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository.
 
 ## How to use?
 
@@ -41,6 +41,7 @@ services:
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
+      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       TRADING_MODE: ${TRADING_MODE:-live}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
       READ_ONLY_API: ${READ_ONLY_API:-}
@@ -53,6 +54,7 @@ services:
 #    volumes:
 #      - ${PWD}/jts.ini:/root/Jts/jts.ini
 #      - ${PWD}/config.ini:/root/ibc/config.ini
+#      - ${PWD}/tws_settings:${TWS_SETTINGS_PATH:-/root/Jts}
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -63,15 +65,16 @@ Create an .env on root directory or set the following environment variables:
 
 | Variable              | Description                                                         | Default                    |
 | --------------------- | ------------------------------------------------------------------- | -------------------------- |
-| `TWS_USERID`          | The TWS **username**.                                               |                            |
-| `TWS_PASSWORD`        | The TWS **password**.                                               |                            |
-| `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
-| `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not defined**            |
+| `TWS_USERID`          | The TWS **username**. |  |
+| `TWS_PASSWORD`        | The TWS **password**. |  |
+| `TRADING_MODE`        | **live** or **paper** | **paper**                  |
+| `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316)) | **not defined**  |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | **not defined** (VNC disabled)|
 | `TWOFA_TIMEOUT_ACTION` | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'exit' |
 | `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
-| `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) or a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
+| `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
+| TWS_SETTINGS_PATH | The settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume . |  |
 | `CUSTOM_CONFIG` | If set to `YES`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 
 Example .env file:
@@ -79,6 +82,7 @@ Example .env file:
 ```text
 TWS_USERID=myTwsAccountName
 TWS_PASSWORD=myTwsPassword
+TWS_SETTINGS_PATH=
 TRADING_MODE=paper
 READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
@@ -101,12 +105,35 @@ After image is downloaded, container is started + 30s, the following ports will 
 | 4002 | TWS API port for paper accounts.                             |
 | 5900 | When `VNC_SERVER_PASSWORD` was defined, the VNC server port. |
 
-_Note that with the above `docker-compose.yml`, ports are only exposed to the
+Note that with the above `docker-compose.yml`, ports are only exposed to the
 docker host (127.0.0.1), but not to the network of the host. To expose it to
 the whole network change the port mappings on accordingly (remove the
 '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
-## How to build locally
+3. Remove `RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from Dockerfile (unless you want to keep checksum-check)
+4. Download IB Gateway and name the file `ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile (first line)
+5. Download IBC and name the file `IBCLinux-{IBC_VERSION}.zip`, where `{IBC_VERSION}` must match the version as configured on Dockerfile (second line)
+6. Build and run: `docker-compose up --build`
+
+## IB Gateway installation files
+
+Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+**does not download IB Gateway installer files from IB homepage but from the
+[github-releases](https://github.com/gnzsnz/ib-gateway-docker/releases) of this project**.
+
+This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
+but IB does only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
+
+The installer files stored on [releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been downloaded from IB homepage and renamed to reflect the version.
+
+If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
+on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
+`RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
+--output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
+
+**Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
+
+### How to build locally step by step
 
 1. Clone this repo
 
@@ -130,36 +157,6 @@ Open `Dockerfile` on editor and replace this lines:
    COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
    ```
 
-3. Remove `RUN sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from Dockerfile (unless you want to keep checksum-check)
-4. Download IB Gateway and name the file `ibgateway-{IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile (first line)
-5. Download IBC and name the file `IBCLinux-{IBC_VERSION}.zip`, where `{IBC_VERSION}` must match the version as configured on Dockerfile (second line)
-6. Build and run: `docker-compose up --build`
-
-## Versions and Tags
-
-The docker image version is similar to the IB Gateway version on the image.
-
-See [Supported tags](#supported-tags)
-
-### IB Gateway installation files
-
-Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
-**does not download IB Gateway installer files from IB homepage but from the
-[github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) of this project**.
-
-This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
-but IB does only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
-
-The installer files stored on [github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) have been downloaded from
-IB homepage and renamed to reflect the version.
-
-If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
-on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
-`RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
---output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
-
-**Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
-
 ## Customizing the image
 
 The image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
@@ -168,11 +165,28 @@ Apps and config file locations:
 
 | App        |  Folder   | Config file               | Default                                                                                           |
 | ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
-| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini  | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
+| IBC | /root/ibc | /root/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
+
+### Preserve settings across containers
+
+You can preserve settings by, setting environment variable `$TWS_SETTINGS_PATH` and setting a volume
+
+```yaml
+...
+    environment:
+      - TWS_SETTINGS_PATH: /root/tws_settings
+...
+    volumes:
+      - ${PWD}/tws_settings:/root/tws_settings
+...
+
+```
+
+**Important**: when you save your settings in a volume, file `jts.ini` will be saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not exists (first run) but not once the file exists. This is to avoid overwriting your settings.
 
 ## Security Considerations
 
