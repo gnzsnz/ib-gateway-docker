@@ -19,7 +19,7 @@ jobs:
         id: channel
         run: |
           channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
-          echo "::set-output name=channel::$channel"
+          echo "channel=$channel" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -33,7 +33,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
-        uses: docker/login-action@17f28ab24d0d2832d5ff23a1409bbfc373ebcb96
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
