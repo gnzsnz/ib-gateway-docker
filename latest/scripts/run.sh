@@ -10,15 +10,15 @@ if [ -n "$VNC_SERVER_PASSWORD" ]; then
   /root/scripts/run_x11_vnc.sh &
 fi
 
-# replace env variables
-envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
-envsubst < "${TWS_INI}.tmpl" > "${TWS_INI}"
-
+if [ "$CUSTOM_CONFIG" != "YES" ]; then
+  # replace env variables
+  envsubst < "${IBC_INI}.tmpl" > "${IBC_INI}"
+  envsubst < "${TWS_INI}.tmpl" > "${TWS_INI}"
+fi
 
 /root/scripts/fork_ports_delayed.sh &
 
 /root/ibc/scripts/ibcstart.sh "${TWS_MAJOR_VRSN}" -g \
      "--tws-path=${TWS_PATH}" \
      "--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
-     "--user=${TWS_USERID}" "--pw=${TWS_PASSWORD}" "--mode=${TRADING_MODE}" \
      "--on2fatimeout=${TWOFA_TIMEOUT_ACTION}"
