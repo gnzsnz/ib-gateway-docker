@@ -9,7 +9,7 @@ if [ $# -ne 2 ] ; then
 fi
 
 channel=$1
-version=$2
+export VERSION=$2
 
 if [ "$channel" != "stable" ] && [ "$channel" != "latest" ]; then
 	echo "The channel must be 'stable' or 'latest'"
@@ -18,6 +18,6 @@ fi
 
 cp -r image-files/. "$channel/."
 rm -f "$channel/Dockerfile"
-VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' < "Dockerfile.template" > "$channel/Dockerfile"
+envsubst \$VERSION < "Dockerfile.template" > "$channel/Dockerfile"
 
 echo "Done"
