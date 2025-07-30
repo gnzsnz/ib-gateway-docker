@@ -22,10 +22,10 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.25.1h`         | `3.18.0`    | `latest` `10.25` `10.25.1h` |
-| `stable` | `10.19.2d`         | `3.18.0`    | `stable` `10.19` `10.19.2d` |
+| `latest` | `10.25.1j`  | `3.18.0` | `latest` `10.25.1j` `10.25` |
+| `stable` | `10.19.2d`  | `3.18.0` | `stable` `10.19.2d` `10.19` |
 
-This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/117795730?tag=stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/120858613?tag=latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
+This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
 
 ## How to use?
 
@@ -63,10 +63,10 @@ Create an .env on root directory or set the following environment variables:
 
 | Variable              | Description                                                         | Default                    |
 | --------------------- | ------------------------------------------------------------------- | -------------------------- |
-| `TWS_USERID`  | The TWS **username**. |  |
-| `TWS_PASSWORD`  | The TWS **password**. | |
-| `TRADING_MODE`  | **live** or **paper** | **paper**                  |
-| `READ_ONLY_API`  | **yes** or **no** ([see](image-files/config/ibc/config.ini.tmpl))  | **not defined**  |
+| `TWS_USERID`          | The TWS **username**.                                               |                            |
+| `TWS_PASSWORD`        | The TWS **password**.                                               |                            |
+| `TRADING_MODE`        | **live** or **paper**                                               | **paper**                  |
+| `READ_ONLY_API`       | **yes** or **no** ([see](resources/config.ini#L316))                | **not defined**            |
 | `VNC_SERVER_PASSWORD` | VNC server password. If not defined, no VNC server will be started. | **not defined** (VNC disabled)|
 | `TWOFA_TIMEOUT_ACTION` | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'exit' |
 | `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
@@ -143,35 +143,33 @@ See [Supported tags](#supported-tags)
 
 ### IB Gateway installation files
 
-Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile.template)
+Note that the [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
 **does not download IB Gateway installer files from IB homepage but from the
-[releases repository](https://github.com/gnzsnz/ib-gateway-docker/releases) of this project**.
+[github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) of this project**.
 
 This is because it shall be possible to (re-)build the image, targeting a specific Gateway version,
 but IB does only provide download links for the `latest` or `stable` version (there is no 'old version' download archive).
 
-The installer files stored on [releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been downloaded from IB homepage and renamed to reflect the version.
+The installer files stored on [github-pages](https://github.com/gnzsnz/ib-gateway-docker/tree/gh-pages/ibgateway-releases) have been downloaded from
+IB homepage and renamed to reflect the version.
 
-If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line on Dockerfile
-
+If you want to download Gateway installer from IB homepage directly, or use your local installation file, change this line
+on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
 `RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
---output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` 
-
-to download (or copy) the file from the source you prefer.
+--output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download (or copy) the file from the source you prefer.
 
 **Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
 
 ## Customizing the image
 
-The image can be customized by overwriting the default configuration files
-with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
+The image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
 
 Apps and config file locations:
 
 | App        |  Folder   | Config file               | Default                                                                                           |
 | ---------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
+| IB Gateway | /root/Jts | /root/Jts/jts.ini         | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibgateway/jts.ini) |
+| IBC        | /root/ibc | /root/ibc/config.ini      | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/config/ibc/config.ini.tmpl) |
 
 To start the IB Gateway run `/root/scripts/run.sh` from your Dockerfile or
 run-script.
@@ -198,4 +196,5 @@ This image does not contain nor store any user credentials.
 
 They are provided as environment variable during the container startup and
 the host is responsible to properly protect it (e.g. use
-[Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) or similar).
+[Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) 
+or similar).
