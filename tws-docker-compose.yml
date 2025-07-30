@@ -1,5 +1,3 @@
-version: "3.4"
-
 name: algo-trader
 services:
   tws:
