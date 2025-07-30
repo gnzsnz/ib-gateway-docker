@@ -2,24 +2,24 @@ name: "Publish Docker"
 
 on:
   push:
+    branches:
+      - 'master'
     tags:
-      - "v*"
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
 
 jobs:
   publish-docker:
-    name: Publish Docker Image
+    name: "Publish Docker Image"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+      - name: "Checkout source code"
+        uses: "actions/checkout@v2"
         with:
           ref: ${{ github.ref }}
           lfs: true
-      - name: Extract release channel
-        id: channel
-        run: |
-          channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
-          echo "channel=$channel" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -28,12 +28,14 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+              type=ref,event=branch
+              type=ref,event=pr
+              type=match,pattern=v(\d+.\d+),group=1
+              type=match,pattern=v(\d+.\d+.\w+),group=1
+              type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@17f28ab24d0d2832d5ff23a1409bbfc373ebcb96
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -42,7 +44,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ${{ steps.channel.outputs.channel }}
-          push: true
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

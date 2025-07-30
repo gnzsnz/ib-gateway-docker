@@ -4,7 +4,8 @@ services:
   ib-gateway:
     restart: always
     build:
-      context: ./latest
+      context: .
+      dockerfile: ./Dockerfile
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
