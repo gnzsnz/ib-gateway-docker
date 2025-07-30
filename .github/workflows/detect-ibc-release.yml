@@ -1,0 +1,69 @@
+name: Detect IBC Releases
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+
+  workflow_dispatch:
+
+env:
+  IBC_REPO: https://github.com/IbcAlpha/IBC.git
+jobs:
+  detect-release:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get Current Version
+        id: version
+        run: |
+          CURRENT_IBC="$(grep 'ENV IBC_VERSION' Dockerfile.template|cut -d '=' -f 2)"
+          echo "CURRENT_IBC=$CURRENT_IBC" >> $GITHUB_OUTPUT
+      
+      - name: Get IBC latest version
+        id: ibc_version
+        run: |
+          git clone ${{ env.IBC_REPO }} /tmp/IBC
+          IBC_LATEST="$(git -C /tmp/IBC tag --sort=creatordate | tail -1)"
+          echo "IBC_LATEST=$IBC_LATEST" >> $GITHUB_OUTPUT
+
+      - name: Verify latest version
+        id: verify_latest
+        run: |
+          current=${{ steps.version.outputs.CURRENT_IBC }}
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST }}
+
+          if [[ "$current" = "$latest" ]]; then
+            update="false"
+          else
+            update="true"
+          fi
+
+          echo "update=$update" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: ${{ steps.verify_latest.outputs.update == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ver=${{ steps.version.outputs.CURRENT_IBC }}
+          latest=${{ steps.ibc_version.outputs.IBC_LATEST}}
+          branch="IBC-update-${latest}"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git pull
+          git checkout -b "$branch" origin/master
+          
+          # update Dockerfile.template, but don't run update.sh
+          # next ib gateway release will run update.sh
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
+
+          git add Dockerfile.template
+          git commit -m "Update IBC from ${ver} to ${latest}"
+          git push --set-upstream origin "$branch"
+
+          gh pr create --base master --fill          
+
