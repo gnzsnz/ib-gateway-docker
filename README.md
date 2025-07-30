@@ -22,8 +22,8 @@ a VNC server that allows to interact with the IB Gateway user interface (optiona
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.25.1h`         | `3.18.0`    | `latest` `10.25` `10.25.1h` |
-| `stable` | `10.19.2d`         | `3.18.0`    | `stable` `10.19` `10.19.2d` |
+| `latest` | `10.25.1j`  | `3.18.0` | `latest` `10.25.1j` `10.25` |
+| `stable` | `10.19.2d`  | `3.18.0` | `stable` `10.19.2d` `10.19` |
 
 This `README` might not have the latest tags, but you can always get [stable](https://github.com/users/gnzsnz/packages/container/ib-gateway/117795730?tag=stable) and [latest](https://github.com/users/gnzsnz/packages/container/ib-gateway/120858613?tag=latest) plus all available [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/).
 
@@ -49,6 +49,10 @@ services:
       RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
       TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
+      CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
+#    volumes:
+#      - ${PWD}/jts.ini:/root/Jts/jts.ini
+#      - ${PWD}/config.ini:/root/ibc/config.ini
     ports:
       - "127.0.0.1:4001:4001"
       - "127.0.0.1:4002:4002"
@@ -68,6 +72,7 @@ Create an .env on root directory or set the following environment variables:
 | `AUTO_RESTART_TIME` | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined** |
 | `RELOGIN_AFTER_2FA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | 'no' |
 | `TIME_ZONE` | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) or a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo`| "Etc/UTC" |
+| `CUSTOM_CONFIG` | If set to `YES`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
 
 Example .env file:
 
@@ -81,6 +86,7 @@ TWOFA_TIMEOUT_ACTION=restart
 AUTO_RESTART_TIME=11:59 PM
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
+CUSTOM_CONFIG=
 ```
 
 Run:
@@ -100,7 +106,7 @@ docker host (127.0.0.1), but not to the network of the host. To expose it to
 the whole network change the port mappings on accordingly (remove the
 '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
-## How build locally
+## How to build locally
 
 1. Clone this repo
 
@@ -156,8 +162,7 @@ on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfi
 
 ## Customizing the image
 
-The image can be customized by overwriting the default configuration files
-with custom ones.
+The image can be customized by overwriting the default configuration files with custom ones. To do this you must set enviroment variable `CUSTOM_CONFIG=YES`. By setting `CUSTOM_CONFIG=YES` `run.sh` will not replace environment variables on config files, you must provide config files ready to be used by IB gateway and IBC.
 
 Apps and config file locations:
 
