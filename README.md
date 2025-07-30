@@ -21,7 +21,7 @@ It includes:
 
 | Channel  | IB Gateway Version | IBC Version | Docker Tags                 |
 | -------- | ------------------ | ----------- | --------------------------- |
-| `latest` | `10.26.1i`  | `3.18.0` | `latest` `10.19` `10.26.1i` |
+| `latest` | `10.26.1j`  | `3.18.0` | `latest` `10.26` `10.26.1j` |
 | `stable` | `10.19.2h`  | `3.18.0` | `stable` `10.19` `10.19.2h` |
 
 All [tags](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway/) are available in the container repository. IB Gateway and TWS share the same version numers and tags, TWS tags are available on it's [container repository](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop).
@@ -134,7 +134,6 @@ SAVE_TWS_SETTINGS=
 RELOGIN_AFTER_2FA_TIMEOUT=yes
 TIME_ZONE=Europe/Lisbon
 CUSTOM_CONFIG=
-JAVA_HEAP_SIZE=
 SSH_TUNNEL=
 SSH_OPTIONS=
 SSH_ALIVE_INTERVAL=

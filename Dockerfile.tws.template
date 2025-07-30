@@ -28,6 +28,7 @@ ENV IBC_PATH=/opt/ibc
 ENV IBC_INI=${IBC_PATH}/config.ini
 ENV SCRIPT_PATH=/defaults
 ENV GATEWAY_OR_TWS=tws
+ENV NO_AT_BRIDGE=1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
