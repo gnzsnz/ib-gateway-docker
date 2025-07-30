@@ -1,5 +1,5 @@
 /.env
 tws_settings/
 ssh/
-config/
+/config/
 .python-version
