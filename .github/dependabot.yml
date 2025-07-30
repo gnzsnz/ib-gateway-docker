@@ -9,13 +9,7 @@ updates:
     directory: "/stable"
     schedule:
       interval: "daily"
-
   - package-ecosystem: "docker"
     directory: "/latest"
     schedule:
       interval: "daily"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
