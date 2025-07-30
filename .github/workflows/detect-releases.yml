@@ -13,15 +13,12 @@ defaults:
 jobs:
   detect-release:
     runs-on: ubuntu-latest
-    outputs:
-      update: ${{ steps.check-update.outputs.has_update }}
-      channel: ${{ matrix.channel }}
     strategy:
       fail-fast: true
       matrix:
         channel: ["stable", "latest"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Get Latest Version
         id: version
@@ -38,7 +35,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release list > /tmp/ibgateway-releases
-          if grep -qF '${{ matrix.channel }}@${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
+          if grep -qF '${{ steps.version.outputs.build_version }}' /tmp/ibgateway-releases
           then
             echo "has_update=false" >> $GITHUB_OUTPUT
           else
@@ -67,39 +64,6 @@ jobs:
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: ./update.sh ${{ matrix.channel }} ${{ steps.version.outputs.build_version }}
 
-      - name: Update README
-        if: ${{ steps.check-update.outputs.has_update == 'true' }}
-        run: |
-          # get stable and latest versions
-          export _stable_dockerfile='stable/Dockerfile'
-          export _latest_dockerfile='latest/Dockerfile'
-          if [ ${{ matrix.channel }} = 'latest' ]; then
-            # set latest
-            export LATEST_VERSION=${{ steps.version.outputs.build_version }}
-            export LATEST_MINOR=$(echo $LATEST_VERSION | cut -d '.' -f1,2)
-
-            # set stable
-            export STABLE_VERSION=$(grep 'ENV IB_GATEWAY_VERSION=' $_stable_dockerfile | head -1 | cut -d '=' -f2)
-            export STABLE_MINOR=$(echo $STABLE_VERSION| cut -d '.' -f1,2)
-
-          elif [ ${{ matrix.channel }} = 'stable' ]; then
-            # set STABLE
-            export STABLE_VERSION=${{ steps.version.outputs.build_version }}
-            export STABLE_MINOR=$(echo $STABLE_VERSION | cut -d '.' -f1,2)
-            # set LATEST
-            export LATEST_VERSION=$(grep 'ENV IB_GATEWAY_VERSION=' $_latest_dockerfile | head -1 | cut -d '=' -f2)
-            export LATEST_MINOR=$(echo $LATEST_VERSION| cut -d '.' -f1,2)
-          else
-            echo "invalid channel: ${{ matrix.channel }}"
-            exit 1
-          fi
-          # IBC
-          export IBC_VERSION="$(grep 'ENV IBC_VERSION' Dockerfile.template|cut -d '=' -f 2)"
-          # show in log
-          echo "$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBC_VERSION"
-          # replace variables
-          envsubst '$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBC_VERSION' < template_README.md > README.md
-
       - name: Create PR
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         env:
@@ -110,17 +74,8 @@ jobs:
           git config user.email github-actions@github.com
           git pull
           git checkout -b "$t_branch" origin/master
-          git add '${{ matrix.channel }}' README.md
+          git add '${{ matrix.channel }}'
           git commit -m 'Update `${{ matrix.channel }}` to `${{ steps.version.outputs.build_version }}`'
           git push --set-upstream origin "$t_branch"
 
           gh pr create --base master --fill
-
-
-  build:
-    name: Call build workflow
-    needs: detect-release
-    if: needs.detect-release.outputs.update == 'true'
-    uses: gnzsnz/ib-gateway-docker/.github/workflows/build.yml@master
-    with:
-        channel: ${{ needs.detect-release.outputs.channel }}
