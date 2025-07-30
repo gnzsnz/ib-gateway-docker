@@ -35,9 +35,9 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.30.1h` | `3.19.0` | `latest` `10.30` `10.30.1h` |
+| [ib-gateway][1] | `latest` | `10.30.1i` | `3.19.0` | `latest` `10.30` `10.30.1i` |
 | [ib-gateway][1] |`stable` | `10.19.2o` | `3.19.0` | `stable` `10.19` `10.19.2o` |
-| [tws-rdesktop][2] | `latest` | `10.30.1h` | `3.19.0` | `latest` `10.30` `10.30.1h` |
+| [tws-rdesktop][2] | `latest` | `10.30.1i` | `3.19.0` | `latest` `10.30` `10.30.1i` |
 | [tws-rdesktop][2] |`stable` | `10.19.2o` | `3.19.0` | `stable` `10.19` `10.19.2o` |
 
 All tags are available in the container repository for [ib-gateway][1] and [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
