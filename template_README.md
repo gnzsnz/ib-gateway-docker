@@ -113,7 +113,7 @@ TWS_USERID=myTwsAccountName
 TWS_PASSWORD=myTwsPassword
 # see credentials section
 #TWS_PASSWORD_FILE
-#TWS_USERID_PAPER#
+#TWS_USERID_PAPER=
 #TWS_PASSWORD_PAPER=
 #TWS_PASSWORD_PAPER_FILE=
 # ib-gateway
@@ -166,13 +166,13 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | --- | --- | --- |
 | `TWS_USERID`  | The TWS **username**. |   |
 | `TWS_PASSWORD` | The TWS **password**.  |   |
-| `TWS_PASSWORD_FILE` | The file containing TWS **password**. See [credentials section](#credentials) |   |
+| `TWS_PASSWORD_FILE` | The file containing TWS **password**. See [credentials section](#credentials). |   |
 | `TRADING_MODE` | **live** or **paper**. From `10.26.1k` it supports **both** which will start ib-gateway or TWS in live AND paper mode in parallel within the container. | **paper** |
 | `TWS_USERID_PAPER`  | If `TRADING_MODE=both`, then this is required to pass paper account user  | **not defined** |
 | `TWS_PASSWORD_PAPER` | If `TRADING_MODE=both`, then this is required to pass paper account password  | **not defined**  |
-| `TWS_PASSWORD_PAPER_FILE` | If `TRADING_MODE=both`, then this is required to pass paper account password. See [credentials section](#credentials)  | **not defined**  |
+| `TWS_PASSWORD_PAPER_FILE` | If `TRADING_MODE=both`, then this is required to pass paper account password. See [credentials section](#credentials).  | **not defined**  |
 | `READ_ONLY_API`  | **yes** or **no**. [See IBC documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md)  | **not defined** |
-| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
+| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
 | `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
 | `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
 | `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
@@ -203,7 +203,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
 | `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
 | `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
-| `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
+| `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
 
 ## Ports
 
@@ -490,7 +490,7 @@ secrets:
 
 ```
 
-In "dicussions" section you will find full examples for [ibgateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
+In "discussion" section you will find full examples for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
 
 ### RDP
 
@@ -537,7 +537,7 @@ nano docker-compose.yml
 docker compose build --pull
 docker compose up
 
-# to build TWS, first build ib-gateway. steps above, then
+# to build TWS, first build ib-gateway. see steps above, then
 # createa a local tag. update version accordingly
 docker tag ghcr.io/gnzsnz/ib-gateway:stable ghcr.io/gnzsnz/ib-gateway:10.37.1j
 # update docker-compose.yml to your needs
