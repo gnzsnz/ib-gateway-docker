@@ -9,12 +9,16 @@
 FROM ubuntu:24.04 AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
-ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
+ENV IB_GATEWAY_CHANNEL=$CHANNEL
 ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
-ARG IB_GATEWAY_URL="https://github.com/gnzsnz/ib-gateway-docker/releases/download/ibgateway-${IB_GATEWAY_RELEASE_CHANNEL}%40${IB_GATEWAY_VERSION}/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
-ARG IBC_URL="https://github.com/IbcAlpha/IBC/releases/download/${IBC_VERSION}/IBCLinux-${IBC_VERSION}.zip"
-ARG ZULU_NAME=zulu17.56.15-ca-fx-jre17.0.14-linux_aarch64
+ARG IB_GATEWAY_FILE="ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
+ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
+ARG IB_GATEWAY_URL="${IB_GATEWAY_REPO}/releases/download/ibgateway-${IB_GATEWAY_CHANNEL}%40${IB_GATEWAY_VERSION}/${IB_GATEWAY_FILE}"
+ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
+ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
+ARG IBC_URL="${IBC_REPO}/releases/download/${IBC_VERSION}/${IBC_FILE}"
+ARG ZULU_NAME=zulu17.60.17-ca-fx-jre17.0.16-linux_aarch64
 ARG ZULU_FILE=${ZULU_NAME}.tar.gz
 ARG ZULU_URL=https://cdn.azul.com/zulu/bin/${ZULU_FILE}
 
@@ -28,7 +32,7 @@ RUN apt-get update -y && \
   rm -rf /var/lib/apt/lists/* && \
   if [ "$(uname -m)" = "aarch64" ]; then \
     curl -sSLO ${ZULU_URL} ; \
-    tar -xzf $ZULU_FILE -C /usr/local/ ; \
+    tar -xzf ${ZULU_FILE} -C /usr/local/ ; \
     ln -s /usr/local/${ZULU_NAME} /usr/local/zulu17 ; \
   fi && \
 # Install IB Gateway
@@ -36,17 +40,17 @@ RUN apt-get update -y && \
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
   curl -sSOL ${IB_GATEWAY_URL} && \
   curl -sSOL ${IB_GATEWAY_URL}.sha256 && \
-  sha256sum --check ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 &&\
-  chmod a+x ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh && \
+  sha256sum --check ./${IB_GATEWAY_FILE}.sha256 &&\
+  chmod a+x ./${IB_GATEWAY_FILE} && \
   if [ "$(uname -m)" = "aarch64" ]; then \
-    app_java_home=/usr/local/zulu17 ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
+    app_java_home=/usr/local/zulu17 ./${IB_GATEWAY_FILE} -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
   else \
-    ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
+    ./${IB_GATEWAY_FILE} -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
   fi && \
   # Install IBC
   curl -sSOL ${IBC_URL} && \
   mkdir /root/ibc && \
-  unzip ./IBCLinux-${IBC_VERSION}.zip -d /root/ibc && \
+  unzip ./${IBC_FILE} -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
   chmod -R u+x /root/ibc/scripts/*.sh
 
