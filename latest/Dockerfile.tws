@@ -7,7 +7,7 @@
 
 # hadolint global ignore=DL3008
 
-ARG IB_VERSION=10.39.1d
+ARG IB_VERSION=10.39.1e
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
@@ -18,7 +18,7 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.39.1d
+ENV IB_GATEWAY_VERSION=10.39.1e
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.23.0
 
@@ -48,7 +48,7 @@ RUN \
   rm -rf /var/lib/apt/lists/* # end
 
 # Copy files
-COPY --from=setup /usr/local/i4j_jres/ /usr/local/i4j_jres
+COPY --from=setup /usr/local/ /usr/local/
 COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
 COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
 COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
