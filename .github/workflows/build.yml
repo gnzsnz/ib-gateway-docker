@@ -51,7 +51,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: false
-          load: true
+          load: false
           platforms: linux/amd64,linux/arm64
           context: ./${{ env.CHANNEL }}
           cache-from: type=gha
@@ -80,7 +80,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: false
-          load: true
+          load: false
           platforms: linux/amd64,linux/arm64
           context: ${{ env.CHANNEL }}
           file: ${{ env.CHANNEL }}/Dockerfile.tws
