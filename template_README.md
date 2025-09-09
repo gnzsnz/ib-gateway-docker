@@ -26,7 +26,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Experimental [aarch64](#aarch64-support) support, ex raspberry pi, M1;M2,M3,.., since `10.37.1j`/`10.39.1e`
+- Experimental [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
 
@@ -525,26 +525,19 @@ value in seconds defined in `SSH_RESTART`.
 This is experimental, so expects bugs.
 
 Please go to discussions section to see common problems. Avoid creating issues unless
-you have empirically probed that is a bug, ex it does not work to me is not a bug.
+you have empirically probed that is a bug, ie it does not work to me is not a bug.
 
-For the moment you will have to build the image locally
+To use aarch64 you just need to run:
 
 ```bash
-git clone https://github.com/gnzsnz/ib-gateway-docker.git
-cd ib-gateway-docker
-# update docker-compose.yml to your needs
-nano docker-compose.yml 
-docker compose build --pull
+# ib-gateway
 docker compose up
 
-# to build TWS, first build ib-gateway. see steps above, then
-# createa a local tag. update version accordingly
-docker tag ghcr.io/gnzsnz/ib-gateway:stable ghcr.io/gnzsnz/ib-gateway:10.37.1j
-# update docker-compose.yml to your needs
-nano tws-docker-compose.yml
-docker compose -f tws-docker-compose.yml build # DO NOT use --pull
+# TWS
 docker compose -f tws-docker-compose.yml up
 ```
+
+This will pull the right image for aarch64 architecture.
 
 ## IB Gateway installation files
 
