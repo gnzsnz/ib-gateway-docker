@@ -36,9 +36,9 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.40.1a` | `3.23.0` | `latest` `10.40` `10.40.1a` |
+| [ib-gateway][1] | `latest` | `10.40.1b` | `3.23.0` | `latest` `10.40` `10.40.1b` |
 | [ib-gateway][1] |`stable` | `10.37.1l` | `3.23.0` | `stable` `10.37` `10.37.1l` |
-| [tws-rdesktop][2] | `latest` | `10.40.1a` | `3.23.0` | `latest` `10.40` `10.40.1a` |
+| [tws-rdesktop][2] | `latest` | `10.40.1b` | `3.23.0` | `latest` `10.40` `10.40.1b` |
 | [tws-rdesktop][2] |`stable` | `10.37.1l` | `3.23.0` | `stable` `10.37` `10.37.1l` |
 
 All tags are available in the container repository for [ib-gateway][1] and
@@ -525,7 +525,7 @@ value in seconds defined in `SSH_RESTART`.
 This is experimental, so expects bugs.
 
 Please go to discussions section to see common problems. Avoid creating issues unless
-you have empirically probed that is a bug, ex it does not work to me is not a bug.
+you have empirically probed that is a bug, ie it does not work to me is not a bug.
 
 To use aarch64 you just need to run:
 
