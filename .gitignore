@@ -5,3 +5,4 @@ ssh/
 .python-version
 /*_password.txt
 /pass/*
+/init-scripts/*
