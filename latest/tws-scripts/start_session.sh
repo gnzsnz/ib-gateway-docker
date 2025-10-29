@@ -22,6 +22,11 @@ if [ -n "${TZ}" ]; then
 	echo "${TZ}" >/etc/timezone
 fi
 
+# run start scripts
+if [ -n "$START_SCRIPTS" ]; then
+	run_scripts "$HOME/$START_SCRIPTS"
+fi
+
 # open xfce session
 echo ".> Openning Xrdp session"
 _out=$(echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc)
