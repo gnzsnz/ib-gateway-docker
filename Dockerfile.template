@@ -90,7 +90,7 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install --no-install-recommends --yes \
-  gettext-base socat xvfb x11vnc sshpass openssh-client sudo && \
+  gettext-base socat xvfb x11vnc sshpass openssh-client sudo telnet && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if id ubuntu; then \
