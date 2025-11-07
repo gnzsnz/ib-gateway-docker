@@ -14,24 +14,14 @@ If this is not an issue but a request for help, please post it on the
 section. There is a search function that will help you find solutions to common
 problems.
 
-Please make sure that you are running `latest` or `stable` for either
-`ib-gateway` or `tws-rdesktop`. Please run one of these as required
+Please make sure that you are running the latest version of `ib-gateway`:
 
 ```bash
-# ib-gateway
 docker pull ghcr.io/gnzsnz/ib-gateway:latest
-docker pull ghcr.io/gnzsnz/ib-gateway:stable
-# tws-rdesktop
-docker pull ghcr.io/gnzsnz/tws-rdesktop:latest
-docker pull ghcr.io/gnzsnz/tws-rdesktop:stable
 ```
 
-Please make sure that you are using the `docker-compose.yml` file provided as
-example, those files are tested and you should be able to get things working
-by using it.
-
-- [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml)
-- [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml)
+Please make sure that you are using the [docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) file provided as
+an example - it is tested and you should be able to get things working by using it.
 
 The example `.env` file on [README.md](https://github.com/gnzsnz/ib-gateway-docker/blob/master/README.md)
 contains safe default values. Make sure you test the container using it as

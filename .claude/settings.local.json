@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:using-git-worktrees)",
+      "Bash(docker compose config:*)",
+      "Skill(superpowers:writing-plans)",
+      "Bash(docker compose build:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

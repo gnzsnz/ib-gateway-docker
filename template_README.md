@@ -4,19 +4,17 @@
 
 ## What is it?
 
-A docker image to run Interactive Brokers Gateway and TWS without any human
+A docker image to run Interactive Brokers Gateway without any human
 interaction on a docker container
 
 It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
-- Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
-- [IBC](https://github.com/IbcAlpha/IBC) - to control TWS/IB Gateway (simulates user input).
+- [IBC](https://github.com/IbcAlpha/IBC) - to control IB Gateway (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
   virtual framebuffer to run IB Gateway Application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact
   with the IB Gateway user interface (optional, for development / maintenance purpose).
-- xrdp/xfce enviroment for TWS. Build on top of [linuxserver/rdesktop](https://github.com/linuxserver/docker-rdesktop/).
 - [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) a
   tool to accept TCP connection from non-localhost and relay it to IB Gateway
   from localhost (IB Gateway restricts connections to container's 127.0.0.1 by
@@ -33,24 +31,20 @@ It includes:
 
 ## Supported Tags
 
-Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
+Images are provided for [IB gateway][1]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
 | [ib-gateway][1] | `latest` | `${LATEST_VERSION}` | `${IBC_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
 | [ib-gateway][1] |`stable` | `${STABLE_VERSION}` | `${IBC_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
-| [tws-rdesktop][2] | `latest` | `${LATEST_VERSION}` | `${IBC_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
-| [tws-rdesktop][2] |`stable` | `${STABLE_VERSION}` | `${IBC_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
 
-All tags are available in the container repository for [ib-gateway][1] and
-[tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
+All tags are available in the container repository for [ib-gateway][1].
 
 ## How to use it?
 
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing
-one). The sample files provided can be used as starting point,
-[ib-gateway-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and
-[tws-rdesktop-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml).
+one). The sample file provided can be used as starting point,
+[ib-gateway-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml).
 
 ```yaml
 name: algo-trader
@@ -122,10 +116,7 @@ TWS_PASSWORD=myTwsPassword
 #TWS_USERID_PAPER=
 #TWS_PASSWORD_PAPER=
 #TWS_PASSWORD_PAPER_FILE=
-# ib-gateway
 #TWS_SETTINGS_PATH=/home/ibgateway/Jts
-# tws
-#TWS_SETTINGS_PATH=/config/tws_settings
 TWS_SETTINGS_PATH=
 TWS_ACCEPT_INCOMING=
 TRADING_MODE=paper
@@ -164,37 +155,37 @@ Once `docker-compose.yml` and `.env` are in place you can start the container wi
 docker compose up
 ```
 
-To get a GUI can use vnc for ib-gateway or RDP for TWS.
+To get a GUI you can use VNC.
 
 Looking for help? Please keep reading below, or go to [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common problems and solutions.
 
 ## Configuration
 
-All environment variables are common between ibgateway and TWS image, unless specifically stated. The container can be configured with the following environment variables:
+The container can be configured with the following environment variables:
 
 | Variable | Description | Default |
 | --- | --- | --- |
 | `TWS_USERID`  | The TWS **username**. |   |
 | `TWS_PASSWORD` | The TWS **password**.  |   |
 | `TWS_PASSWORD_FILE` | The file containing TWS **password**. See [credentials section](#credentials). |   |
-| `TRADING_MODE` | **live** or **paper**. From `10.26.1k` it supports **both** which will start ib-gateway or TWS in live AND paper mode in parallel within the container. | **paper** |
+| `TRADING_MODE` | **live** or **paper**. From `10.26.1k` it supports **both** which will start ib-gateway in live AND paper mode in parallel within the container. | **paper** |
 | `TWS_USERID_PAPER`  | If `TRADING_MODE=both`, then this is required to pass paper account user  | **not defined** |
 | `TWS_PASSWORD_PAPER` | If `TRADING_MODE=both`, then this is required to pass paper account password  | **not defined**  |
 | `TWS_PASSWORD_PAPER_FILE` | If `TRADING_MODE=both`, then this is required to pass paper account password. See [credentials section](#credentials).  | **not defined**  |
 | `READ_ONLY_API`  | **yes** or **no**. [See IBC documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md)  | **not defined** |
-| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
-| `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
+| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. See [credentials section](#credentials). | **not defined** (VNC disabled) |
+| `VNC_SERVER_PASSWORD_FILE`  | VNC server password file. If not defined, then VNC server will NOT start. | **not defined** (VNC disabled) |
 | `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
 | `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
-| `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing TWS/Gateway configuration is unchanged  | **not defined**                                      |
+| `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing Gateway configuration is unchanged  | **not defined**                                      |
 | `AUTO_RESTART_TIME`  | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined**  |
-| `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
+| `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, IB Gateway shuts down tidily, without restarting   | **not defined**   |
 | `TWS_COLD_RESTART` | IBC >= 3.19 set this value to <hh:mm> | **not defined** |
 | `SAVE_TWS_SETTINGS`  | automatically save its settings on a schedule of your choosing. You can specify one or more specific times, ex `SaveTwsSettingsAt=08:00   12:30 17:30`  | **not defined**  |
 | `RELOGIN_AFTER_TWOFA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
 | `EXISTING_SESSION_DETECTED_ACTION` | Set Existing Session Detected Action. See IBC [documentation](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl#L296-L329) | primary |
-| `ALLOW_BLIND_TRADING` | TWS displays a dialog to warn you against blind trading.See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L702)| no |
-| `TIME_ZONE`  | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
+| `ALLOW_BLIND_TRADING` | IB Gateway displays a dialog to warn you against blind trading.See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L702)| no |
+| `TIME_ZONE`  | Support for timezone, see your jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
 | `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. If `TRADING_MODE=both` this will be the prefix four your settings. ex `/config/tws_settings_live` and `/config/tws_settings_paper`. |  |
 | `TWS_ACCEPT_INCOMING` | See IBC documentation, possible values `accept`, `reject`, `manual` | `manual` |
 | `TWS_MASTER_CLIENT_ID` | See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/b866a263afec948c70352ce077e1560f3ad2b152/resources/config.ini#L349) | **not defined** |
@@ -209,12 +200,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `SSH_REMOTE_PORT`   | Remote port for ssh tunnel. If `TRADING_MODE=both` then `SSH_REMOTE_PORT` is set to paper port `4002/7498`  | Same port than IB gateway `4001/4002` or `7497/7498` |
 | `SSH_USER_TUNNEL`   | `user@server` to connect to    | **not defined**   |
 | `SSH_RESTART`  | Number of seconds to wait before restarting tunnel in case of disconnection.  | 5  |
-| `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`. Specific to ibgateway, ignored by TWS.  | **not defined**   |
-| `SSH_RDP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_RDP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
-| `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
-| `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
-| `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
-| `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
+| `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`.  | **not defined**   |
 | `START_SCRIPTS` | Directory with bash scripts to run **before** X environment is up. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `X_SCRIPTS` | Directory with bash scripts to run **after** X environment is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `IBC_SCRIPTS` | Directory with bash scripts to run **after** IBC is running. See [start-up scripts](#start-up-scripts) | **not defined** |
@@ -225,60 +211,26 @@ The following ports will be ready for usage on the ib-gateway container and dock
 
 | Port | Description  |
 | ---- | ---- |
-| 4003 | TWS API port for live accounts. Through socat, internal TWS API port 4001. Mapped **externally** to 4001 in sample `docker-compose.yml`.  |
-| 4004 | TWS API port for paper accounts. Through socat, internal TWS API port 4002. Mapped **externally** to 4002 in sample `docker-compose.yml`. |
+| 4003 | IB Gateway API port for live accounts. Through socat, internal API port 4001. Mapped **externally** to 4001 in sample `docker-compose.yml`.  |
+| 4004 | IB Gateway API port for paper accounts. Through socat, internal API port 4002. Mapped **externally** to 4002 in sample `docker-compose.yml`. |
 | 5900 | When `VNC_SERVER_PASSWORD` was defined, the VNC server port. |
 
-TWS image uses the following ports
-
-| Port | Description   |
-| ---- | --- |
-| 7498 | TWS API port for live accounts. Through socat, internal TWS API port 7496. Mapped **externally** to 7496 in sample `tws-docker-compose.yml`.  |
-| 7499 | TWS API port for paper accounts. Through socat, internal TWS API port 7497. Mapped **externally** to 7497 in sample `tws-docker-compose.yml`. |
-| 3389 | Port for RDP server. Mapped **externally** to 3370 in sample `tws-docker-compose.yml`.  |
-
-Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports. For TWS `127.0.0.1:7496/7497` to container's `0.0.0.0:7498/7499`, and `tws-docker-file.yml` will map ports to host back to `7496/7497`.
+Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) is used to publish IB Gateway API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-compose.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
-
-## Using TWS
-
-From `10.26.1h` it's possible to run TWS in a container. [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) image provides a desktop environment that allows to use TWS.
-
-### Performance considerations for TWS
-
-[tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) has the following recomended settings.
-
-In [tws-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml):
-
-- set `/dev/dri:/dev/dri`
-- shm_size: "1gb"
-- `seccomp:unconfined`
-- `JAVA_HEAP_SIZE`, depending your TWS you might need to increase it. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm)
-- Volumes, set a volume for `/tmp`. ex `tws_tmp:/tmp`
-- Volumes, set a volumen for `/config`
-
-The start up script will disable xfce compositing, as this has a significant impact on performance.
 
 ## Customizing the image
 
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
 
-However, if you need to go beyond what's available, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set environment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway/TWS and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
+However, if you need to go beyond what's available, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set environment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB Gateway and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
 
-Image IB Gateway and IBC config file locations:
+IB Gateway and IBC config file locations:
 
 | App  | Config file  | Default  |
 | --- | --- | --- |
 | IB Gateway | /home/ibgateway/Jts/jts.ini    | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
 | IBC  | /home/ibgateway/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
-
-For TWS image config file locations are:
-
-| App | Config file  | Default  |
-| --- | --- | --- |
-| TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
 
 Sample settings:
 
@@ -289,9 +241,7 @@ Sample settings:
 ...
     volumes:
       - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini # for IB Gateway
-      - ${PWD}/jts.ini:/opt/ibkr/jts.ini # for TWS
-      - ${PWD}/config.ini:/opt/ibc/config.ini # for TWS
+      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
 ...
 ```
 
@@ -303,18 +253,13 @@ You can preserve IB Gateway configuration by setting environment variable
 ```yaml
 ...
     environment:
-      - TWS_SETTINGS_PATH: /home/ibgateway/tws_settings # IB Gateway
-      - TWS_SETTINGS_PATH: /config/tws_settings # tws rdesktop
+      - TWS_SETTINGS_PATH: /home/ibgateway/tws_settings
 ...
     volumes:
-      - ${PWD}/tws_settings:/home/ibgateway/tws_settings # IB Gateway
-      - ${PWD}/config:/config # for TWS we use linuxserver /config volume
+      - ${PWD}/tws_settings:/home/ibgateway/tws_settings
 ...
 
 ```
-
-For TWS it's recommended to use `TWS_SETTINGS_PATH`, as there is a good amount
-of data written to disk.
 
 **Important**: when you save your config in a volume, file `jts.ini` will be
 saved. `TIME_ZONE` will only be applied to `jts.ini` if the file does not
@@ -346,10 +291,6 @@ and a volume in `docker-compose.yml`
     - ${PWD}/init-scripts:/home/ibgateway/init-scripts
 ```
 
-For TWS you can set your `.env` file as in the example and create a directory
-with your scripts in `/config/init-scripts/`. In TWS `$HOME=/config/`, while
-ib-gateway uses `$HOME=/home/ibgateway`.
-
 The start up process will search for start-up scripts in `$HOME/START_SCRIPTS`,
 `$HOME/X_SCRIPTS` and `$HOME/IBC_SCRIPTS`.
 
@@ -357,7 +298,7 @@ Scripts in directory `$HOME/START_SCRIPTS` will run before the X environment is
 up. Scripts in `$HOME/X_SCRIPTS` will run once X environment is up, and
 `$HOME/IBC_SCRIPTS` once IBC runs. Take into account that scripts will run as
 soon as possible, so you might need to wait for X environment to be fully up or
-IBC to complete ibgateway/TWS start-up process.
+IBC to complete IB Gateway start-up process.
 
 ## Security Considerations
 
@@ -485,12 +426,9 @@ to `ib-gateway-docker` container. This is achieved through a volume mount
 ```yaml
 ...
     volumes:
-      - ${PWD}/ssh:/home/ibgateway/.ssh # IB Gateway
-      - ${PWD}/config/ssh:/config/.ssh # TWS
+      - ${PWD}/ssh:/home/ibgateway/.ssh
 ...
 ```
-
-TWS image will search ssh keys on `HOME` directory, so store keys on `/config/.ssh`
 
 Make sure that:
 
@@ -542,15 +480,7 @@ secrets:
 
 ```
 
-In "discussion" section you will find full examples for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
-
-### RDP
-
-[tws-rdesktop][2] will create a new TLS certificate every time the container
-starts. You can create your own certificate following this
-[instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
-Once this steps are put in place the same TLS certificate will be used every
-time, which will allow you to trust it in your RDP client.
+In "discussion" section you will find full examples for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103)
 
 ## Troubleshooting socat and ssh
 
@@ -582,11 +512,7 @@ you have empirically probed that is a bug, ie it does not work to me is not a bu
 To use aarch64 you just need to run:
 
 ```bash
-# ib-gateway
 docker compose up
-
-# TWS
-docker compose -f tws-docker-compose.yml up
 ```
 
 This will pull the right image for aarch64 architecture.
@@ -655,4 +581,3 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
 1. Build and run: `docker-compose up --build`
 
 [1]: https://github.com/users/gnzsnz/packages/container/package/ib-gateway "ib-gateway"
-[2]: https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop "tws-rdesktop"

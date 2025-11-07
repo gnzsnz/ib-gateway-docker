@@ -3,7 +3,7 @@ services:
   ib-gateway:
     restart: always
     build:
-      context: ./latest
+      context: .
       tags:
         - "ghcr.io/gnzsnz/ib-gateway:latest"
     image: ghcr.io/gnzsnz/ib-gateway:latest

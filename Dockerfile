@@ -5,11 +5,11 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
-# hadolint global ignore=DL3008
+# hadolint global ignore=DL3008,DL4006
 FROM ubuntu:24.04 AS setup
 
-ENV IB_GATEWAY_VERSION=10.37.1l
-ENV IB_GATEWAY_CHANNEL=stable
+ENV IB_GATEWAY_VERSION=10.41.1c
+ENV IB_GATEWAY_CHANNEL=latest
 ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_FILE="ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
@@ -66,7 +66,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:24.04
 
-ENV IB_GATEWAY_VERSION=10.37.1l
+ENV IB_GATEWAY_VERSION=$VERSION
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
@@ -90,7 +90,7 @@ COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 RUN apt-get update -y && \
   apt-get upgrade -y && \
   apt-get install --no-install-recommends --yes \
-  gettext-base socat xvfb x11vnc sshpass openssh-client && \
+  gettext-base socat xvfb x11vnc sshpass openssh-client sudo telnet && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if id ubuntu; then \
@@ -98,6 +98,7 @@ RUN apt-get update -y && \
   ;fi && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
+  echo "ibgateway ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
   chmod a+x ${SCRIPT_PATH}/*.sh
 
 USER ${USER_ID}:${USER_GID}

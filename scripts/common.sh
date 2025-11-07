@@ -2,7 +2,7 @@
 # shellcheck disable=SC1091
 
 apply_settings() {
-	# apply env variables into IBC and gateway/TWS config files
+	# apply env variables into IBC and gateway config files
 	if [ "$CUSTOM_CONFIG" != "yes" ]; then
 		echo ".> Appling settings to IBC's config.ini"
 
@@ -70,42 +70,40 @@ unset_env() {
 	fi
 }
 
+run_scripts() {
+	# run start up scripts
+	_start_scripts=$1
+	if [ ! -d "$_start_scripts" ]; then
+		echo "> No start scripts defined on $_start_scripts"
+		return 0
+	fi
+	echo "> Running start up scripts on $_start_scripts"
+
+	for _f in "${_start_scripts}"/*.sh; do
+		echo "> Running $_f"
+		[ -f "$_f" ] && bash "$_f" || echo "File $_f not found."
+	done
+
+}
+
 set_ports() {
 	# set ports for API and SOCAT
 
 	# ibgateway ports
-	if [ "${GATEWAY_OR_TWS}" = "gateway" ]; then
-		if [ "$TRADING_MODE" = "paper" ]; then
-			# paper ibgateway ports
-			API_PORT=4002
-			SOCAT_PORT=4004
-			export API_PORT SOCAT_PORT
-		elif [ "$TRADING_MODE" = "live" ]; then
-			# live ibgateway ports
-			API_PORT=4001
-			SOCAT_PORT=4003
-			export API_PORT SOCAT_PORT
-		else
-			# invalid option
-			echo ".> Invalid TRADING_MODE: $TRADING_MODE"
-			exit 1
-		fi
-	elif [ "${GATEWAY_OR_TWS}" = "tws" ]; then
-		if [ "$TRADING_MODE" = "paper" ]; then
-			# paper TWS ports
-			API_PORT=7497
-			SOCAT_PORT=7499
-			export API_PORT SOCAT_PORT
-		elif [ "$TRADING_MODE" = "live" ]; then
-			# live TWS ports
-			API_PORT=7496
-			SOCAT_PORT=7498
-			export API_PORT SOCAT_PORT
-		else
-			# invalid option
-			echo ".> Invalid TRADING_MODE: $TRADING_MODE"
-			exit 1
-		fi
+	if [ "$TRADING_MODE" = "paper" ]; then
+		# paper ibgateway ports
+		API_PORT=4002
+		SOCAT_PORT=4004
+		export API_PORT SOCAT_PORT
+	elif [ "$TRADING_MODE" = "live" ]; then
+		# live ibgateway ports
+		API_PORT=4001
+		SOCAT_PORT=4003
+		export API_PORT SOCAT_PORT
+	else
+		# invalid option
+		echo ".> Invalid TRADING_MODE: $TRADING_MODE"
+		exit 1
 	fi
 	echo ".> API_PORT set to: ${API_PORT}"
 	echo ".> SOCAT_PORT set to: ${SOCAT_PORT}"
@@ -213,14 +211,10 @@ start_ssh() {
 	echo ".> SSH_REMOTE_PORT set to :${SSH_REMOTE_PORT}"
 
 	# set vnc ssh tunnel
-	if [ "$GATEWAY_OR_TWS" = "gateway" ] && [ -n "$SSH_VNC_PORT" ] && pgrep x11vnc >/dev/null; then
+	if [ -n "$SSH_VNC_PORT" ] && pgrep x11vnc >/dev/null; then
 		# set ssh tunnel for vnc
 		SSH_SCREEN="-R 127.0.0.1:5900:localhost:$SSH_VNC_PORT"
 		echo ".> SSH_VNC_TUNNEL set to :${SSH_SCREEN}"
-	elif [ "$GATEWAY_OR_TWS" = "tws" ] && [ -n "$SSH_RDP_PORT" ]; then
-		# set ssh tunnel for rdp
-		SSH_SCREEN="-R 127.0.0.1:3389:localhost:$SSH_RDP_PORT"
-		echo ".> SSH_RDP_TUNNEL set to :${SSH_SCREEN}"
 	else
 		# no ssh screen
 		SSH_SCREEN=
