@@ -112,7 +112,7 @@ services:
 
 ```
 
-Create an .env on root directory. Example .env file:
+Create an .env on root directory. You can use the provided [.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/.env-dist) as a starting point. Example .env file:
 
 ```bash
 TWS_USERID=myTwsAccountName
@@ -164,7 +164,7 @@ Once `docker-compose.yml` and `.env` are in place you can start the container wi
 docker compose up
 ```
 
-To get a GUI can use vnc for ib-gateway or RDP for TWS.
+To get a GUI you can use vnc for ib-gateway or RDP for TWS.
 
 Looking for help? Please keep reading below, or go to
 [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common
@@ -188,6 +188,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
 | `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
 | `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
+| `TWOFA_EXIT_INTERVAL` | It controls how long (in seconds) IBC waits for login to complete after the user acknowledges the second factor authentication. See [IBC documentation](https://github.com/IbcAlpha/IBC/blob/38593af5193ccd634aa226cc66242adc8718b653/resources/config.ini#L147) | 60 seconds |
 | `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing TWS/Gateway configuration is unchanged  | **not defined**                                      |
 | `AUTO_RESTART_TIME`  | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined**  |
 | `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
