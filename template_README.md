@@ -166,7 +166,9 @@ docker compose up
 
 To get a GUI can use vnc for ib-gateway or RDP for TWS.
 
-Looking for help? Please keep reading below, or go to [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common problems and solutions.
+Looking for help? Please keep reading below, or go to
+[discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common
+problems and solutions. If you have problems please go through the [troubleshooting guide](https://github.com/gnzsnz/ib-gateway-docker/discussions/245)
 
 ## Configuration
 
