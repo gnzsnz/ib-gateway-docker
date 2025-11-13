@@ -100,6 +100,12 @@ start_process() {
 ###############################################################################
 #####		Common Start
 ###############################################################################
+
+# run start scripts
+if [ -n "$START_SCRIPTS" ]; then
+	run_scripts "$HOME/$START_SCRIPTS"
+fi
+
 # start Xvfb
 start_xvfb
 
@@ -111,6 +117,11 @@ set_java_heap
 
 # start VNC server
 start_vnc
+
+# run scripts once X environment is up
+if [ -n "$X_SCRIPTS" ]; then
+	run_scripts "$HOME/$X_SCRIPTS"
+fi
 
 ###############################################################################
 #####		Paper, Live or both start process
@@ -166,6 +177,11 @@ if [ "$DUAL_MODE" == "yes" ]; then
 
 	sleep 15
 	start_process
+fi
+
+# run scripts once IBC is running
+if [ -n "$IBC_SCRIPTS" ]; then
+	run_scripts "$HOME/$IBC_SCRIPTS"
 fi
 
 trap stop_ibc SIGINT SIGTERM

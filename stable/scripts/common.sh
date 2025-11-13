@@ -70,6 +70,22 @@ unset_env() {
 	fi
 }
 
+run_scripts() {
+	# run start up scripts
+	_start_scripts=$1
+	if [ ! -d "$_start_scripts" ]; then
+		echo "> No start scripts defined on $_start_scripts"
+		return 0
+	fi
+	echo "> Running start up scripts on $_start_scripts"
+
+	for _f in "${_start_scripts}"/*.sh; do
+		echo "> Running $_f"
+		[ -f "$_f" ] && bash "$_f" || echo "File $_f not found."
+	done
+
+}
+
 set_ports() {
 	# set ports for API and SOCAT
 
