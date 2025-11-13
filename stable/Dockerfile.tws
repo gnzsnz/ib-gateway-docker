@@ -7,7 +7,7 @@
 
 # hadolint global ignore=DL3008
 
-ARG IB_VERSION=10.37.1l
+ARG IB_VERSION=10.37.1m
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
@@ -18,7 +18,7 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.37.1l
+ENV IB_GATEWAY_VERSION=10.37.1m
 ENV IB_GATEWAY_RELEASE_CHANNEL=stable
 ENV IBC_VERSION=3.23.0
 
@@ -43,7 +43,7 @@ RUN \
   apt-get install --no-install-recommends --yes socat sshpass gettext-base \
     libnspr4 libnss3 libcrypto++8 xdg-utils xfce4-cpugraph-plugin \
     xfce4-netload-plugin xfce4-taskmanager xfce4-xkb-plugin xfce4-notes \
-    gvfs gvfs-backends gvfs-fuse && \
+    gvfs gvfs-backends gvfs-fuse telnet && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* # end
 
