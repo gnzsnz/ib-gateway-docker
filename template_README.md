@@ -659,3 +659,10 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
 
 [1]: https://github.com/users/gnzsnz/packages/container/package/ib-gateway "ib-gateway"
 [2]: https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop "tws-rdesktop"
+
+## Repo stats
+
+Repository stars overtime.
+
+[![Stargazers over time](https://starchart.cc/gnzsnz/ib-gateway-docker.svg?variant=adaptive)](https://starchart.cc/gnzsnz/ib-gateway-docker)
+
