@@ -6,3 +6,11 @@ ssh/
 /*_password.txt
 /pass/*
 /init-scripts/*
+
+# Custom multi-account deployment
+custom/config/accounts.yaml
+custom/config/accounts.yaml.encrypted
+custom/docker-compose.generated.yml
+custom/scripts/__pycache__/
+custom/scripts/*.pyc
+.ib-gateway-key

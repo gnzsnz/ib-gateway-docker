@@ -1,0 +1,94 @@
+# IB Gateway Multi-Account Configuration Template
+# ================================================
+#
+# INSTRUCTIONS:
+# 1. Copy this file to accounts.yaml
+# 2. Fill in your account credentials
+# 3. Run: python scripts/encrypt_config.py encrypt accounts.yaml
+# 4. The encrypted file (accounts.yaml.encrypted) will be created
+# 5. Delete the plain text accounts.yaml file
+#
+# SECURITY NOTES:
+# - Never commit accounts.yaml (plain text) to git
+# - Only accounts.yaml.encrypted should be version controlled (optional)
+# - The encryption key is required at runtime to decrypt credentials
+#
+# IMPORTANT: This file structure must be preserved exactly
+
+# Global settings applied to all accounts unless overridden
+global_settings:
+  # Docker image to use
+  image: "ghcr.io/gnzsnz/ib-gateway:stable"
+
+  # Build context (use if building locally instead of pulling image)
+  # build_context: "./stable"
+
+  # Timezone for all containers
+  timezone: "America/New_York"
+
+  # VNC password for all containers (optional)
+  vnc_password: "yourVncPassword"
+
+  # API settings
+  read_only_api: "no"
+  twofa_timeout_action: "restart"
+  relogin_after_twofa_timeout: "yes"
+  auto_restart_time: "11:59 PM"
+  existing_session_detected_action: "primary"
+  allow_blind_trading: "no"
+
+  # Restart policy: always, unless-stopped, on-failure, no
+  restart_policy: "always"
+
+# Account definitions
+# Each account requires: username, password, port, trading_mode
+accounts:
+  # Live accounts
+  - name: "esolis199"
+    username: "esolis199"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14199
+    trading_mode: "live"
+    # Optional per-account overrides:
+    # vnc_password: "custom_vnc_password"
+    # timezone: "Europe/London"
+    # read_only_api: "yes"
+
+  - name: "esolis202"
+    username: "esolis202"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14202
+    trading_mode: "live"
+
+  - name: "esolis210"
+    username: "esolis210"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14210
+    trading_mode: "live"
+
+  - name: "esolis215"
+    username: "esolis215"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14215
+    trading_mode: "live"
+
+  # Paper accounts
+  - name: "esolis317"
+    username: "esolis317"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14317
+    trading_mode: "paper"
+
+  - name: "esolis988"
+    username: "esolis988"
+    password: "YOUR_PASSWORD_HERE"
+    port: 14988
+    trading_mode: "paper"
+
+# Remote server configuration (where Docker containers will run)
+server:
+  host: "10.42.5.90"
+  # SSH port (default 22)
+  ssh_port: 22
+  # Directory on remote server for docker-compose files
+  deploy_path: "/opt/ib-gateway"

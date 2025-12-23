@@ -1,0 +1,19 @@
+# IB Gateway Multi-Account Deployment System
+# Python dependencies for Windows Server management scripts
+
+# SSH connectivity
+paramiko>=3.4.0
+
+# YAML configuration parsing
+PyYAML>=6.0.1
+
+# Encryption for credentials
+cryptography>=41.0.0
+
+# CLI interface
+click>=8.1.7
+
+# Rich terminal output
+rich>=13.7.0
+
+# Python version requirement: 3.8+
