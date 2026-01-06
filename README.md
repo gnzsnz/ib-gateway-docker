@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/gnzsnz/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/gnzsnz/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Discussions](https://img.shields.io/github/discussions/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/discussions) [![GitHub Repo stars](https://img.shields.io/github/stars/gnzsnz/ib-gateway-docker)](#repo-stats) [![GitHub forks](https://img.shields.io/github/forks/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/network/members)
 
-<img src="https://github.com/gnzsnz/ib-gateway-docker/blob/master/logo.png" height="300" alt="IB Gateway Docker"/>
+<img src="https://github.com/gnzsnz/ib-gateway-docker/blob/master/logo.png" height="300" class="center" alt="IB Gateway Docker"/>
 
 ## What is it?
 
@@ -40,9 +40,9 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
 | [ib-gateway][1] | `latest` | `10.42.1a` | `3.23.0` | `latest` `10.42` `10.42.1a` |
-| [ib-gateway][1] |`stable` | `10.37.1n` | `3.23.0` | `stable` `10.37` `10.37.1n` |
+| [ib-gateway][1] |`stable` | `10.37.1o` | `3.23.0` | `stable` `10.37` `10.37.1o` |
 | [tws-rdesktop][2] | `latest` | `10.42.1a` | `3.23.0` | `latest` `10.42` `10.42.1a` |
-| [tws-rdesktop][2] |`stable` | `10.37.1n` | `3.23.0` | `stable` `10.37` `10.37.1n` |
+| [tws-rdesktop][2] |`stable` | `10.37.1o` | `3.23.0` | `stable` `10.37` `10.37.1o` |
 
 All tags are available in the container repository for [ib-gateway][1] and
 [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
