@@ -99,7 +99,8 @@ RUN apt-get update -y && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
   echo "ibgateway ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
-  chmod a+x ${SCRIPT_PATH}/*.sh
+  chmod a+x ${SCRIPT_PATH}/*.sh && \
+  mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 
 USER ${USER_ID}:${USER_GID}
 WORKDIR ${HOME}
