@@ -8,7 +8,7 @@
 # hadolint global ignore=DL3008,DL4006
 FROM ubuntu:24.04 AS setup
 
-ENV IB_GATEWAY_VERSION=10.42.1a
+ENV IB_GATEWAY_VERSION=10.43.1a
 ENV IB_GATEWAY_CHANNEL=latest
 ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
@@ -66,7 +66,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:24.04
 
-ENV IB_GATEWAY_VERSION=10.42.1a
+ENV IB_GATEWAY_VERSION=10.43.1a
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
@@ -99,7 +99,8 @@ RUN apt-get update -y && \
   groupadd --gid ${USER_GID} ibgateway && \
   useradd -ms /bin/bash --uid ${USER_ID} --gid ${USER_GID} ibgateway && \
   echo "ibgateway ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
-  chmod a+x ${SCRIPT_PATH}/*.sh
+  chmod a+x ${SCRIPT_PATH}/*.sh && \
+  mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 
 USER ${USER_ID}:${USER_GID}
 WORKDIR ${HOME}
