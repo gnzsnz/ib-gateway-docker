@@ -60,8 +60,9 @@ start_vnc() {
 	# start VNC server
 	file_env 'VNC_SERVER_PASSWORD'
 	if [ -n "$VNC_SERVER_PASSWORD" ]; then
-		echo ".> Starting VNC server"
-		x11vnc -ncache_cr -display :1 -forever -shared -bg -noipv6 -passwd "$VNC_SERVER_PASSWORD" &
+		VNC_PORT="${VNC_PORT:-5900}"
+		echo ".> Starting VNC server on port ${VNC_PORT}"
+		x11vnc -ncache_cr -display :1 -forever -shared -bg -noipv6 -rfbport "$VNC_PORT" -passwd "$VNC_SERVER_PASSWORD" &
 		unset_env 'VNC_SERVER_PASSWORD'
 	else
 		echo ".> VNC server disabled"

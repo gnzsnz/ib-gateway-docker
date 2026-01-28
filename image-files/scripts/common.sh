@@ -6,9 +6,11 @@ apply_settings() {
 	if [ "$CUSTOM_CONFIG" != "yes" ]; then
 		echo ".> Appling settings to IBC's config.ini"
 
+		file_env 'TWS_USERID'
 		file_env 'TWS_PASSWORD'
 		# replace env variables
 		envsubst <"${IBC_INI_TMPL}" >"${IBC_INI}"
+		unset_env 'TWS_USERID'
 		unset_env 'TWS_PASSWORD'
 		# set config.ini readable by user only
 		chmod 600 "${IBC_INI}"

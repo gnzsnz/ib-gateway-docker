@@ -47,18 +47,27 @@ stop_ibc() {
 start_xvfb() {
 	# start Xvfb
 	echo ".> Starting Xvfb server"
-	DISPLAY=:1
+	# Use display :99 to avoid conflicts with host X servers
+	DISPLAY=:99
 	export DISPLAY
-	rm -f /tmp/.X1-lock
+	# Kill any existing Xvfb processes
+	pkill -9 Xvfb 2>/dev/null || true
+	sleep 0.5
+	# Clean up stale X lock and socket
+	rm -f /tmp/.X99-lock
+	rm -f /tmp/.X11-unix/X99
 	Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
+	# Wait for Xvfb socket to be ready
+	wait_x_socket
 }
 
 start_vnc() {
 	# start VNC server
 	file_env 'VNC_SERVER_PASSWORD'
 	if [ -n "$VNC_SERVER_PASSWORD" ]; then
-		echo ".> Starting VNC server"
-		x11vnc -ncache_cr -display :1 -forever -shared -bg -noipv6 -passwd "$VNC_SERVER_PASSWORD" &
+		VNC_PORT="${VNC_PORT:-5900}"
+		echo ".> Starting VNC server on port ${VNC_PORT}"
+		x11vnc -ncache_cr -display $DISPLAY -forever -shared -bg -noipv6 -rfbport "$VNC_PORT" -passwd "$VNC_SERVER_PASSWORD" &
 		unset_env 'VNC_SERVER_PASSWORD'
 	else
 		echo ".> VNC server disabled"
