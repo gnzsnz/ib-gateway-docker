@@ -499,7 +499,7 @@ SendMarketDataInLotsForUSstocks=
 # Note that 127.0.0.1 is always permitted to connect, so do not include it
 # in this setting.
 
-TrustedTwsApiClientIPs=
+TrustedTwsApiClientIPs=${TRUSTED_IPS}
 
 
 # Reset Order ID Sequence
@@ -697,7 +697,7 @@ ClosedownAt=
 # configuration page, as this is much more secure (in this case, no
 # incoming API connection dialogs will occur for those IP addresses).
 
-AcceptIncomingConnectionAction=${TWS_ACCEPT_INCOMING}
+AcceptIncomingConnectionAction=accept
 
 
 # Allow Blind Trading
