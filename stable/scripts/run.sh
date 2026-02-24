@@ -11,6 +11,7 @@ echo "*************************************************************************"
 # shellcheck disable=SC1091
 source "${SCRIPT_PATH}/common.sh"
 
+# shellcheck disable=SC2329
 stop_ibc() {
 	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down IB Gateway."
 
@@ -54,11 +55,14 @@ start_xvfb() {
 }
 
 start_vnc() {
+	# wait for X11 socket to be ready
+	wait_x_socket
 	# start VNC server
 	file_env 'VNC_SERVER_PASSWORD'
 	if [ -n "$VNC_SERVER_PASSWORD" ]; then
 		echo ".> Starting VNC server"
-		x11vnc -ncache_cr -display :1 -forever -shared -bg -noipv6 -passwd "$VNC_SERVER_PASSWORD" &
+		x11vnc -ncache_cr -display $DISPLAY -forever -shared -bg -noipv6 \
+			-passwd "$VNC_SERVER_PASSWORD" &
 		unset_env 'VNC_SERVER_PASSWORD'
 	else
 		echo ".> VNC server disabled"
@@ -74,6 +78,13 @@ start_IBC() {
 	echo ".>		ibc-init: ${IBC_INI}"
 	echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
 	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
+
+	# Start TOTP handler if TWOFACTOR_CODE is set
+	if [ -n "$TWOFACTOR_CODE" ]; then
+		echo ".> Starting TOTP automation handler"
+		"${SCRIPT_PATH}/totp_handler.sh" &
+	fi
+
 	# start IBC -g for gateway
 	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" -g \
 		"--tws-path=${TWS_PATH}" \
@@ -120,6 +131,7 @@ start_vnc
 
 # run scripts once X environment is up
 if [ -n "$X_SCRIPTS" ]; then
+	wait_x_socket
 	run_scripts "$HOME/$X_SCRIPTS"
 fi
 

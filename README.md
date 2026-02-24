@@ -14,6 +14,7 @@ It includes:
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
 - [IBC](https://github.com/IbcAlpha/IBC) - to control TWS/IB Gateway (simulates user input).
+- **[TOTP (Mobile Authenticator) Automation](#totp-mobile-authenticator-automation)** - automated TOTP code entry for 2FA, eliminating manual authentication (optional).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
   virtual framebuffer to run IB Gateway Application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact
@@ -69,6 +70,8 @@ services:
       TWS_PASSWORD: ${TWS_PASSWORD}
       TWS_PASSWORD_FILE: ${TWS_PASSWORD_FILE}
       TRADING_MODE: ${TRADING_MODE:-paper}
+      TWOFACTOR_CODE: ${TWOFACTOR_CODE:-}
+      TWOFACTOR_CODE_FILE: ${TWOFACTOR_CODE_FILE:-}
       TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
       TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-}
       TWS_MASTER_CLIENT_ID: ${TWS_MASTER_CLIENT_ID:-}
@@ -124,6 +127,9 @@ TWS_PASSWORD=myTwsPassword
 #TWS_USERID_PAPER=
 #TWS_PASSWORD_PAPER=
 #TWS_PASSWORD_PAPER_FILE=
+# TOTP automation (optional, for automated 2FA)
+#TWOFACTOR_CODE=ABCDEFGH12345678IJKLMNOP90QRSTUV
+#TWOFACTOR_CODE_FILE
 # ib-gateway
 #TWS_SETTINGS_PATH=/home/ibgateway/Jts
 # tws
@@ -188,6 +194,8 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `READ_ONLY_API`  | **yes** or **no**. [See IBC documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md)  | **not defined** |
 | `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
 | `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
+| `TWOFACTOR_CODE` | Base32 TOTP secret for automated Mobile Authenticator authentication. When set, the container will automatically generate and enter TOTP codes during login. See [TOTP Automation](#totp-mobile-authenticator-automation) section. | **not defined** (manual 2FA) |
+| `TWOFACTOR_CODE_FILE` | File containing base32 TOTP secret. Use with Docker secrets for secure TOTP secret storage. See [credentials section](#credentials). | **not defined** |
 | `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
 | `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
 | `TWOFA_EXIT_INTERVAL` | It controls how long (in seconds) IBC waits for login to complete after the user acknowledges the second factor authentication. See [IBC documentation](https://github.com/IbcAlpha/IBC/blob/38593af5193ccd634aa226cc66242adc8718b653/resources/config.ini#L147) | 60 seconds |
@@ -245,6 +253,121 @@ TWS image uses the following ports
 Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-file.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports. For TWS `127.0.0.1:7496/7497` to container's `0.0.0.0:7498/7499`, and `tws-docker-file.yml` will map ports to host back to `7496/7497`.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
+
+## TOTP (Mobile Authenticator) Automation
+
+The container can automatically handle IBKR Mobile Authenticator 2FA by generating and entering TOTP codes, eliminating the need for manual authentication or mobile push notifications.
+
+### Features
+
+- **Automatic TOTP Generation**: Uses `oathtool` to generate 6-digit codes from your TOTP secret
+- **Automated Entry**: X11 automation (via `xdotool`) automatically enters codes into the 2FA dialog
+- **Fast Authentication**: Completes 2FA in approximately 6 seconds
+- **Zero Touch**: No manual intervention required once configured
+- **Works on ARM64**: Tested on Apple Silicon (M1/M2/M3) and Raspberry Pi
+
+### Prerequisites
+
+1. **IBKR Mobile Authenticator Setup**: You must have Mobile Authenticator (TOTP) enabled on your IBKR account
+2. **TOTP Secret**: You need the base32 TOTP secret from IBKR. See [Getting Your TOTP Secret](#getting-your-totp-secret) below
+
+### Configuration
+
+Add the `TWOFACTOR_CODE` environment variable to your `.env` file:
+
+```bash
+# TOTP Secret (base32 format)
+TWOFACTOR_CODE=ABCDEFGH12345678IJKLMNOP90QRSTUV
+
+# Recommended: Set to restart on 2FA timeout
+TWOFA_TIMEOUT_ACTION=restart
+```
+
+And in your `docker-compose.yml`:
+
+```yaml
+services:
+  ib-gateway:
+    environment:
+      TWS_USERID: ${TWS_USERID}
+      TWS_PASSWORD: ${TWS_PASSWORD}
+      TWOFACTOR_CODE: ${TWOFACTOR_CODE}
+      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-restart}
+      # ... other settings
+```
+
+### Getting Your TOTP Secret
+
+When setting up IBKR Mobile Authenticator, IBKR provides a QR code and a text version of the secret key. The secret is a base32-encoded string (typically 32 characters with uppercase letters and numbers 2-7).
+
+**Option 1: During Initial Setup**
+1. In IBKR Client Portal, go to Settings → Security → Secure Login System
+2. Choose "Mobile Authentication (IBKR Mobile)"
+3. IBKR will display a QR code and a text secret
+4. **Save the text secret** - this is your `TWOFACTOR_CODE`
+5. Complete setup by scanning QR code with your authenticator app
+
+**Option 2: Extract from Existing Setup**
+
+If you already have IBKR Mobile Authenticator configured in an app like Google Authenticator or Authy, you can extract the secret:
+
+- **Google Authenticator**: Use export feature or a QR code reader
+- **Authy**: Secrets are encrypted and cannot be easily extracted
+- **Most Apps**: The secret is embedded in the QR code shown during setup
+
+**Security Note**: The TOTP secret is equivalent to your password. Store it securely and never commit it to version control. Use environment variables or Docker secrets.
+
+### How It Works
+
+1. Container starts and runs the TOTP automation handler in the background
+2. Handler monitors for the "Second Factor Authentication" dialog
+3. When detected, generates current TOTP code using your secret
+4. Automatically enters the code and presses Enter
+5. Authentication completes in ~6 seconds
+6. IB Gateway API becomes available
+
+### Example Logs
+
+Successful TOTP automation:
+
+```
+.> Starting TOTP automation handler
+[TOTP] TOTP automation enabled, monitoring for 2FA dialog...
+[TOTP] 2FA dialog detected!
+[TOTP] Generated TOTP code: 123456
+[TOTP] Code entered and Enter pressed
+[TOTP] TOTP automation completed successfully
+IBC: Second Factor Authentication; event=Closed
+IBC: Duration since login: 6 seconds
+IBC: Login has completed
+```
+
+### Troubleshooting
+
+**TOTP codes not working:**
+- Ensure your Docker host system time is accurate (TOTP is time-based)
+- Verify the TOTP secret is correct (test with an authenticator app)
+- Check that the secret is in base32 format (uppercase letters A-Z and digits 2-7)
+
+**Container restarts after 2FA:**
+- This is expected behavior when `TWOFA_TIMEOUT_ACTION=restart` and authentication fails
+- Check container logs for error messages
+- Verify VNC (port 5900) to see the actual IBKR interface
+
+**Multiple 2FA devices enrolled:**
+- Set `TWOFA_DEVICE` to the exact name shown in IBKR's device selection dialog
+- Example: `TWOFA_DEVICE=Authenticator App`
+
+### Security Considerations
+
+**TOTP Secret Storage:**
+- Use Docker secrets for production: `TWOFACTOR_CODE_FILE=/run/secrets/totp_secret`
+- Never commit `.env` files containing secrets to version control
+- Restrict file permissions: `chmod 600 .env`
+
+**Disabling TOTP Automation:**
+- Simply remove or comment out `TWOFACTOR_CODE` in your `.env` file
+- The container will fall back to manual 2FA (IBKR Mobile push notification)
 
 ## Using TWS
 
