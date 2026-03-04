@@ -263,3 +263,23 @@ start_socat() {
 	fi
 
 }
+
+wait_x_socket() {
+	DISPLAY_NUM=${DISPLAY#:}
+	# wait for X11 socket
+	if [ -S "/tmp/.X11-unix/X${DISPLAY_NUM}" ]; then
+		return 0
+	fi
+	echo ".> Waiting for Xvfb socket on $DISPLAY..."
+	timeout=50 # 50 * .2 = 10 seconds max wait
+	elapsed=0
+	while [ ! -S "/tmp/.X11-unix/X${DISPLAY_NUM}" ]; do
+		sleep 0.2
+		elapsed=$((elapsed + 1))
+		if [ $elapsed -ge $timeout ]; then
+			echo "Error: Timed out waiting for Xvfb socket!"
+			exit 1
+		fi
+	done
+	echo ".> Xvfb socket ready!"
+}
