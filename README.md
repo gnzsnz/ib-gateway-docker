@@ -325,6 +325,7 @@ If you already have IBKR Mobile Authenticator configured in an app like Google A
 4. Automatically enters the code and presses Enter
 5. Authentication completes in ~6 seconds
 6. IB Gateway API becomes available
+7. Handler continues running to handle any re-authentication events (e.g. weekly re-login)
 
 ### Example Logs
 
@@ -334,8 +335,8 @@ Successful TOTP automation:
 .> Starting TOTP automation handler
 [TOTP] TOTP automation enabled, monitoring for 2FA dialog...
 [TOTP] 2FA dialog detected!
-[TOTP] Generated TOTP code: 123456
-[TOTP] Code entered and Enter pressed
+[TOTP] Generated TOTP code, entering...
+[TOTP] Code entered and submitted
 [TOTP] TOTP automation completed successfully
 IBC: Second Factor Authentication; event=Closed
 IBC: Duration since login: 6 seconds
