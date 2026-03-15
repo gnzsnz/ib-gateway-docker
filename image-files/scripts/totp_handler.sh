@@ -1,8 +1,7 @@
 #!/bin/bash
 # TOTP Automation Handler for IB Gateway
 # This script monitors for the 2FA dialog and automatically enters the TOTP code
-
-set -e
+# It runs for the lifetime of the container to handle re-authentication events
 
 # Check if TWOFACTOR_CODE is set
 if [ -z "$TWOFACTOR_CODE" ]; then
@@ -25,7 +24,7 @@ enter_totp_code() {
     local code
     code=$(generate_totp)
 
-    echo "[TOTP] Generated TOTP code: ${code}"
+    echo "[TOTP] Generated TOTP code, entering..."
 
     # Find the 2FA window
     local window_id
@@ -36,7 +35,7 @@ enter_totp_code() {
         xdotool windowfocus "$window_id"
         sleep 1
 
-        # Click in the input field first to ensure focus
+        # Click in the input field to ensure focus
         xdotool mousemove --window "$window_id" 150 75
         xdotool click 1
         sleep 0.5
@@ -45,14 +44,14 @@ enter_totp_code() {
         xdotool key ctrl+a
         sleep 0.2
 
-        # Type the code using xdotool type (simpler than char-by-char)
+        # Type the code
         xdotool type --delay 100 "$code"
         sleep 1
 
-        # Simply press Enter - this should submit the form
+        # Submit
         xdotool key Return
 
-        echo "[TOTP] Code entered and Enter pressed"
+        echo "[TOTP] Code entered and submitted"
         return 0
     else
         echo "[TOTP] 2FA window not found"
@@ -68,27 +67,21 @@ while ! xdpyinfo -display "$DISPLAY" >/dev/null 2>&1; do
     sleep 1
 done
 
-# Monitor for 2FA dialog
-attempt=0
-max_attempts=60  # 5 minutes (60 * 5 seconds)
-
-while [ $attempt -lt $max_attempts ]; do
-    if check_2fa_dialog >/dev/null; then
+# Monitor for 2FA dialog indefinitely
+while true; do
+    if check_2fa_dialog >/dev/null 2>&1; then
         echo "[TOTP] 2FA dialog detected!"
         sleep 2  # Wait for dialog to fully render
 
         if enter_totp_code; then
             echo "[TOTP] TOTP automation completed successfully"
-            exit 0
+            # Cooldown to avoid re-triggering on the same dialog
+            sleep 30
+        else
+            # If entry failed, retry shortly
+            sleep 3
         fi
-
-        # If entry failed, try again
-        sleep 3
     fi
 
     sleep 5
-    attempt=$((attempt + 1))
 done
-
-echo "[TOTP] Monitoring timeout reached, exiting"
-exit 0

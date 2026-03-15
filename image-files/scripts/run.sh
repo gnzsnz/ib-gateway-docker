@@ -80,9 +80,11 @@ start_IBC() {
 	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
 
 	# Start TOTP handler if TWOFACTOR_CODE is set
+	file_env 'TWOFACTOR_CODE'
 	if [ -n "$TWOFACTOR_CODE" ]; then
 		echo ".> Starting TOTP automation handler"
 		"${SCRIPT_PATH}/totp_handler.sh" &
+		unset_env 'TWOFACTOR_CODE'
 	fi
 
 	# start IBC -g for gateway
