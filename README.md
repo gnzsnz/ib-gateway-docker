@@ -263,6 +263,7 @@ The container can automatically handle IBKR Mobile Authenticator 2FA by generati
 - **Automatic TOTP Generation**: Uses `oathtool` to generate 6-digit codes from your TOTP secret
 - **Automated Entry**: X11 automation (via `xdotool`) automatically enters codes into the 2FA dialog
 - **Fast Authentication**: Completes 2FA in approximately 6 seconds
+- **Dual Mode Support**: Handles `TRADING_MODE=both` — automatically authenticates both live and paper sessions
 - **Zero Touch**: No manual intervention required once configured
 - **Works on ARM64**: Tested on Apple Silicon (M1/M2/M3) and Raspberry Pi
 
@@ -320,12 +321,13 @@ If you already have IBKR Mobile Authenticator configured in an app like Google A
 ### How It Works
 
 1. Container starts and runs the TOTP automation handler in the background
-2. Handler monitors for the "Second Factor Authentication" dialog
+2. Handler monitors for "Second Factor Authentication" dialogs
 3. When detected, generates current TOTP code using your secret
 4. Automatically enters the code and presses Enter
 5. Authentication completes in ~6 seconds
-6. IB Gateway API becomes available
-7. Handler continues running to handle any re-authentication events (e.g. weekly re-login)
+6. In dual mode (`TRADING_MODE=both`), the handler detects and authenticates both the live and paper sessions independently
+7. IB Gateway API becomes available
+8. Handler continues running to handle any re-authentication events (e.g. weekly re-login)
 
 ### Example Logs
 
@@ -334,13 +336,26 @@ Successful TOTP automation:
 ```
 .> Starting TOTP automation handler
 [TOTP] TOTP automation enabled, monitoring for 2FA dialog...
-[TOTP] 2FA dialog detected!
-[TOTP] Generated TOTP code, entering...
-[TOTP] Code entered and submitted
-[TOTP] TOTP automation completed successfully
+[TOTP] 2FA dialog detected (window 12345678)!
+[TOTP] Generated TOTP code, entering into window 12345678...
+[TOTP] Code entered and submitted for window 12345678
+[TOTP] TOTP automation completed successfully for window 12345678
 IBC: Second Factor Authentication; event=Closed
 IBC: Duration since login: 6 seconds
 IBC: Login has completed
+```
+
+Dual mode (`TRADING_MODE=both`) — both sessions authenticate:
+
+```
+[TOTP] 2FA dialog detected (window 12345678)!
+[TOTP] Generated TOTP code, entering into window 12345678...
+[TOTP] Code entered and submitted for window 12345678
+[TOTP] TOTP automation completed successfully for window 12345678
+[TOTP] 2FA dialog detected (window 87654321)!
+[TOTP] Generated TOTP code, entering into window 87654321...
+[TOTP] Code entered and submitted for window 87654321
+[TOTP] TOTP automation completed successfully for window 87654321
 ```
 
 ### Troubleshooting
