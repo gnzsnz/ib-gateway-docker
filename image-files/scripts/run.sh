@@ -48,10 +48,11 @@ stop_ibc() {
 start_xvfb() {
 	# start Xvfb
 	echo ".> Starting Xvfb server"
-	DISPLAY=:1
+	DISPLAY=${DISPLAY:-:1}
 	export DISPLAY
-	rm -f /tmp/.X1-lock
-	Xvfb $DISPLAY -ac -screen 0 1024x768x16 &
+	DISPLAY_NUM=${DISPLAY#:}
+	rm -f "/tmp/.X${DISPLAY_NUM}-lock"
+	Xvfb "$DISPLAY" -ac -screen 0 1024x768x16 &
 }
 
 start_vnc() {
@@ -61,7 +62,7 @@ start_vnc() {
 	file_env 'VNC_SERVER_PASSWORD'
 	if [ -n "$VNC_SERVER_PASSWORD" ]; then
 		echo ".> Starting VNC server"
-		x11vnc -ncache_cr -display $DISPLAY -forever -shared -bg -noipv6 \
+		x11vnc -ncache_cr -display "$DISPLAY" -forever -shared -bg -noipv6 \
 			-passwd "$VNC_SERVER_PASSWORD" &
 		unset_env 'VNC_SERVER_PASSWORD'
 	else

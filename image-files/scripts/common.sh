@@ -93,13 +93,13 @@ set_ports() {
 	if [ "${GATEWAY_OR_TWS}" = "gateway" ]; then
 		if [ "$TRADING_MODE" = "paper" ]; then
 			# paper ibgateway ports
-			API_PORT=4002
-			SOCAT_PORT=4004
+			API_PORT=${API_PORT:-4002}
+			SOCAT_PORT=${SOCAT_PORT:-4004}
 			export API_PORT SOCAT_PORT
 		elif [ "$TRADING_MODE" = "live" ]; then
 			# live ibgateway ports
-			API_PORT=4001
-			SOCAT_PORT=4003
+			API_PORT=${API_PORT:-4001}
+			SOCAT_PORT=${SOCAT_PORT:-4003}
 			export API_PORT SOCAT_PORT
 		else
 			# invalid option
@@ -109,13 +109,13 @@ set_ports() {
 	elif [ "${GATEWAY_OR_TWS}" = "tws" ]; then
 		if [ "$TRADING_MODE" = "paper" ]; then
 			# paper TWS ports
-			API_PORT=7497
-			SOCAT_PORT=7499
+			API_PORT=${API_PORT:-7497}
+			SOCAT_PORT=${SOCAT_PORT:-7499}
 			export API_PORT SOCAT_PORT
 		elif [ "$TRADING_MODE" = "live" ]; then
 			# live TWS ports
-			API_PORT=7496
-			SOCAT_PORT=7498
+			API_PORT=${API_PORT:-7496}
+			SOCAT_PORT=${SOCAT_PORT:-7498}
 			export API_PORT SOCAT_PORT
 		else
 			# invalid option
