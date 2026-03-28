@@ -376,6 +376,12 @@ Dual mode (`TRADING_MODE=both`) — both sessions authenticate:
 
 ### Security Considerations
 
+**Important:** Automating TOTP entry effectively removes the second factor from
+multi-factor authentication — you no longer have "something you know" +
+"something you own", only secrets stored on the same machine. This is a
+deliberate trade-off for unattended operation. Users should understand and accept
+this reduced security posture.
+
 **TOTP Secret Storage:**
 - Use Docker secrets for production: `TWOFACTOR_CODE_FILE=/run/secrets/totp_secret`
 - Never commit `.env` files containing secrets to version control
