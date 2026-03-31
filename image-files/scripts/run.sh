@@ -36,6 +36,11 @@ stop_ibc() {
 		pkill run_socat.sh
 		pkill socat
 	fi
+	# Stop TOTP handler
+	if [ -n "$TOTP_HANDLER_PID" ]; then
+		echo ".> Stopping TOTP handler."
+		kill "$TOTP_HANDLER_PID" 2>/dev/null
+	fi
 	# Set TERM
 	echo ".> Stopping IBC."
 	kill -SIGTERM "${pid[@]}"
@@ -78,6 +83,17 @@ start_IBC() {
 	echo ".>		ibc-init: ${IBC_INI}"
 	echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
 	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
+
+	# Start TOTP handler once (not per-session in dual mode)
+	file_env 'TWOFACTOR_CODE'
+	if [ -n "$TWOFACTOR_CODE" ] && [ -z "$TOTP_HANDLER_PID" ]; then
+		echo ".> Starting TOTP automation handler"
+		"${SCRIPT_PATH}/totp_handler.sh" &
+		TOTP_HANDLER_PID=$!
+		export TOTP_HANDLER_PID
+		unset_env 'TWOFACTOR_CODE'
+	fi
+
 	# start IBC -g for gateway
 	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" -g \
 		"--tws-path=${TWS_PATH}" \
