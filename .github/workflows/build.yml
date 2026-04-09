@@ -48,7 +48,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build ibgateway Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           push: false
           load: false
@@ -77,7 +77,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build TWS Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           push: false
           load: false
