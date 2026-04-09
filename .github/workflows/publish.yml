@@ -65,7 +65,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build and push ibgateway
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
@@ -94,7 +94,7 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build and push TWS
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
