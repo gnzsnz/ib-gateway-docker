@@ -35,7 +35,7 @@ jobs:
       ###############################################################
       - name: Docker metadata ibgateway
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/gnzsnz/ib-gateway
@@ -64,7 +64,7 @@ jobs:
       ###############################################################
       - name: Docker metadata tws
         id: meta-tws
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/gnzsnz/tws-rdesktop
