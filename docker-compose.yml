@@ -52,6 +52,6 @@ services:
     #      - ${PWD}/ssh/:/home/ibgateway/.ssh
     #      - ${PWD}/scripts:/home/ibgateway/init-scripts
     ports:
-      - "127.0.0.1:4001:4003"
-      - "127.0.0.1:4002:4004"
+      - "4001:4003"
+      - "4002:4004"
       - "127.0.0.1:5900:5900"
