@@ -48,10 +48,14 @@ jobs:
       - name: Download
         if: ${{ steps.check-update.outputs.has_update == 'true' }}
         run: |
-          download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-x64.sh'
-          dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-x64.sh'
-          curl -sSL "$download_url" --output "$dest"
-          sha256sum "$dest" > "${dest}.sha256"
+          archs="x64 arm"
+          for arch in $archs
+          do
+            download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-'$arch'x64.sh'
+            dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-'$arch'x64.sh'
+            curl -sSL "$download_url" --output "$dest"
+            sha256sum "$dest" > "${dest}.sha256"
+          done
 
       - name: Create release
         if: ${{ steps.check-update.outputs.has_update == 'true' }}

@@ -12,45 +12,38 @@ ENV IB_GATEWAY_VERSION=10.46.1g
 ENV IB_GATEWAY_CHANNEL=latest
 ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
-ARG IB_GATEWAY_FILE="ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
-ARG IB_GATEWAY_URL="${IB_GATEWAY_REPO}/releases/download/ibgateway-${IB_GATEWAY_CHANNEL}%40${IB_GATEWAY_VERSION}/${IB_GATEWAY_FILE}"
 ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
 ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
 ARG IBC_URL="${IBC_REPO}/releases/download/${IBC_VERSION}/${IBC_FILE}"
-ARG ZULU_NAME=zulu17.60.17-ca-fx-jre17.0.16-linux_aarch64
-ARG ZULU_FILE=${ZULU_NAME}.tar.gz
-ARG ZULU_URL=https://cdn.azul.com/zulu/bin/${ZULU_FILE}
 
 WORKDIR /tmp/setup
 
 # Prepare system
 RUN apt-get update -y && \
-  apt-get install --no-install-recommends --yes \
+  apt-get install --no-install-recommends --yes && \
   curl ca-certificates unzip && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if [ "$(uname -m)" = "aarch64" ]; then \
-    curl -sSLO ${ZULU_URL} ; \
-    tar -xzf ${ZULU_FILE} -C /usr/local/ ; \
-    ln -s /usr/local/${ZULU_NAME} /usr/local/zulu17 ; \
+     ARCH="arm" ; \
+  else \
+     ARCH="x64" ; \
   fi && \
+  IB_GATEWAY_FILE="ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-${ARCH}.sh" && \
+  IB_GATEWAY_URL="${IB_GATEWAY_REPO}/releases/download/ibgateway-${IB_GATEWAY_CHANNEL}%40${IB_GATEWAY_VERSION}/${IB_GATEWAY_FILE}" && \
 # Install IB Gateway
 # Use this instead of "RUN curl .." to install a local file:
 #COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh .
-  curl -sSOL ${IB_GATEWAY_URL} && \
-  curl -sSOL ${IB_GATEWAY_URL}.sha256 && \
-  sha256sum --check ./${IB_GATEWAY_FILE}.sha256 &&\
-  chmod a+x ./${IB_GATEWAY_FILE} && \
-  if [ "$(uname -m)" = "aarch64" ]; then \
-    app_java_home=/usr/local/zulu17 ./${IB_GATEWAY_FILE} -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
-  else \
-    ./${IB_GATEWAY_FILE} -q -dir /root/Jts/ibgateway/${IB_GATEWAY_VERSION} ; \
-  fi && \
+  curl -sSOL "${IB_GATEWAY_URL}" && \
+  #curl -sSOL ${IB_GATEWAY_URL}.sha256 && \
+  #sha256sum --check ./${IB_GATEWAY_FILE}.sha256 &&\
+  chmod a+x "./${IB_GATEWAY_FILE}" && \
+  "./${IB_GATEWAY_FILE}" -q -dir "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}" && \
   # Install IBC
-  curl -sSOL ${IBC_URL} && \
+  curl -sSOL "${IBC_URL}" && \
   mkdir /root/ibc && \
-  unzip ./${IBC_FILE} -d /root/ibc && \
+  unzip "./${IBC_FILE}" -d /root/ibc && \
   chmod -R u+x /root/ibc/*.sh && \
   chmod -R u+x /root/ibc/scripts/*.sh
 
