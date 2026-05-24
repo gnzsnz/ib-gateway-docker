@@ -1,0 +1,7 @@
+# Tell Linguist these are not Go templates
+*.template linguist-language=Dockerfile
+
+# Optionally, make sure shell scripts are counted
+*.sh linguist-detectable=true
+
+*.tmpl linguist-generated=true
