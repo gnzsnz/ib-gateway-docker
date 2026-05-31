@@ -10,7 +10,7 @@ assignees: ''
 ## Before you submit this issue
 
 If this is not an issue but a request for help, please post it on the
-[discussions](https://github.com/gnzsnz/ib-gateway-docker/discussions/categories/q-a)
+[discussions](https://github.com/dennisdeh/ib-gateway-docker/discussions/categories/q-a)
 section. There is a search function that will help you find solutions to common
 problems.
 
@@ -30,10 +30,10 @@ Please make sure that you are using the `docker-compose.yml` file provided as
 example, those files are tested and you should be able to get things working
 by using it.
 
-- [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml)
-- [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml)
+- [ib-gateway](https://github.com/dennisdeh/ib-gateway-docker/blob/master/docker-compose.yml)
+- [tws-rdesktop](https://github.com/dennisdeh/ib-gateway-docker/blob/master/tws-docker-compose.yml)
 
-The example `.env` file on [README.md](https://github.com/gnzsnz/ib-gateway-docker/blob/master/README.md)
+The example `.env` file on [README.md](https://github.com/dennisdeh/ib-gateway-docker/blob/master/README.md)
 contains safe default values. Make sure you test the container using it as
 starting point.
 

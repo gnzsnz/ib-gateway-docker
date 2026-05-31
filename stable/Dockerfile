@@ -13,7 +13,7 @@ ENV IB_GATEWAY_CHANNEL=stable
 ENV IBC_VERSION=3.23.0
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_FILE="ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh"
-ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
+ARG IB_GATEWAY_REPO="https://github.com/dennisdeh/ib-gateway-docker"
 ARG IB_GATEWAY_URL="${IB_GATEWAY_REPO}/releases/download/ibgateway-${IB_GATEWAY_CHANNEL}%40${IB_GATEWAY_VERSION}/${IB_GATEWAY_FILE}"
 ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
 ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
@@ -108,8 +108,8 @@ WORKDIR ${HOME}
 # Start run script
 CMD ["/home/ibgateway/scripts/run.sh"]
 
-LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
-LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway
+LABEL org.opencontainers.image.source=https://github.com/dennisdeh/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/dennisdeh/ib-gateway-docker/pkgs/container/ib-gateway
 LABEL org.opencontainers.image.description="Docker image with IB Gateway and IBC "
 LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
 LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

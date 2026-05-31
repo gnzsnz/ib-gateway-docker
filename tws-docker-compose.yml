@@ -11,8 +11,9 @@ services:
       context: ./latest
       dockerfile: Dockerfile.tws
       tags:
-        - "ghcr.io/gnzsnz/tws-rdesktop:latest"
-    image: ghcr.io/gnzsnz/tws-rdesktop:latest
+        - "ghcr.io/dennisdeh/tws-rdesktop:latest"
+    pull_policy: build
+    image: ghcr.io/dennisdeh/tws-rdesktop:latest
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}

@@ -30,7 +30,7 @@ disable_agents() {
 
 disable_compositing() {
 	# disable compositing
-	# https://github.com/gnzsnz/ib-gateway-docker/issues/55
+	# https://github.com/dennisdeh/ib-gateway-docker/issues/55
 	echo ".> Disabling xfce compositing"
 	xfconf-query --channel=xfwm4 --property=/general/use_compositing \
 		--type=bool --set=false --create
