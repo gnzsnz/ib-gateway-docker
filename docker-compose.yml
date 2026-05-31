@@ -1,4 +1,4 @@
-name: algo-trader
+name: inv_ibkr
 services:
   ib-gateway:
     restart: always
@@ -6,6 +6,7 @@ services:
       context: ./latest
       tags:
         - "ghcr.io/dennisdeh/ib-gateway:latest"
+    pull_policy: build
     image: ghcr.io/dennisdeh/ib-gateway:latest
     environment:
       TWS_USERID: ${TWS_USERID}
