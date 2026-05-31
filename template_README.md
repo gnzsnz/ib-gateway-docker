@@ -1,8 +1,10 @@
 # Interactive Brokers Gateway Docker
 
-[![Build](https://github.com/dennisdeh/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/dennisdeh/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Discussions](https://img.shields.io/github/discussions/gnzsnz/ib-gateway-docker)](https://github.com/dennisdeh/ib-gateway-docker/discussions) [![GitHub Repo stars](https://img.shields.io/github/stars/gnzsnz/ib-gateway-docker)](#repo-stats) [![GitHub forks](https://img.shields.io/github/forks/gnzsnz/ib-gateway-docker)](https://github.com/dennisdeh/ib-gateway-docker/network/members)
+[![Build](https://github.com/dennisdeh/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/dennisdeh/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Discussions](https://img.shields.io/github/discussions/dennisdeh/ib-gateway-docker)](https://github.com/dennisdeh/ib-gateway-docker/discussions) [![GitHub Repo stars](https://img.shields.io/github/stars/dennisdeh/ib-gateway-docker)](#repo-stats) [![GitHub forks](https://img.shields.io/github/forks/dennisdeh/ib-gateway-docker)](https://github.com/dennisdeh/ib-gateway-docker/network/members)
 
 <img src="https://github.com/dennisdeh/ib-gateway-docker/blob/master/logo.png" height="300" class="center" alt="IB Gateway Docker"/>
+
+This is a fork of the original [ib-gateway-docker](https://github.com/gnzsnz/ib-gateway-docker) project.
 
 ## What is it?
 
@@ -62,8 +64,8 @@ services:
     build:
       context: ./stable
       tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+        - "ghcr.io/dennisdeh/ib-gateway:stable"
+    image: ghcr.io/dennisdeh/ib-gateway:stable
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -659,11 +661,11 @@ https://github.com/dennisdeh/ib-gateway-docker/raw/gh-pages/ibgateway-releases/i
    `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
 
-[1]: https://github.com/users/gnzsnz/packages/container/package/ib-gateway "ib-gateway"
+[1]: https://github.com/users/dennisdeh/packages/container/package/ib-gateway "ib-gateway"
 [2]: https://github.com/dennisdeh/ib-gateway-docker/pkgs/container/tws-rdesktop "tws-rdesktop"
 
 ## Repo stats
 
 Repository stars overtime.
 
-[![Stargazers over time](https://starchart.cc/gnzsnz/ib-gateway-docker.svg?variant=adaptive)](https://starchart.cc/gnzsnz/ib-gateway-docker)
+[![Stargazers over time](https://starchart.cc/dennisdeh/ib-gateway-docker.svg?variant=adaptive)](https://starchart.cc/dennisdeh/ib-gateway-docker)

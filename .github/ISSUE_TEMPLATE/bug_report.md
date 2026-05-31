@@ -19,11 +19,11 @@ Please make sure that you are running `latest` or `stable` for either
 
 ```bash
 # ib-gateway
-docker pull ghcr.io/gnzsnz/ib-gateway:latest
-docker pull ghcr.io/gnzsnz/ib-gateway:stable
+docker pull ghcr.io/dennisdeh/ib-gateway:latest
+docker pull ghcr.io/dennisdeh/ib-gateway:stable
 # tws-rdesktop
-docker pull ghcr.io/gnzsnz/tws-rdesktop:latest
-docker pull ghcr.io/gnzsnz/tws-rdesktop:stable
+docker pull ghcr.io/dennisdeh/tws-rdesktop:latest
+docker pull ghcr.io/dennisdeh/tws-rdesktop:stable
 ```
 
 Please make sure that you are using the `docker-compose.yml` file provided as
@@ -65,7 +65,7 @@ Please complete the following information:
 
 - OS: [e.g. Windows]
 - Docker version: [e.g. chrome, safari]
-- Image Tag (`docker image inspect ghcr.io/gnzsnz/ib-gateway:tag`): [e.g.
+- Image Tag (`docker image inspect ghcr.io/dennisdeh/ib-gateway:tag`): [e.g.
   latest, stable] **MANDATORY** ⚠️⚠️
 - Image Digest (`docker images --digests`): [e.g.
   sha256:60d9d54009b1b66908bbca1ebf5b8a03a39fe0cb35c2ab4023f6e41b55d17894]
