@@ -6,3 +6,9 @@ ssh/
 /*_password.txt
 /pass/*
 /init-scripts/*
+/.idea/.gitignore
+/.idea/ib-gateway-docker.iml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
