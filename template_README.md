@@ -579,7 +579,10 @@ value in seconds defined in `SSH_RESTART`.
 
 ## aarch64 support
 
-This is experimental, so expects bugs.
+IBKR's has started releasing an installer for `linux-arm`. And this image is
+using it. While the official installer is for `ib-gateway`, we provide an TWS
+image too. So please take into account that TWS image might have unexpected
+bugs.
 
 Please go to discussions section to see common problems. Avoid creating issues unless
 you have empirically probed that is a bug, ie it does not work to me is not a bug.
