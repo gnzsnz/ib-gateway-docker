@@ -51,8 +51,8 @@ jobs:
           archs="x64 arm"
           for arch in $archs
           do
-            download_url='https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-'$arch'x64.sh'
-            dest='ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-'$arch'x64.sh'
+            download_url="https://download2.interactivebrokers.com/installers/ibgateway/${{ matrix.channel }}-standalone/ibgateway-${{ matrix.channel }}-standalone-linux-${arch}.sh"
+            dest="ibgateway-${{ steps.version.outputs.build_version }}-standalone-linux-${arch}.sh"
             curl -sSL "$download_url" --output "$dest"
             sha256sum "$dest" > "${dest}.sha256"
           done
