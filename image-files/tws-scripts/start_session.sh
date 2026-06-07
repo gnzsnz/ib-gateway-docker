@@ -27,15 +27,17 @@ if [ -n "$START_SCRIPTS" ]; then
 	run_scripts "$HOME/$START_SCRIPTS"
 fi
 
-# open xfce session
-echo ".> Openning Xrdp session"
-_out=$(echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc)
-unset _PASS #unset
-_display=$(echo "$_out" | grep -e '^ok' | cut -d ' ' -f 3 | cut -d '=' -f 2)
-if [ -n "$_display" ]; then
-	DISPLAY=$_display
-	export DISPLAY
-	echo ".> Xrdp started on DISPLAY=${DISPLAY}"
+if [[ "$(which xrdp-sesrun)" ]]; then
+	# open xfce session on rdesktop
+	echo ".> Openning Xrdp session"
+	_out=$(echo "${_PASS}" | xrdp-sesrun -s 127.0.0.1 -F 0 abc)
+	unset _PASS #unset
+	_display=$(echo "$_out" | grep -e '^ok' | cut -d ' ' -f 3 | cut -d '=' -f 2)
+	if [ -n "$_display" ]; then
+		DISPLAY=$_display
+		export DISPLAY
+		echo ".> Xrdp started on DISPLAY=${DISPLAY}"
+	fi
 fi
 
 # setting permissions
