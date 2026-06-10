@@ -57,7 +57,7 @@ one). The sample files provided can be used as starting point,
 [tws-rdesktop-compose](https://github.com/dennisdeh/ib-gateway-docker/blob/master/tws-docker-compose.yml).
 
 ```yaml
-name: algo-trader
+name: inv_ibkr
 services:
   ib-gateway:
     restart: always
@@ -559,6 +559,8 @@ starts. You can create your own certificate following this
 Once this steps are put in place the same TLS certificate will be used every
 time, which will allow you to trust it in your RDP client.
 
+Default user:password is `abc:abc`
+
 ## Troubleshooting socat and ssh
 
 In case you experience problems with the API connection, you can restart the `socat` process
@@ -632,40 +634,21 @@ https://github.com/dennisdeh/ib-gateway-docker/raw/gh-pages/ibgateway-releases/i
     ```bash
       git clone https://github.com/dennisdeh/ib-gateway-docker
     ```
+2. Build the base ib-gateway image (tags it as :latest)
+```bash
+docker compose -f docker-compose.yml build
+```
 
-1. Change docker file to use your local IB Gateway installer file, instead of
-   Loading it from this project releases: Open `Dockerfile` on editor and
-   replace this lines:
+3. Tag it with the version Dockerfile.tws references
+```bash
+docker tag ghcr.io/dennisdeh/ib-gateway:latest ghcr.io/dennisdeh/ib-gateway:10.47.1c
+```
 
-   ```docker
-   RUN curl -sSL https://github.com/dennisdeh/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
-       --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-   RUN curl -sSL https://github.com/dennisdeh/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256 \
-       --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256
-   ```
-
-   with
-
-   ```docker
-   COPY ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
-   ```
-
-1. Remove `RUN sha256sum --check
-   ./ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh.sha256` from
-   Dockerfile (unless you want to keep checksum-check)
-1. Download IB Gateway and name the file
-   `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
-   `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
-   (first line)
-1. Download IBC and name the file `IBCLinux-3.23.0.zip`, where
-   `{IBC_VERSION}` must match the version as configured on Dockerfile
-1. Build and run: `docker-compose up --build`
+4. Now build TWS — it will find the local base image
+```bash
+docker compose -f tws-docker-compose.yml build
+```
 
 [1]: https://github.com/users/dennisdeh/packages/container/package/ib-gateway "ib-gateway"
 [2]: https://github.com/dennisdeh/ib-gateway-docker/pkgs/container/tws-rdesktop "tws-rdesktop"
 
-## Repo stats
-
-Repository stars overtime.
-
-[![Stargazers over time](https://starchart.cc/dennisdeh/ib-gateway-docker.svg?variant=adaptive)](https://starchart.cc/dennisdeh/ib-gateway-docker)

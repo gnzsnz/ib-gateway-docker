@@ -1,7 +1,8 @@
-name: algo-trader
+name: inv_ibkr_tws
 services:
   tws:
     restart: unless-stopped
+    container_name: ${CONTAINER_NAME:-}
     devices:
       - /dev/dri:/dev/dri #recomended
     shm_size: "1gb" #recomended
@@ -58,13 +59,13 @@ services:
       - ./config:/config # optional
       - tws_tmp:/tmp # recommended for performance
     # custom certificate and key
-    #- ${PWD}/keylock:/keylock # required to avoid key generation by container
-    #- ${PWD/key.pem:/etc/xrdp/key.pem # key
-    #- ${PWD}/cert.pem:/etc/xrdp/cert.pem # cert
+      - ./keylock:/keylock # required to avoid key generation by container
+      - ./key.pem:/etc/xrdp/key.pem # key
+      - ./cert.pem:/etc/xrdp/cert.pem # cert
     ports:
-      - "127.0.0.1:7496:7498" # live
-      - "127.0.0.1:7497:7499" # paper
-      - "127.0.0.1:3370:3389" # xrdp
+      - "127.0.0.1:${PORT_HOST_TWS_LIVE:-7496}:7498"
+      - "127.0.0.1:${PORT_HOST_TWS_PAPER:-7497}:7499"
+      - "127.0.0.1:${PORT_HOST_RDP:-3370}:3389"
 
 volumes:
   tws_tmp:

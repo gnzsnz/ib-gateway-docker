@@ -2,6 +2,7 @@ name: inv_ibkr
 services:
   ib-gateway:
     restart: always
+    container_name: ${CONTAINER_NAME:-}
     build:
       context: ./latest
       tags:
@@ -53,6 +54,6 @@ services:
     #      - ${PWD}/ssh/:/home/ibgateway/.ssh
     #      - ${PWD}/scripts:/home/ibgateway/init-scripts
     ports:
-      - "127.0.0.1:4001:4003"
-      - "127.0.0.1:4002:4004"
-      - "127.0.0.1:5900:5900"
+      - "127.0.0.1:${PORT_HOST_TWS_LIVE:-4001}:4003"
+      - "127.0.0.1:${PORT_HOST_TWS_PAPER:-4002}:4004"
+      - "127.0.0.1:${PORT_HOST_VNC_SERVER:-5900}:5900"
