@@ -39,9 +39,9 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.47.1d` | `3.23.0` | `latest` `10.47` `10.47.1d` |
+| [ib-gateway][1] | `latest` | `10.47.1e` | `3.23.0` | `latest` `10.47` `10.47.1e` |
 | [ib-gateway][1] |`stable` | `10.45.1g` | `3.23.0` | `stable` `10.45` `10.45.1g` |
-| [tws-rdesktop][2] | `latest` | `10.47.1d` | `3.23.0` | `latest` `10.47` `10.47.1d` |
+| [tws-rdesktop][2] | `latest` | `10.47.1e` | `3.23.0` | `latest` `10.47` `10.47.1e` |
 | [tws-rdesktop][2] |`stable` | `10.45.1g` | `3.23.0` | `stable` `10.45` `10.45.1g` |
 
 All tags are available in the container repository for [ib-gateway][1] and
@@ -104,7 +104,7 @@ services:
 #    volumes:
 #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
 #      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
+#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
 #      - ${PWD}/ssh/:/home/ibgateway/.ssh
 #      - ${PWD}/init-scripts:/home/ibgateway/init-scripts
     ports:
@@ -125,7 +125,7 @@ TWS_PASSWORD=myTwsPassword
 #TWS_PASSWORD_PAPER=
 #TWS_PASSWORD_PAPER_FILE=
 # ib-gateway
-#TWS_SETTINGS_PATH=/home/ibgateway/Jts
+#TWS_SETTINGS_PATH=/home/ibgateway/tws_settings
 # tws
 #TWS_SETTINGS_PATH=/config/tws_settings
 TWS_SETTINGS_PATH=
