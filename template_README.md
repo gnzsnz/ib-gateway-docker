@@ -28,7 +28,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Experimental [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
+- [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
 - Execution of custom scripts during [star-up process](#start-up-scripts).
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
@@ -579,7 +579,10 @@ value in seconds defined in `SSH_RESTART`.
 
 ## aarch64 support
 
-This is experimental, so expects bugs.
+IBKR's has started releasing an installer for `linux-arm`. And this image is
+using it. While the official installer is for `ib-gateway`, we provide an TWS
+image too. So please take into account that TWS image might have unexpected
+bugs.
 
 Please go to discussions section to see common problems. Avoid creating issues unless
 you have empirically probed that is a bug, ie it does not work to me is not a bug.
