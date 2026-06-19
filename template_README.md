@@ -28,7 +28,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Experimental [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
+- [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
 - Execution of custom scripts during [star-up process](#start-up-scripts).
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
