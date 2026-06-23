@@ -28,7 +28,7 @@ It includes:
   `10.19.2g-stable` and `10.25.1o-latest` or greater.
 - Support parallel execution of `live` and `paper` trading mode.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
-- Experimental [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
+- [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
 - Execution of custom scripts during [star-up process](#start-up-scripts).
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
@@ -39,10 +39,10 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.47.1e` | `3.23.0` | `latest` `10.47` `10.47.1e` |
-| [ib-gateway][1] |`stable` | `10.45.1g` | `3.23.0` | `stable` `10.45` `10.45.1g` |
-| [tws-rdesktop][2] | `latest` | `10.47.1e` | `3.23.0` | `latest` `10.47` `10.47.1e` |
-| [tws-rdesktop][2] |`stable` | `10.45.1g` | `3.23.0` | `stable` `10.45` `10.45.1g` |
+| [ib-gateway][1] | `latest` | `10.48.1b` | `3.24.0` | `latest` `10.48` `10.48.1b` |
+| [ib-gateway][1] |`stable` | `10.45.1g` | `3.24.0` | `stable` `10.45` `10.45.1g` |
+| [tws-rdesktop][2] | `latest` | `10.48.1b` | `3.24.0` | `latest` `10.48` `10.48.1b` |
+| [tws-rdesktop][2] |`stable` | `10.45.1g` | `3.24.0` | `stable` `10.45` `10.45.1g` |
 
 All tags are available in the container repository for [ib-gateway][1] and
 [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
@@ -579,7 +579,10 @@ value in seconds defined in `SSH_RESTART`.
 
 ## aarch64 support
 
-This is experimental, so expects bugs.
+IBKR's has started releasing an installer for `linux-arm`. And this image is
+using it. While the official installer is for `ib-gateway`, we provide an TWS
+image too. So please take into account that TWS image might have unexpected
+bugs.
 
 Please go to discussions section to see common problems. Avoid creating issues unless
 you have empirically probed that is a bug, ie it does not work to me is not a bug.
@@ -655,7 +658,7 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
    `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
    (first line)
-1. Download IBC and name the file `IBCLinux-3.23.0.zip`, where
+1. Download IBC and name the file `IBCLinux-3.24.0.zip`, where
    `{IBC_VERSION}` must match the version as configured on Dockerfile
 1. Build and run: `docker-compose up --build`
 
