@@ -8,7 +8,7 @@
 # hadolint global ignore=DL3008,DL4006
 FROM ubuntu:24.04 AS setup
 
-ENV IB_GATEWAY_VERSION=10.48.1b
+ENV IB_GATEWAY_VERSION=10.48.1c
 ENV IB_GATEWAY_CHANNEL=latest
 ENV IBC_VERSION=3.24.0
 ARG DEBIAN_FRONTEND=noninteractive
@@ -59,7 +59,7 @@ COPY ./scripts /root/scripts
 
 FROM ubuntu:24.04
 
-ENV IB_GATEWAY_VERSION=10.48.1b
+ENV IB_GATEWAY_VERSION=10.48.1c
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
