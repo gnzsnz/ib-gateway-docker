@@ -39,7 +39,13 @@ RUN apt-get update -y && \
   curl -sSOL "${IB_GATEWAY_URL}.sha256" && \
   sha256sum --check "./${IB_GATEWAY_FILE}.sha256" &&\
   chmod a+x "./${IB_GATEWAY_FILE}" && \
-  "./${IB_GATEWAY_FILE}" -q -dir "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}" && \
+# issue #414
+  "./${IB_GATEWAY_FILE}" __i4j_extract_and_exit && \
+  mkdir -p /usr/local/jre && \
+  tar xzf "./${IB_GATEWAY_FILE}.test/jre.tar.gz" -C /usr/local/jre && \
+  rm -rf "./${IB_GATEWAY_FILE}.test" && \
+  INSTALL4J_JAVA_HOME_OVERRIDE=/usr/local/jre "./${IB_GATEWAY_FILE}" -q -dir "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}" && \
+  echo "/usr/local/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" && \
   # Install IBC
   curl -sSOL "${IBC_URL}" && \
   mkdir /root/ibc && \
@@ -74,6 +80,7 @@ ENV IBC_INI=${HOME}/ibc/config.ini
 ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
+ENV JAVA_HOME=/usr/local/jre
 ARG DEBIAN_FRONTEND=noninteractive
 # Copy files
 COPY --from=setup /usr/local/ /usr/local/
