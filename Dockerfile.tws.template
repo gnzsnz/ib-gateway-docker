@@ -34,6 +34,7 @@ ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=/defaults
 ENV GATEWAY_OR_TWS=tws
 ENV NO_AT_BRIDGE=1
+ENV JAVA_HOME=${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -48,12 +49,13 @@ RUN \
   rm -rf /var/lib/apt/lists/* # end
 
 # Copy files
-COPY --from=setup /usr/local/ /usr/local/
 COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
 COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
 COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
 COPY ./tws-scripts/run_tws.sh ${SCRIPT_PATH}
 COPY ./scripts/* ${SCRIPT_PATH}
+
+RUN echo "${JAVA_HOME}" > "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg"
 
 # labels
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
