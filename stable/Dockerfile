@@ -40,7 +40,9 @@ RUN apt-get update -y && \
   sha256sum --check "./${IB_GATEWAY_FILE}.sha256" &&\
   chmod a+x "./${IB_GATEWAY_FILE}" && \
   "./${IB_GATEWAY_FILE}" -q -dir "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}" && \
-  echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" && \
+  if [ -d "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
+    echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
+  fi && \
   # Install IBC
   curl -sSOL "${IBC_URL}" && \
   mkdir /root/ibc && \
@@ -75,9 +77,9 @@ ENV IBC_INI=${HOME}/ibc/config.ini
 ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
-ENV JAVA_HOME=${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre
 ARG DEBIAN_FRONTEND=noninteractive
 # Copy files
+COPY --from=setup /usr/local/ /usr/local/
 COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
