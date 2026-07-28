@@ -7,7 +7,7 @@
 
 # hadolint global ignore=DL3008
 
-ARG IB_VERSION=10.48.1e
+ARG IB_VERSION=10.48.1f
 FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION} AS setup
 
 WORKDIR /
@@ -18,7 +18,7 @@ WORKDIR /
 
 FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
 
-ENV IB_GATEWAY_VERSION=10.48.1e
+ENV IB_GATEWAY_VERSION=10.48.1f
 ENV IB_GATEWAY_RELEASE_CHANNEL=latest
 ENV IBC_VERSION=3.24.1
 
@@ -34,7 +34,6 @@ ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=/defaults
 ENV GATEWAY_OR_TWS=tws
 ENV NO_AT_BRIDGE=1
-ENV JAVA_HOME=${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -49,13 +48,16 @@ RUN \
   rm -rf /var/lib/apt/lists/* # end
 
 # Copy files
+COPY --from=setup /usr/local/ /usr/local/
 COPY --chown=abc:abc --from=setup /home/ibgateway/Jts ${TWS_PATH}
 COPY --chown=abc:abc --from=setup /home/ibgateway/ibc ${IBC_PATH}
 COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
 COPY ./tws-scripts/run_tws.sh ${SCRIPT_PATH}
 COPY ./scripts/* ${SCRIPT_PATH}
 
-RUN echo "${JAVA_HOME}" > "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg"
+RUN if [ -d "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
+  echo "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/jre" > "${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
+fi
 
 # labels
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
