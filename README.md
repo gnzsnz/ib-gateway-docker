@@ -39,9 +39,9 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.49.1e` | `3.24.1` | `latest` `10.49` `10.49.1e` |
+| [ib-gateway][1] | `latest` | `10.50.1d` | `3.24.1` | `latest` `10.50` `10.50.1d` |
 | [ib-gateway][1] |`stable` | `10.45.1j` | `3.24.1` | `stable` `10.45` `10.45.1j` |
-| [tws-rdesktop][2] | `latest` | `10.49.1e` | `3.24.1` | `latest` `10.49` `10.49.1e` |
+| [tws-rdesktop][2] | `latest` | `10.50.1d` | `3.24.1` | `latest` `10.50` `10.50.1d` |
 | [tws-rdesktop][2] |`stable` | `10.45.1j` | `3.24.1` | `stable` `10.45` `10.45.1j` |
 
 All tags are available in the container repository for [ib-gateway][1] and
