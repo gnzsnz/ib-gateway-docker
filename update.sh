@@ -31,4 +31,11 @@ rm -f "$channel/Dockerfile.tws"
 # shellcheck disable=SC2016
 VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.tws.template" >"$channel/Dockerfile.tws"
 
+echo ".> Setting channle: $channel and version: $version for tws-webtop"
+
+# Dockerfile tws-webtop
+rm -f "$channel/Dockerfile.tws-webtop"
+# shellcheck disable=SC2016
+VERSION="$version" CHANNEL="$channel" envsubst '$VERSION,$CHANNEL' <"Dockerfile.tws-webtop.template" >"$channel/Dockerfile.tws-webtop"
+
 echo ".> Done"
