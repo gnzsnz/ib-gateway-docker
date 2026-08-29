@@ -104,3 +104,33 @@ jobs:
           push: true
           tags: ${{ steps.meta-tws.outputs.tags }}
           labels: ${{ steps.meta-tws.outputs.labels }}
+
+      ###############################################################
+      #   Build tws-webtop
+      ###############################################################
+
+      - name: Docker meta TWS webtop
+        id: meta-tws-webtop
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ghcr.io/gnzsnz/tws-webtop
+            gnzsnz/tws-webtop
+          flavor: |
+            latest=false
+          tags: |
+            type=match,pattern=v(\d+.\d+),group=1
+            type=match,pattern=v(\d+.\d+.\w+),group=1
+            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+
+      - name: Build and push TWS webtop
+        uses: docker/build-push-action@v7
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: ${{ steps.channel.outputs.channel }}
+          file: ${{ steps.channel.outputs.channel }}/Dockerfile.tws-webtop
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta-tws-webtop.outputs.tags }}
+          labels: ${{ steps.meta-tws-webtop.outputs.labels }}
