@@ -92,8 +92,10 @@ jobs:
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.template
           echo ".> updating Dockerfile.tws.template"
           sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws.template
+          echo ".> updating Dockerfile.tws-webtop.template"
+          sed -i "s/IBC_VERSION=${ver}/IBC_VERSION=${latest}/g" Dockerfile.tws-webtop.template
 
-          git add Dockerfile.template Dockerfile.tws.template
+          git add Dockerfile.template Dockerfile.tws.template Dockerfile.tws-webtop.template
           git commit -m "Update IBC from ${ver} to ${latest}"
           git push --set-upstream origin "$branch"
 
