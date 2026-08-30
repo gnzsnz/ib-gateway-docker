@@ -45,8 +45,10 @@ start_IBC() {
 	echo ".>		ibc-init: ${IBC_INI}"
 	echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
 	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
-	# start IBC
-	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" \
+	# start IBC, -g for gateway
+	_ibc_gateway_flag=""
+	[ "${GATEWAY_OR_TWS}" = "gateway" ] && _ibc_gateway_flag="-g"
+	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" ${_ibc_gateway_flag} \
 		"--tws-path=${TWS_PATH}" \
 		"--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
 		"--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
