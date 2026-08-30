@@ -42,4 +42,4 @@ fi
 echo ".> Setting permissions for ${TWS_PATH} and ${IBC_PATH}"
 chown abc:abc -R /opt "${TWS_PATH}" "${IBC_PATH}"
 
-sudo -EH -u abc "${SCRIPT_PATH}/run_tws.sh"
+exec sudo -EH -u abc "${SCRIPT_PATH}/run_tws.sh"
