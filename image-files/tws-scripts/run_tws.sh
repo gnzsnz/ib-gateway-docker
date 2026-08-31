@@ -45,8 +45,10 @@ start_IBC() {
 	echo ".>		ibc-init: ${IBC_INI}"
 	echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
 	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
-	# start IBC
-	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" \
+	# start IBC, -g for gateway
+	_ibc_gateway_flag=""
+	[ "${GATEWAY_OR_TWS}" = "gateway" ] && _ibc_gateway_flag="-g"
+	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" ${_ibc_gateway_flag} \
 		"--tws-path=${TWS_PATH}" \
 		"--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
 		"--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
@@ -67,6 +69,21 @@ start_process() {
 	start_IBC
 }
 
+set_display() {
+	# export DISPLAY
+	_pid="$(pgrep -f /usr/bin/Xvfb)"
+	# Read DISPLAY from the process environment safely
+	mapfile -t display_lines < <(tr '\0' '\n' </proc/"$_pid"/environ 2>/dev/null | grep -m1 '^DISPLAY=')
+
+	if [[ ${#display_lines[@]} -gt 0 ]]; then
+		# Safely export the first match
+		export "${display_lines[0]}"
+		echo ".> DISPLAY set to ${display_lines[0]}"
+	else
+		echo ".> Could not find DISPLAY"
+	fi
+}
+
 ###############################################################################
 #####		Common Start
 ###############################################################################
@@ -74,6 +91,10 @@ start_process() {
 # user id
 echo ".> Running as user"
 id
+
+if [ -n "$DISPLAY" ]; then
+	set_display
+fi
 
 # run scripts once X environment is up
 if [ -n "$X_SCRIPTS" ]; then

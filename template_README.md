@@ -250,6 +250,43 @@ Note that with the above `docker-compose.yml`, ports are only exposed to the doc
 
 From `10.26.1h` it's possible to run TWS in a container. [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) image provides a desktop environment that allows to use TWS.
 
+### tws-webtop (experimental)
+
+linuxserver.io has deprecated the `rdesktop` base image ("RDP users should seek alternatives...
+others advised to transition to Webtop"). As a result, this project also provides an
+**experimental** [tws-webtop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-webtop)
+image, built on `lscr.io/linuxserver/webtop:ubuntu-xfce` (using
+[Selkies](https://github.com/selkies-project/selkies) for browser-based desktop streaming instead
+of RDP). See [tws-webtop-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-webtop-docker-compose.yml)
+to get started.
+
+**Status**: this is not a drop-in replacement for tws-rdesktop, and there is no committed
+timeline to make it the default. Selkies is a young project (linuxserver only rebased their
+webtop images onto it in mid-2025, and the upstream project has flagged that it is short on
+maintainers). XFCE's own Wayland session support is also still incomplete upstream, so this
+image intentionally runs in X11 mode (`PIXELFLUX_WAYLAND=false`) rather than Wayland. Expect
+rough edges, and treat tws-rdesktop as the supported path for now.
+
+**Security defaults differ from tws-rdesktop** — read before exposing beyond `127.0.0.1`:
+
+- Unlike RDP, which always requires a login, the webtop web UI has **no authentication by
+  default**. The base image supports HTTP Basic Auth via `CUSTOM_USER`/`PASSWORD` environment
+  variables (linuxserver's own description: "should be used to keep the kids out, not the
+  internet"), and its web terminal has passwordless `sudo` by default, so anyone who reaches the
+  UI can get root in the container. How (and whether) to wire this into `tws-webtop-docker-compose.yml`
+  by default is still an open question for this project — for now, treat the container as
+  unauthenticated unless you add these variables yourself.
+- This project's own `PASSWD` variable (the `abc` user's OS password) does **not** provide access
+  control on tws-webtop the way it effectively did on tws-rdesktop: RDP authenticated against it,
+  but webtop's `sudo` is passwordless by default and nothing checks this password.
+- HTTPS is on by default (port 3001) using a self-signed certificate generated on first start. To
+  use your own certificate, mount it to `/config/ssl/cert.pem` and `/config/ssl/cert.key` (see the
+  commented volume lines in
+  [tws-webtop-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-webtop-docker-compose.yml)).
+- For anything beyond a trusted local network, put a reverse proxy in front (e.g.
+  [SWAG](https://github.com/linuxserver/docker-swag)) rather than relying on the built-in basic
+  auth.
+
 ### Performance considerations for TWS
 
 [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop) has the following recomended settings.
