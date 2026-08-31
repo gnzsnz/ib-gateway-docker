@@ -5,8 +5,6 @@ services:
 #    devices:
 #      - /dev/dri:/dev/dri #recomended
     shm_size: "1gb" #recomended
-    security_opt:
-      - seccomp:unconfined #recomended
     build:
       context: ./latest
       dockerfile: Dockerfile.tws-webtop
@@ -50,6 +48,7 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_RDP_PORT: ${SSH_RDP_PORT:-}
+      GATEWAY_OR_TWS: ${GATEWAY_OR_TWS:tws}
       START_SCRIPTS: ${START_SCRIPTS:-}
       X_SCRIPTS: ${X_SCRIPTS:-}
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
