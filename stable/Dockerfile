@@ -6,7 +6,7 @@
 ##############################################################################
 
 # hadolint global ignore=DL3008,DL4006
-FROM ubuntu:24.04 AS setup
+FROM ubuntu:25.10 AS setup
 
 ENV IB_GATEWAY_VERSION=10.45.1j
 ENV IB_GATEWAY_CHANNEL=stable
@@ -60,7 +60,7 @@ COPY ./scripts /root/scripts
 # Build Stage: build production image
 ##############################################################################
 
-FROM ubuntu:24.04
+FROM ubuntu:25.10
 
 ENV IB_GATEWAY_VERSION=10.45.1j
 # IB Gateway user constants
