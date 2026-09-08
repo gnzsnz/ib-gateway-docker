@@ -67,6 +67,27 @@ start_process() {
 	start_IBC
 }
 
+# shellcheck disable=SC2329
+stop_ibc() {
+	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down TWS."
+	#
+	if [ -n "$SSH_TUNNEL" ]; then
+		echo ".> Stopping ssh."
+		pkill run_ssh.sh
+		pkill ssh
+	fi
+	echo ".> Stopping socat."
+	pkill run_socat.sh
+	pkill socat
+	# Set TERM
+	echo ".> Stopping IBC."
+	kill -SIGTERM "${pid[@]}"
+	# Wait for exit
+	wait "${pid[@]}"
+	# All done.
+	echo ".> Done... $?"
+}
+
 ###############################################################################
 #####		Common Start
 ###############################################################################
@@ -156,6 +177,7 @@ if [ -n "$IBC_SCRIPTS" ]; then
 	run_scripts "$HOME/$IBC_SCRIPTS"
 fi
 
+trap stop_ibc SIGINT SIGTERM
 wait "${pid[@]}"
 _wait="$?"
 echo ".> ************************** End run_tws.sh ******************************** <."
