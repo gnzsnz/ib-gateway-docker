@@ -15,7 +15,6 @@ jobs:
     name: Build ibgateway & TWS
 
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
 
@@ -59,6 +58,30 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # Dockerfile.tws's setup stage does `FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION}` -- for
+      # an in-progress version bump that tag doesn't exist in the registry yet, so the TWS build
+      # below would otherwise always fail to pull it. Build ibgateway a second time, amd64-only
+      # and loaded into the local image store under that exact ref, so the TWS build can be
+      # redirected to it via build-contexts instead. amd64-only applies only to this local
+      # handoff build and the TWS build below -- ibgateway's own multi-arch validation above is
+      # unaffected, and TWS's real multi-arch build+push still happens in publish.yml once
+      # ibgateway is actually published.
+      - name: Get ib-gateway version for TWS build-context handoff
+        id: ib_version
+        run: |
+          IB_VERSION="$(grep 'ARG IB_VERSION=' ${{ env.CHANNEL }}/Dockerfile.tws | cut -d '=' -f2)"
+          echo "IB_VERSION=$IB_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build local ibgateway image for TWS
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: true
+          platforms: linux/amd64
+          context: ./${{ env.CHANNEL }}
+          cache-from: type=gha
+          tags: ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}
+
       ###############################################################
       #   Build tws
       ###############################################################
@@ -81,9 +104,11 @@ jobs:
         with:
           push: false
           load: false
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           context: ${{ env.CHANNEL }}
           file: ${{ env.CHANNEL }}/Dockerfile.tws
+          build-contexts: |
+            ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}=docker-image://ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta-tws.outputs.tags }}
