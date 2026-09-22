@@ -16,7 +16,8 @@ WORKDIR /
 # Build Stage: build production image
 ##############################################################################
 
-FROM lscr.io/linuxserver/rdesktop:ubuntu-xfce
+# hadolint global ignore=DL3007
+FROM ghcr.io/gnzsnz/rdesktop-xfce:latest
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_RELEASE_CHANNEL=$CHANNEL
