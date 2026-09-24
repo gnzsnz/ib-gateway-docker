@@ -9,19 +9,17 @@ echo "*************************************************************************"
 # source common functions
 source "${SCRIPT_PATH}/common.sh"
 
-# abc's RDP password is normally set by the base image's own
-# init-xrdp-user.sh oneshot (guaranteed to run before xrdp-sesman starts);
-# mirror its precedence here (RDP_PASSWORD env, then persisted
+# abc's RDP password is set by the base image's own init-xrdp-user.sh
+# oneshot (guaranteed to run before xrdp-sesman starts, which natively
+# understands RDP_PASSWORD/RDP_PASSWORD_FILE); mirror its precedence here
+# (RDP_PASSWORD env, then RDP_PASSWORD_FILE, then persisted
 # /config/.rdp_credentials) so we pipe the same password to xrdp-sesrun
-# that was actually chpasswd'd. RDP_PASSWORD_FILE (old _FILE suffix
-# convention, matching ibgateway's own) is a local extension the base
-# image doesn't know about, so if set we chpasswd here ourselves.
+# that was actually chpasswd'd -- no need to chpasswd again ourselves.
 _cred_file=/config/.rdp_credentials
-if [ -n "${RDP_PASSWORD_FILE:-}" ] && [ -s "${RDP_PASSWORD_FILE}" ]; then
-	_rdp_pass=$(cat "${RDP_PASSWORD_FILE}")
-	echo "abc:${_rdp_pass}" | chpasswd
-elif [ -n "${RDP_PASSWORD:-}" ]; then
+if [ -n "${RDP_PASSWORD:-}" ]; then
 	_rdp_pass=${RDP_PASSWORD}
+elif [ -n "${RDP_PASSWORD_FILE:-}" ] && [ -s "${RDP_PASSWORD_FILE}" ]; then
+	_rdp_pass=$(cat "${RDP_PASSWORD_FILE}")
 elif [ -s "$_cred_file" ]; then
 	_rdp_pass=$(cat "$_cred_file")
 fi
