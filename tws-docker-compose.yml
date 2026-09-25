@@ -3,6 +3,9 @@ services:
   tws:
     restart: unless-stopped
     shm_size: "1gb" #recomended
+    devices:
+    - /dev/dri:/dev/dri #recomended
+    #- /dev/dri/renderD128:/dev/dri/renderD128 #another option, don't use both
     security_opt:
       - seccomp:unconfined # required
       - apparmor:unconfined # required
