@@ -2,11 +2,13 @@ name: algo-trader
 services:
   tws:
     restart: unless-stopped
-    devices:
-      - /dev/dri:/dev/dri #recomended
     shm_size: "1gb" #recomended
+    devices:
+    - /dev/dri:/dev/dri #recomended
+    #- /dev/dri/renderD128:/dev/dri/renderD128 #another option, don't use both
     security_opt:
-      - seccomp:unconfined #recomended
+      - seccomp:unconfined # required
+      - apparmor:unconfined # required
     build:
       context: ./latest
       dockerfile: Dockerfile.tws
@@ -16,7 +18,8 @@ services:
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
-      PASSWD: ${PASSWD:-}
+      RDP_PASSWORD: ${RDP_PASSWORD:-}
+      RDP_PASSWORD_FILE: ${RDP_PASSWORD_FILE:-}
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
@@ -56,10 +59,6 @@ services:
     volumes:
       - ./config:/config # optional
       - tws_tmp:/tmp # recommended for performance
-    # custom certificate and key
-    #- ${PWD}/keylock:/keylock # required to avoid key generation by container
-    #- ${PWD/key.pem:/etc/xrdp/key.pem # key
-    #- ${PWD}/cert.pem:/etc/xrdp/cert.pem # cert
     ports:
       - "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper

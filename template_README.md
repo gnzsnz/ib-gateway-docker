@@ -256,9 +256,9 @@ From `10.26.1h` it's possible to run TWS in a container. [tws-rdesktop](https://
 
 In [tws-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml):
 
-- set `/dev/dri:/dev/dri`
 - shm_size: "1gb"
 - `seccomp:unconfined`
+- `apparmor:unconfined`, required. Docker's default AppArmor profile blocks the sandboxed SVG icon loader GNOME/XFCE uses, which can crash the desktop session mid-use.
 - `JAVA_HEAP_SIZE`, depending your TWS you might need to increase it. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm)
 - Volumes, set a volume for `/tmp`. ex `tws_tmp:/tmp`
 - Volumes, set a volumen for `/config`
