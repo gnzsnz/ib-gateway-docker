@@ -1,5 +1,6 @@
 /.env
 tws_settings/
+ibcontroller/
 ssh/
 /config/
 .python-version

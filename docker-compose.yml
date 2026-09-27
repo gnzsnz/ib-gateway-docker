@@ -8,31 +8,33 @@ services:
         - "ghcr.io/gnzsnz/ib-gateway:latest"
     image: ghcr.io/gnzsnz/ib-gateway:latest
     environment:
-      TWS_USERID: ${TWS_USERID}
-      TWS_PASSWORD: ${TWS_PASSWORD}
-      TRADING_MODE: ${TRADING_MODE:-paper}
-      TWS_USERID_PAPER: ${TWS_USERID_PAPER:-}
-      TWS_PASSWORD_PAPER: ${TWS_PASSWORD_PAPER:-}
-      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
-      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-manual}
-      TWS_MASTER_CLIENT_ID: ${TWS_MASTER_CLIENT_ID:-}
-      READ_ONLY_API: ${READ_ONLY_API:-}
+      # ibcontroller env vars, see README's "ibcontroller env vars and config volume"
+      IBC_USERID: ${IBC_USERID}
+      IBC_PASSWORD: ${IBC_PASSWORD}
+      IBC_TRADING_MODE: ${IBC_TRADING_MODE:-paper}
+      # image-only: paper process's own credentials when IBC_TRADING_MODE=both
+      IBC_USERID_PAPER: ${IBC_USERID_PAPER:-}
+      IBC_PASSWORD_PAPER: ${IBC_PASSWORD_PAPER:-}
+      # bare key: "" != unset for ibcontroller, see README
+      IBC_TWS_SETTINGS_PATH:
+      IBC_ACCEPT_INCOMING_CONNECTIONS: ${IBC_ACCEPT_INCOMING_CONNECTIONS:-manual}
+      IBC_READ_ONLY_API:
+      IBC_MFA_TIMEOUT_ACTION: ${IBC_MFA_TIMEOUT_ACTION:-exit}
+      IBC_AUTO_RESTART_TIME:
+      IBC_AUTO_LOGOFF_TIME:
+      # "HH:MM", weekly on Sunday -- direct rename of TWS_COLD_RESTART, same format
+      IBC_COLD_RESTART_TIME:
+      IBC_RELOGIN_AFTER_MFA_TIMEOUT: ${IBC_RELOGIN_AFTER_MFA_TIMEOUT:-no}
+      IBC_MFA_EXIT_INTERVAL: ${IBC_MFA_EXIT_INTERVAL:-60}
+      IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
+      # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
+      # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see README
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
-      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
-      BYPASS_WARNING: ${BYPASS_WARNING:-}
-      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
-      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
-      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
-      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
-      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
-      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
-      TWOFA_DEVICE: ${TWOFA_DEVICE:-}
-      EXISTING_SESSION_DETECTED_ACTION: ${EXISTING_SESSION_DETECTED_ACTION:-primary}
-      ALLOW_BLIND_TRADING: ${ALLOW_BLIND_TRADING:-no}
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
-      JAVA_HEAP_SIZE: ${JAVA_HEAP_SIZE:-}
+      # includes the unit, e.g. "1024m"/"4g"
+      IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
       SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
@@ -45,12 +47,18 @@ services:
       START_SCRIPTS: ${START_SCRIPTS:-}
       X_SCRIPTS: ${X_SCRIPTS:-}
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
-    #    volumes:
+    volumes:
     #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-    #      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-    #      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
+      # config/log persistence, see README; host dir must be owned by USER_ID:USER_GID
+      - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller
+      - ${PWD}/tws_settings/:${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
     #      - ${PWD}/ssh/:/home/ibgateway/.ssh
     #      - ${PWD}/scripts:/home/ibgateway/init-scripts
+      # agent sockets (IBC_APP_DIR/run): tmpfs, not the bind mount above, see README
+      - type: tmpfs
+        target: /home/ibgateway/ibcontroller/run
+        tmpfs:
+          mode: 0o1777 # -> decimal 1023 == octal 1777, /tmp-style perms
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"

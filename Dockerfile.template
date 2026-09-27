@@ -10,19 +10,19 @@ FROM ubuntu:26.04 AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_CHANNEL=$CHANNEL
-ENV IBC_VERSION=3.24.2
+ENV IBCONTROLLER_VERSION=0.1.3
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
-ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
-ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
-ARG IBC_URL="${IBC_REPO}/releases/download/${IBC_VERSION}/${IBC_FILE}"
+# uv-managed python lives here so both stages agree on the path
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_INSTALL_DIR=/usr/local/bin
 
 WORKDIR /tmp/setup
 
 # Prepare system
 RUN apt-get update -y && \
   apt-get install --no-install-recommends --yes \
-  curl ca-certificates unzip && \
+  curl ca-certificates && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if [ "$(uname -m)" = "aarch64" ]; then \
@@ -43,15 +43,15 @@ RUN apt-get update -y && \
   if [ -d "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
     echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
   fi && \
-  # Install IBC
-  curl -sSOL "${IBC_URL}" && \
-  mkdir /root/ibc && \
-  unzip "./${IBC_FILE}" -d /root/ibc && \
-  chmod -R u+x /root/ibc/*.sh && \
-  chmod -R u+x /root/ibc/scripts/*.sh
+  # Install uv, then a managed python (never the distro one), then ibcontroller into it
+  curl -LsSf https://astral.sh/uv/install.sh | sh && \
+  uv python install 3.12 && \
+  PYTHON_BIN="$(uv python find 3.12)" && \
+  uv pip install --python "${PYTHON_BIN}" --break-system-packages \
+    "py-ib-controller==${IBCONTROLLER_VERSION}" && \
+  ln -sfn "$(dirname "${PYTHON_BIN}")" /opt/python/current
 
 COPY ./config/ibgateway/jts.ini.tmpl /root/Jts/jts.ini.tmpl
-COPY ./config/ibc/config.ini.tmpl /root/ibc/config.ini.tmpl
 
 # Copy scripts
 COPY ./scripts /root/scripts
@@ -66,20 +66,29 @@ ENV IB_GATEWAY_VERSION=$VERSION
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
-# IBC env vars
 ENV HOME=/home/ibgateway
 ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
-ENV TWS_PATH=${HOME}/Jts
 ENV TWS_INI=jts.ini
 ENV TWS_INI_TMPL=${TWS_INI}.tmpl
-ENV IBC_PATH=${HOME}/ibc
-ENV IBC_INI=${HOME}/ibc/config.ini
-ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 ENV GATEWAY_OR_TWS=gateway
+# ibcontroller env vars, native names -- ibcontroller reads these directly, no
+# CLI-flag translation, so there is exactly one place each value lives.
+# IBC_APP_DIR is mountable so a user can override
+# ibcontroller.toml/ibkr_settings.toml/labels.json without rebuilding the image
+ENV IBC_APP_DIR=${HOME}/ibcontroller
+# points at the mounted config volume's ibkr_settings.toml; harmless if the
+# file doesn't exist yet (ibcontroller logs it and falls back to built-in
+# settings only) -- renaming ibkr_settings.toml.example there activates it,
+# no other step needed
+ENV IBC_SETTINGS_FILE=${IBC_APP_DIR}/config/ibkr_settings.toml
+ENV IBC_PROGRAM=gateway
+ENV IBC_TWS_PATH=${HOME}/Jts
+ENV IBC_TWS_CHANNEL=$CHANNEL
+ENV PATH="/opt/python/current:${PATH}"
 ARG DEBIAN_FRONTEND=noninteractive
 # Copy files
-COPY --from=setup /usr/local/ /usr/local/
+COPY --from=setup /opt/python/ /opt/python/
 COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
@@ -110,6 +119,6 @@ CMD ["/home/ibgateway/scripts/run.sh"]
 
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
 LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway
-LABEL org.opencontainers.image.description="Docker image with IB Gateway and IBC "
+LABEL org.opencontainers.image.description="Docker image with IB Gateway and ibcontroller "
 LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
 LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}

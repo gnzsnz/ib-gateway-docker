@@ -2,34 +2,26 @@
 # shellcheck disable=SC1091
 
 apply_settings() {
-	# apply env variables into IBC and gateway/TWS config files
+	# apply env variables into gateway/TWS config files (ibcontroller owns its
+	# own config.ini equivalent -- this is jts.ini only)
 	if [ "$CUSTOM_CONFIG" != "yes" ]; then
-		echo ".> Appling settings to IBC's config.ini"
-
-		file_env 'TWS_PASSWORD'
-		# replace env variables
-		envsubst <"${IBC_INI_TMPL}" >"${IBC_INI}"
-		unset_env 'TWS_PASSWORD'
-		# set config.ini readable by user only
-		chmod 600 "${IBC_INI}"
-
 		# where are settings stored
-		if [ -n "$TWS_SETTINGS_PATH" ]; then
-			echo ".> Settings directory set to: $TWS_SETTINGS_PATH"
-			_JTS_PATH=$TWS_SETTINGS_PATH
-			if [ ! -d "$TWS_SETTINGS_PATH" ]; then
-				# if TWS_SETTINGS_PATH does not exists, create it
-				echo ".> Creating directory: $TWS_SETTINGS_PATH"
-				mkdir "$TWS_SETTINGS_PATH"
+		if [ -n "$IBC_TWS_SETTINGS_PATH" ]; then
+			echo ".> Settings directory set to: $IBC_TWS_SETTINGS_PATH"
+			_JTS_PATH=$IBC_TWS_SETTINGS_PATH
+			if [ ! -d "$IBC_TWS_SETTINGS_PATH" ]; then
+				# if IBC_TWS_SETTINGS_PATH does not exists, create it
+				echo ".> Creating directory: $IBC_TWS_SETTINGS_PATH"
+				mkdir "$IBC_TWS_SETTINGS_PATH"
 			fi
 		else
-			echo ".> Settings directory NOT set, defaulting to: $TWS_PATH"
-			_JTS_PATH=$TWS_PATH
+			echo ".> Settings directory NOT set, defaulting to: $IBC_TWS_PATH"
+			_JTS_PATH=$IBC_TWS_PATH
 		fi
 		# only if jts.ini does not exists
 		if [ ! -f "$_JTS_PATH/$TWS_INI" ]; then
 			echo ".> Setting timezone in ${_JTS_PATH}/${TWS_INI}"
-			envsubst <"${TWS_PATH}/${TWS_INI_TMPL}" >"${_JTS_PATH}/${TWS_INI}"
+			envsubst <"${IBC_TWS_PATH}/${TWS_INI_TMPL}" >"${_JTS_PATH}/${TWS_INI}"
 		else
 			echo ".> File jts.ini already exists, not setting timezone"
 		fi
@@ -91,53 +83,41 @@ set_ports() {
 
 	# ibgateway ports
 	if [ "${GATEWAY_OR_TWS}" = "gateway" ]; then
-		if [ "$TRADING_MODE" = "paper" ]; then
+		if [ "$IBC_TRADING_MODE" = "paper" ]; then
 			# paper ibgateway ports
 			API_PORT=4002
 			SOCAT_PORT=4004
 			export API_PORT SOCAT_PORT
-		elif [ "$TRADING_MODE" = "live" ]; then
+		elif [ "$IBC_TRADING_MODE" = "live" ]; then
 			# live ibgateway ports
 			API_PORT=4001
 			SOCAT_PORT=4003
 			export API_PORT SOCAT_PORT
 		else
 			# invalid option
-			echo ".> Invalid TRADING_MODE: $TRADING_MODE"
+			echo ".> Invalid IBC_TRADING_MODE: $IBC_TRADING_MODE"
 			exit 1
 		fi
 	elif [ "${GATEWAY_OR_TWS}" = "tws" ]; then
-		if [ "$TRADING_MODE" = "paper" ]; then
+		if [ "$IBC_TRADING_MODE" = "paper" ]; then
 			# paper TWS ports
 			API_PORT=7497
 			SOCAT_PORT=7499
 			export API_PORT SOCAT_PORT
-		elif [ "$TRADING_MODE" = "live" ]; then
+		elif [ "$IBC_TRADING_MODE" = "live" ]; then
 			# live TWS ports
 			API_PORT=7496
 			SOCAT_PORT=7498
 			export API_PORT SOCAT_PORT
 		else
 			# invalid option
-			echo ".> Invalid TRADING_MODE: $TRADING_MODE"
+			echo ".> Invalid IBC_TRADING_MODE: $IBC_TRADING_MODE"
 			exit 1
 		fi
 	fi
 	echo ".> API_PORT set to: ${API_PORT}"
 	echo ".> SOCAT_PORT set to: ${SOCAT_PORT}"
 
-}
-
-set_java_heap() {
-	# set java heap size in vm options
-	if [ -n "${JAVA_HEAP_SIZE}" ]; then
-		_vmpath="${TWS_PATH}/ibgateway/${IB_GATEWAY_VERSION}"
-		_string="s/-Xmx768m/-Xmx${JAVA_HEAP_SIZE}m/g"
-		sed -i "${_string}" "${_vmpath}/ibgateway.vmoptions"
-		echo ".> Java heap size set to ${JAVA_HEAP_SIZE}m"
-	else
-		echo ".> Usign default Java heap size 768m."
-	fi
 }
 
 port_forwarding() {

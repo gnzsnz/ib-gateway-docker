@@ -94,12 +94,12 @@ jobs:
             echo "invalid channel: ${{ matrix.channel }}"
             exit 1
           fi
-          # IBC
-          export IBC_VERSION="$(grep 'ENV IBC_VERSION' Dockerfile.template|cut -d '=' -f 2)"
+          # ibcontroller
+          export IBCONTROLLER_VERSION="$(grep 'ENV IBCONTROLLER_VERSION' Dockerfile.template|cut -d '=' -f 2)"
           # show in log
-          echo "$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBC_VERSION"
+          echo "$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBCONTROLLER_VERSION"
           # replace variables
-          envsubst '$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBC_VERSION' < template_README.md > README.md
+          envsubst '$LATEST_VERSION,$LATEST_MINOR,$STABLE_VERSION,$STABLE_MINOR,$IBCONTROLLER_VERSION' < template_README.md > README.md
 
       - name: Create PR
         if: ${{ steps.check-update.outputs.has_update == 'true' }}

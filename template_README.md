@@ -13,7 +13,7 @@ It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
-- [IBC](https://github.com/IbcAlpha/IBC) - to control TWS/IB Gateway (simulates user input).
+- [ibcontroller](https://github.com/gnzsnz/ibcontroller) - to control TWS/IB Gateway (simulates user input).
 - [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
   virtual framebuffer to run IB Gateway Application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact
@@ -37,12 +37,12 @@ It includes:
 
 Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
-| Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
+| Image| Channel  | IB Gateway Version  | ibcontroller Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `${LATEST_VERSION}` | `${IBC_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
-| [ib-gateway][1] |`stable` | `${STABLE_VERSION}` | `${IBC_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
-| [tws-rdesktop][2] | `latest` | `${LATEST_VERSION}` | `${IBC_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
-| [tws-rdesktop][2] |`stable` | `${STABLE_VERSION}` | `${IBC_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
+| [ib-gateway][1] | `latest` | `${LATEST_VERSION}` | `${IBCONTROLLER_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
+| [ib-gateway][1] |`stable` | `${STABLE_VERSION}` | `${IBCONTROLLER_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
+| [tws-rdesktop][2] | `latest` | `${LATEST_VERSION}` | `${IBCONTROLLER_VERSION}` | `latest` `${LATEST_MINOR}` `${LATEST_VERSION}` |
+| [tws-rdesktop][2] |`stable` | `${STABLE_VERSION}` | `${IBCONTROLLER_VERSION}` | `stable` `${STABLE_MINOR}` `${STABLE_VERSION}` |
 
 All tags are available in the container repository for [ib-gateway][1] and
 [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
@@ -65,30 +65,29 @@ services:
         - "ghcr.io/gnzsnz/ib-gateway:stable"
     image: ghcr.io/gnzsnz/ib-gateway:stable
     environment:
-      TWS_USERID: ${TWS_USERID}
-      TWS_PASSWORD: ${TWS_PASSWORD}
-      TWS_PASSWORD_FILE: ${TWS_PASSWORD_FILE}
-      TRADING_MODE: ${TRADING_MODE:-paper}
-      TWS_SETTINGS_PATH: ${TWS_SETTINGS_PATH:-}
-      TWS_ACCEPT_INCOMING: ${TWS_ACCEPT_INCOMING:-}
-      TWS_MASTER_CLIENT_ID: ${TWS_MASTER_CLIENT_ID:-}
-      READ_ONLY_API: ${READ_ONLY_API:-}
+      # ibcontroller env vars, see "ibcontroller env vars and config volume" below
+      IBC_USERID: ${IBC_USERID}
+      IBC_PASSWORD: ${IBC_PASSWORD}
+      IBC_TRADING_MODE: ${IBC_TRADING_MODE:-paper}
+      # bare key: "" != unset for ibcontroller, see below
+      IBC_TWS_SETTINGS_PATH:
+      IBC_ACCEPT_INCOMING_CONNECTIONS: ${IBC_ACCEPT_INCOMING_CONNECTIONS:-manual}
+      IBC_READ_ONLY_API:
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
-      TWOFA_TIMEOUT_ACTION: ${TWOFA_TIMEOUT_ACTION:-exit}
-      BYPASS_WARNING: ${BYPASS_WARNING:-}
-      AUTO_RESTART_TIME: ${AUTO_RESTART_TIME:-}
-      AUTO_LOGOFF_TIME: ${AUTO_LOGOFF_TIME:-}
-      TWS_COLD_RESTART: ${TWS_COLD_RESTART:-}
-      SAVE_TWS_SETTINGS: ${SAVE_TWS_SETTINGS:-}
-      RELOGIN_AFTER_TWOFA_TIMEOUT: ${RELOGIN_AFTER_TWOFA_TIMEOUT:-no}
-      TWOFA_EXIT_INTERVAL: ${TWOFA_EXIT_INTERVAL:-60}
-      TWOFA_DEVICE: ${TWOFA_DEVICE:-}
-      EXISTING_SESSION_DETECTED_ACTION: ${EXISTING_SESSION_DETECTED_ACTION:-primary}
-      ALLOW_BLIND_TRADING: ${ALLOW_BLIND_TRADING:-no}
+      IBC_MFA_TIMEOUT_ACTION: ${IBC_MFA_TIMEOUT_ACTION:-exit}
+      IBC_AUTO_RESTART_TIME:
+      IBC_AUTO_LOGOFF_TIME:
+      IBC_COLD_RESTART_TIME:
+      IBC_RELOGIN_AFTER_MFA_TIMEOUT: ${IBC_RELOGIN_AFTER_MFA_TIMEOUT:-no}
+      IBC_MFA_EXIT_INTERVAL: ${IBC_MFA_EXIT_INTERVAL:-60}
+      IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
+      # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
+      # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see below
       TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
       TZ: ${TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
-      JAVA_HEAP_SIZE: ${JAVA_HEAP_SIZE:-}
+      # includes the unit, e.g. "1024m"/"4g"
+      IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
       SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
@@ -103,10 +102,16 @@ services:
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
 #    volumes:
 #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
+      # config/log persistence, see below; host dir must be owned by USER_ID:USER_GID
+      - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller
+      - ${PWD}/tws_settings/:${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
 #      - ${PWD}/ssh/:/home/ibgateway/.ssh
 #      - ${PWD}/init-scripts:/home/ibgateway/init-scripts
+      # agent sockets (IBC_APP_DIR/run): tmpfs, not the bind mount above, see below
+      - type: tmpfs
+        target: /home/ibgateway/ibcontroller/run
+        tmpfs:
+          mode: 0o1777 # -> decimal 1023 == octal 1777, /tmp-style perms
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"
@@ -117,34 +122,37 @@ services:
 Create an .env on root directory. You can use the provided [.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/.env-dist) as a starting point. Example .env file:
 
 ```bash
-TWS_USERID=myTwsAccountName
-TWS_PASSWORD=myTwsPassword
+IBC_USERID=myTwsAccountName
+IBC_PASSWORD=myTwsPassword
 # see credentials section
-#TWS_PASSWORD_FILE
-#TWS_USERID_PAPER=
-#TWS_PASSWORD_PAPER=
-#TWS_PASSWORD_PAPER_FILE=
+#IBC_PASSWORD_FILE=
+# for parallel execution, live and paper simultaneously (image-level only,
+# no ibcontroller-side pair -- see IBC_TRADING_MODE=both)
+#IBC_USERID_PAPER=
+#IBC_PASSWORD_PAPER=
+#IBC_PASSWORD_PAPER_FILE=
 # ib-gateway
-#TWS_SETTINGS_PATH=/home/ibgateway/tws_settings
+#IBC_TWS_SETTINGS_PATH=/home/ibgateway/tws_settings
 # tws
-#TWS_SETTINGS_PATH=/config/tws_settings
-TWS_SETTINGS_PATH=
-TWS_ACCEPT_INCOMING=
-TRADING_MODE=paper
-READ_ONLY_API=no
+#IBC_TWS_SETTINGS_PATH=/config/tws_settings
+# commented, not "=" empty: ibcontroller treats present-but-empty the same as
+# any other value, not as unset -- an absent var is what "leave unchanged" needs
+#IBC_ACCEPT_INCOMING_CONNECTIONS=manual
+IBC_TRADING_MODE=paper
+IBC_READ_ONLY_API=no
 VNC_SERVER_PASSWORD=myVncPassword
-TWOFA_TIMEOUT_ACTION=restart
-TWOFA_DEVICE=
-BYPASS_WARNING=
-AUTO_RESTART_TIME=11:59 PM
-AUTO_LOGOFF_TIME=
-TWS_COLD_RESTART=
-SAVE_TWS_SETTINGS=
-RELOGIN_AFTER_TWOFA_TIMEOUT=yes
-EXISTING_SESSION_DETECTED_ACTION=primary
-ALLOW_BLIND_TRADING=no
+IBC_MFA_TIMEOUT_ACTION=restart
+# no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
+# BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see below
+IBC_AUTO_RESTART_TIME=11:59 PM
+#IBC_AUTO_LOGOFF_TIME=08:00 PM
+#IBC_COLD_RESTART_TIME=13:00
+#IBC_MFA_EXIT_INTERVAL=60
+IBC_RELOGIN_AFTER_MFA_TIMEOUT=yes
+IBC_EXISTING_SESSION_ACTION=primary
 TIME_ZONE=Europe/Zurich
 CUSTOM_CONFIG=
+#IBC_JAVA_HEAP_SIZE=1024m
 SSH_TUNNEL=
 SSH_OPTIONS=
 SSH_ALIVE_INTERVAL=
@@ -174,55 +182,69 @@ problems and solutions. If you have problems please go through the [troubleshoot
 
 ## Configuration
 
+### ibcontroller env vars and config volume
+
+`ibcontroller` reads `IBC_*` env vars directly -- most are just `IBC_VAR: ${IBC_VAR:-default}`
+in `docker-compose.yml`. A few (`IBC_TWS_SETTINGS_PATH`, `IBC_READ_ONLY_API`,
+`IBC_AUTO_RESTART_TIME`, `IBC_AUTO_LOGOFF_TIME`, `IBC_COLD_RESTART_TIME`) are set as a bare
+key instead (no `${VAR:-}`), because ibcontroller treats a present-but-empty value the same
+as any other value, not as unset -- `${VAR:-}` would set it to `""` and get rejected; a bare
+key is omitted entirely unless `.env` actually sets it, which is what "leave unchanged"
+needs.
+
+The optional `${PWD}/ibcontroller/` volume persists `ibcontroller.toml`/`ibkr_settings.toml`/
+`labels.json` (rename the scaffolded `*.example` files to activate). Its `run/` subdirectory
+(the agent's Unix-domain sockets) is deliberately *not* part of that mount -- it's a separate
+`tmpfs`, since some Docker backends can't host real sockets on a bind-mounted directory. That
+`tmpfs` needs an explicit `mode: 0o1777` (`/tmp`-style permissions) too, or it defaults to
+`root:root`/`0755` and the container's non-root user can't create sockets in it -- use the
+YAML octal literal (`0o1777`), not a bare decimal `1777`, which parses to the wrong bits.
+
 All environment variables are common between ibgateway and TWS image, unless specifically stated. The container can be configured with the following environment variables:
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `TWS_USERID`  | The TWS **username**. |   |
-| `TWS_PASSWORD` | The TWS **password**.  |   |
-| `TWS_PASSWORD_FILE` | The file containing TWS **password**. See [credentials section](#credentials). |   |
-| `TRADING_MODE` | **live** or **paper**. From `10.26.1k` it supports **both** which will start ib-gateway or TWS in live AND paper mode in parallel within the container. | **paper** |
-| `TWS_USERID_PAPER`  | If `TRADING_MODE=both`, then this is required to pass paper account user  | **not defined** |
-| `TWS_PASSWORD_PAPER` | If `TRADING_MODE=both`, then this is required to pass paper account password  | **not defined**  |
-| `TWS_PASSWORD_PAPER_FILE` | If `TRADING_MODE=both`, then this is required to pass paper account password. See [credentials section](#credentials).  | **not defined**  |
-| `READ_ONLY_API`  | **yes** or **no**. [See IBC documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md)  | **not defined** |
+| `IBC_USERID`  | The TWS/Gateway **username**. |   |
+| `IBC_PASSWORD` | The TWS/Gateway **password**.  |   |
+| `IBC_PASSWORD_FILE` | The file containing the password. See [credentials section](#credentials). |   |
+| `IBC_TRADING_MODE` | **live** or **paper**. **both** starts ib-gateway or TWS in live AND paper mode in parallel within the container. | **paper** |
+| `IBC_USERID_PAPER`  | If `IBC_TRADING_MODE=both`, the paper account username (image-only: fed to the second process, no ibcontroller-side pair) | **not defined** |
+| `IBC_PASSWORD_PAPER` | If `IBC_TRADING_MODE=both`, the paper account password (image-only)  | **not defined**  |
+| `IBC_PASSWORD_PAPER_FILE` | Same as above, from a file. See [credentials section](#credentials).  | **not defined**  |
+| `IBC_READ_ONLY_API`  | **true** or **false**. Leave unset to leave Gateway/TWS's own setting unchanged.  | **not defined** |
 | `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
-| `VNC_SERVER_PASSWORD_FILE`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. | **not defined** (VNC disabled) |
-| `TWOFA_TIMEOUT_ACTION`      | 'exit' or 'restart', set to 'restart if you set `AUTO_RESTART_TIME`. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication)  | exit  |
-| `TWOFA_DEVICE` | second factor authentication device. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L104) | **not defined** |
-| `TWOFA_EXIT_INTERVAL` | It controls how long (in seconds) IBC waits for login to complete after the user acknowledges the second factor authentication. See [IBC documentation](https://github.com/IbcAlpha/IBC/blob/38593af5193ccd634aa226cc66242adc8718b653/resources/config.ini#L147) | 60 seconds |
-| `BYPASS_WARNING` | Settings relate to the corresponding 'Precautions' checkboxes in the API section of the Global Configuration dialog. Accepted values `yes`, `no` if not set, the existing TWS/Gateway configuration is unchanged  | **not defined**                                      |
-| `AUTO_RESTART_TIME`  | time to restart IB Gateway, does not require daily 2FA validation. format hh:mm AM/PM. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#ibc-user-guide) | **not defined**  |
-| `AUTO_LOGOFF_TIME` | Auto-Logoff: at a specified time, TWS shuts down tidily, without restarting   | **not defined**   |
-| `TWS_COLD_RESTART` | IBC >= 3.19 set this value to <hh:mm> | **not defined** |
-| `SAVE_TWS_SETTINGS`  | automatically save its settings on a schedule of your choosing. You can specify one or more specific times, ex `SaveTwsSettingsAt=08:00   12:30 17:30`  | **not defined**  |
-| `RELOGIN_AFTER_TWOFA_TIMEOUT` | support relogin after timeout. See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/master/userguide.md#second-factor-authentication) | no  |
-| `EXISTING_SESSION_DETECTED_ACTION` | Set Existing Session Detected Action. See IBC [documentation](https://github.com/gnzsnz/ib-gateway-docker/blob/master/latest/config/ibc/config.ini.tmpl#L296-L329) | primary |
-| `ALLOW_BLIND_TRADING` | TWS displays a dialog to warn you against blind trading.See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/c98d0bcc2ead9b8ab3900a23a707f01f8fd7dfbc/resources/config.ini#L702)| no |
-| `TIME_ZONE`  | Support for timezone, see your TWS jts.ini file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This sets time zone for IB Gateway. If jts.ini exists it will not be set. if `TWS_SETTINGS_PATH` is set and stored in a volume, jts.ini will already exists so this will not be used. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
-| `TWS_SETTINGS_PATH` | Settings path used by IBC's parameter `--tws_settings_path`. Use with a volume to preserve settings in the volume. If `TRADING_MODE=both` this will be the prefix four your settings. ex `/config/tws_settings_live` and `/config/tws_settings_paper`. |  |
-| `TWS_ACCEPT_INCOMING` | See IBC documentation, possible values `accept`, `reject`, `manual` | `manual` |
-| `TWS_MASTER_CLIENT_ID` | See IBC [documentation](https://github.com/IbcAlpha/IBC/blob/b866a263afec948c70352ce077e1560f3ad2b152/resources/config.ini#L349) | **not defined** |
-| `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not generate config files using env variables. You should mount config files. Use with care and only if you know what you are doing. | NO |
-| `JAVA_HEAP_SIZE` | Set Java heap, default 768MB, TWS might need more. Proposed value 1024. Enter just the number, don't enter units, ex mb. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm) | **not defined**  |
+| `VNC_SERVER_PASSWORD_FILE`  | Same as above, from a file. | **not defined** (VNC disabled) |
+| `IBC_MFA_TIMEOUT_ACTION`      | `exit` or `restart` when a 2FA push goes unanswered. `restart` also needs `IBC_RELOGIN_AFTER_MFA_TIMEOUT=yes`.  | exit  |
+| `IBC_MFA_EXIT_INTERVAL` | Seconds ibcontroller waits for login to complete after the 2FA push is acknowledged. | 60 |
+| `IBC_AUTO_RESTART_TIME`  | Daily restart time, format `hh:mm AM/PM`; does not require daily 2FA validation. | **not defined**  |
+| `IBC_AUTO_LOGOFF_TIME` | At this daily time, closes tidily without restarting. Shares one radio-button pair with `IBC_AUTO_RESTART_TIME` -- if both are set, the restart wins.   | **not defined**   |
+| `IBC_COLD_RESTART_TIME` | `HH:MM`, weekly on Sunday: closes tidily and relaunches with a full fresh login, forcing IBKR's Sunday 01:00 US/Eastern token-invalidation reauth. | **not defined** |
+| `IBC_RELOGIN_AFTER_MFA_TIMEOUT` | Restart the login if the 2FA push times out. | no  |
+| `IBC_EXISTING_SESSION_ACTION` | `manual`/`primary`/`primaryoverride`/`secondary`. | primary |
+| `TIME_ZONE`  | Time zone, see your TWS `jts.ini` file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If `jts.ini` already exists (e.g. a preserved `IBC_TWS_SETTINGS_PATH` volume) this is not applied. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
+| `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. Use with a volume to preserve settings. If `IBC_TRADING_MODE=both` the image suffixes it with `_live`/`_paper`. |  |
+| `IBC_ACCEPT_INCOMING_CONNECTIONS` | `accept`, `reject`, or `manual` | `manual` |
+| *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Use `ibkr_settings.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
+| `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not write `jts.ini` itself -- mount your own instead. | NO |
+| `IBC_JAVA_HEAP_SIZE` | JVM heap for TWS/Gateway at launch. Includes the unit, e.g. `1024m`/`4g`. Leave unset for the installed default (768m). | **not defined**  |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. if set to `both` then `socat` AND remote ssh tunnel are started. SSH keys should be provided to container through ~/.ssh volume.  | **not defined**                                      |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) client | **not defined** |
 | `SSH_ALIVE_INTERVAL`   | [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 20   |
 | `SSH_ALIVE_COUNT`  | [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | **not defined** |
 | `SSH_PASSPHRASE`   | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys   | **not defined**   |
 | `SSH_PASSPHRASE_FILE`   | file containing passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys   | **not defined**   |
-| `SSH_REMOTE_PORT`   | Remote port for ssh tunnel. If `TRADING_MODE=both` then `SSH_REMOTE_PORT` is set to paper port `4002/7498`  | Same port than IB gateway `4001/4002` or `7497/7498` |
+| `SSH_REMOTE_PORT`   | Remote port for ssh tunnel. If `IBC_TRADING_MODE=both` then `SSH_REMOTE_PORT` is set to paper port `4002/7498`  | Same port than IB gateway `4001/4002` or `7497/7498` |
 | `SSH_USER_TUNNEL`   | `user@server` to connect to    | **not defined**   |
 | `SSH_RESTART`  | Number of seconds to wait before restarting tunnel in case of disconnection.  | 5  |
 | `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`. Specific to ibgateway, ignored by TWS.  | **not defined**   |
 | `SSH_RDP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_RDP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
 | `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
 | `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
-| `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
-| `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
+| `RDP_PASSWORD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
+| `RDP_PASSWORD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
 | `START_SCRIPTS` | Directory with bash scripts to run **before** X environment is up. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `X_SCRIPTS` | Directory with bash scripts to run **after** X environment is running. See [start-up scripts](#start-up-scripts) | **not defined** |
-| `IBC_SCRIPTS` | Directory with bash scripts to run **after** IBC is running. See [start-up scripts](#start-up-scripts) | **not defined** |
+| `IBC_SCRIPTS` | Directory with bash scripts to run **after** ibcontroller is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 
 ## Ports
 
@@ -269,21 +291,28 @@ The start up script will disable xfce compositing, as this has a significant imp
 
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
 
-However, if you need to go beyond what's available, the image can be customized by overwriting the default configuration files with custom ones. To do this you must set environment variable `CUSTOM_CONFIG=yes`. By setting `CUSTOM_CONFIG=yes` `run.sh` script will not replace environment variables on config files. You must provide config files ready to be used by IB gateway/TWS and IBC, please make sure that you are familiar with [IBC](https://github.com/IbcAlpha/IBC/blob/master/userguide.md) settings.
+However, if you need to go beyond what's available as env vars, `ibcontroller`
+itself is configured through a **flat** TOML file (`ibcontroller.toml`) and a
+declarative settings file (`ibkr_settings.toml`), both under the [config
+volume](#ibcontroller-env-vars-and-config-volume) -- see there for the mount
+and [ibcontroller's own README](https://github.com/gnzsnz/ibcontroller/blob/main/README.md)
+for the full field reference. `CUSTOM_CONFIG=yes` is unrelated to that: it
+only tells `run.sh` to leave `jts.ini` alone (see the table below) rather than
+write it itself, for when you want to mount your own.
 
-Image IB Gateway and IBC config file locations:
+Image config file locations:
 
 | App  | Config file  | Default  |
 | --- | --- | --- |
 | IB Gateway | /home/ibgateway/Jts/jts.ini    | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC  | /home/ibgateway/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
+| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `ibkr_settings.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
 
 For TWS image config file locations are:
 
 | App | Config file  | Default  |
 | --- | --- | --- |
 | TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| IBC | /opt/ibc/config.ini | [config.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibc/config.ini.tmpl) |
+| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `ibkr_settings.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
 
 Sample settings:
 
@@ -293,23 +322,22 @@ Sample settings:
       - CUSTOM_CONFIG: yes
 ...
     volumes:
-      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
+      - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller # ibcontroller config/log
       - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini # for IB Gateway
       - ${PWD}/jts.ini:/opt/ibkr/jts.ini # for TWS
-      - ${PWD}/config.ini:/opt/ibc/config.ini # for TWS
 ...
 ```
 
 ### Preserve settings across containers
 
 You can preserve IB Gateway configuration by setting environment variable
-`$TWS_SETTINGS_PATH` and setting a volume
+`$IBC_TWS_SETTINGS_PATH` and setting a volume
 
 ```yaml
 ...
     environment:
-      - TWS_SETTINGS_PATH: /home/ibgateway/tws_settings # IB Gateway
-      - TWS_SETTINGS_PATH: /config/tws_settings # tws rdesktop
+      - IBC_TWS_SETTINGS_PATH: /home/ibgateway/tws_settings # IB Gateway
+      - IBC_TWS_SETTINGS_PATH: /config/tws_settings # tws rdesktop
 ...
     volumes:
       - ${PWD}/tws_settings:/home/ibgateway/tws_settings # IB Gateway
@@ -318,7 +346,7 @@ You can preserve IB Gateway configuration by setting environment variable
 
 ```
 
-For TWS it's recommended to use `TWS_SETTINGS_PATH`, as there is a good amount
+For TWS it's recommended to use `IBC_TWS_SETTINGS_PATH`, as there is a good amount
 of data written to disk.
 
 **Important**: when you save your config in a volume, file `jts.ini` will be
@@ -360,9 +388,9 @@ The start up process will search for start-up scripts in `$HOME/START_SCRIPTS`,
 
 Scripts in directory `$HOME/START_SCRIPTS` will run before the X environment is
 up. Scripts in `$HOME/X_SCRIPTS` will run once X environment is up, and
-`$HOME/IBC_SCRIPTS` once IBC runs. Take into account that scripts will run as
+`$HOME/IBC_SCRIPTS` once ibcontroller runs. Take into account that scripts will run as
 soon as possible, so you might need to wait for X environment to be fully up or
-IBC to complete ibgateway/TWS start-up process.
+ibcontroller to complete ibgateway/TWS start-up process.
 
 ## Security Considerations
 
@@ -528,7 +556,7 @@ services:
   ...
   environment:
     ...
-    TWS_PASSWORD_FILE: /run/secrets/tws_password
+    IBC_PASSWORD_FILE: /run/secrets/tws_password
     SSH_PASSPHRASE_FILE: /run/secrets/ssh_passphrase
     VNC_SERVER_PASSWORD_FILE: /run/secrets/vnc_password
     ...
@@ -658,8 +686,9 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
    `ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`, where
    `{IB_GATEWAY_VERSION}` must match the version as configured on Dockerfile
    (first line)
-1. Download IBC and name the file `IBCLinux-${IBC_VERSION}.zip`, where
-   `{IBC_VERSION}` must match the version as configured on Dockerfile
+1. `ibcontroller` is pulled from PyPI at build time (`py-ib-controller`,
+   pinned by `IBCONTROLLER_VERSION` in `Dockerfile.template`) -- no manual
+   download needed, just network access during the build
 1. Build and run: `docker-compose up --build`
 
 [1]: https://github.com/users/gnzsnz/packages/container/package/ib-gateway "ib-gateway"

@@ -23,7 +23,16 @@ repos:
   rev: v0.39.0
   hooks:
   - id: markdownlint
-- repo: https://github.com/wemake-services/dotenv-linter
-  rev: 0.5.0 # Use the ref you want to point at
+  # dotenv-linter/dotenv-linter's own `language: docker` hook can't build --
+  # its .dockerignore excludes its own Dockerfile from the build context, a
+  # bug present since the hook manifest was first added (v4.0.0). Using
+  # their published image directly instead avoids that build step entirely.
+- repo: local
   hooks:
   - id: dotenv-linter
+    name: dotenv-linter
+    description: "Checks the style of Dotenv files."
+    language: docker_image
+    entry: dotenvlinter/dotenv-linter:4.0.0 check
+    types: [text]
+    files: '\.env*'
