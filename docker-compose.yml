@@ -4,6 +4,8 @@ services:
     restart: always
     build:
       context: ./latest
+      dockerfile: Dockerfile
+      target: gateway
       tags:
         - "ghcr.io/gnzsnz/ib-gateway:latest"
     image: ghcr.io/gnzsnz/ib-gateway:latest

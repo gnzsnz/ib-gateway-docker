@@ -82,7 +82,7 @@ set_ports() {
 	# set ports for API and SOCAT
 
 	# ibgateway ports
-	if [ "${GATEWAY_OR_TWS}" = "gateway" ]; then
+	if [ "${IBC_PROGRAM}" = "gateway" ]; then
 		if [ "$IBC_TRADING_MODE" = "paper" ]; then
 			# paper ibgateway ports
 			API_PORT=4002
@@ -98,7 +98,7 @@ set_ports() {
 			echo ".> Invalid IBC_TRADING_MODE: $IBC_TRADING_MODE"
 			exit 1
 		fi
-	elif [ "${GATEWAY_OR_TWS}" = "tws" ]; then
+	elif [ "${IBC_PROGRAM}" = "tws" ]; then
 		if [ "$IBC_TRADING_MODE" = "paper" ]; then
 			# paper TWS ports
 			API_PORT=7497
@@ -209,11 +209,11 @@ start_ssh() {
 	echo ".> SSH_REMOTE_PORT set to :${SSH_REMOTE_PORT}"
 
 	# set vnc ssh tunnel
-	if [ "$GATEWAY_OR_TWS" = "gateway" ] && [ -n "$SSH_VNC_PORT" ] && pgrep x11vnc >/dev/null; then
+	if [ "$IBC_PROGRAM" = "gateway" ] && [ -n "$SSH_VNC_PORT" ] && pgrep x11vnc >/dev/null; then
 		# set ssh tunnel for vnc
 		SSH_SCREEN="-R 127.0.0.1:5900:localhost:$SSH_VNC_PORT"
 		echo ".> SSH_VNC_TUNNEL set to :${SSH_SCREEN}"
-	elif [ "$GATEWAY_OR_TWS" = "tws" ] && [ -n "$SSH_RDP_PORT" ]; then
+	elif [ "$IBC_PROGRAM" = "tws" ] && [ -n "$SSH_RDP_PORT" ]; then
 		# set ssh tunnel for rdp
 		SSH_SCREEN="-R 127.0.0.1:3389:localhost:$SSH_RDP_PORT"
 		echo ".> SSH_RDP_TUNNEL set to :${SSH_SCREEN}"

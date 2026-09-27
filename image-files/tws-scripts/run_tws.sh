@@ -4,8 +4,13 @@
 
 set -Eeo pipefail
 
+# start_session.sh reaches this script through `sudo -EH -u abc`, and sudo's
+# secure_path resets PATH regardless of -E -- reassert it here rather than
+# trusting what we're invoked with
+export PATH="/opt/python/current:${PATH}"
+
 echo "*************************************************************************"
-echo ".> Starting IBC/TWS"
+echo ".> Starting ibcontroller/TWS"
 echo "*************************************************************************"
 # source common functions
 source "${SCRIPT_PATH}/common.sh"
@@ -36,25 +41,44 @@ disable_compositing() {
 		--type=bool --set=false --create
 }
 
-start_IBC() {
-	echo ".> Starting IBC in ${TRADING_MODE} mode, with params:"
-	echo ".>		Version: ${TWS_MAJOR_VRSN}"
-	echo ".>		program: ${IBC_COMMAND:-gateway}"
-	echo ".>		tws-path: ${TWS_PATH}"
-	echo ".>		ibc-path: ${IBC_PATH}"
-	echo ".>		ibc-init: ${IBC_INI}"
-	echo ".>		tws-settings-path: ${TWS_SETTINGS_PATH:-$TWS_PATH}"
-	echo ".>		on2fatimeout: ${TWOFA_TIMEOUT_ACTION}"
-	# start IBC
-	"${IBC_PATH}/scripts/ibcstart.sh" "${TWS_MAJOR_VRSN}" \
-		"--tws-path=${TWS_PATH}" \
-		"--ibc-path=${IBC_PATH}" "--ibc-ini=${IBC_INI}" \
-		"--on2fatimeout=${TWOFA_TIMEOUT_ACTION}" \
-		"--tws-settings-path=${TWS_SETTINGS_PATH:-}" &
+# shellcheck disable=SC2329
+stop_ibcontroller() {
+	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down TWS."
+
+	# ibcontroller closes TWS through its own GUI, so xrdp/XFCE must still be
+	# up while it does that -- stop ibcontroller first and wait for it to
+	# actually exit, same order as run.sh
+	echo ".> Stopping ibcontroller."
+	kill -SIGTERM "${pid[@]}"
+	wait "${pid[@]}"
+	echo ".> Done... $?"
+
+	if [ -n "$SSH_TUNNEL" ]; then
+		echo ".> Stopping ssh."
+		pkill run_ssh.sh
+		pkill ssh
+	fi
+	echo ".> Stopping socat."
+	pkill run_socat.sh
+	pkill socat
+
+	# exit here, explicitly -- see run.sh for why
+	exit 0
+}
+
+start_ibcontroller() {
+	echo ".> Starting ibcontroller in ${IBC_TRADING_MODE} mode, with params:"
+	echo ".>		program: ${IBC_PROGRAM}"
+	echo ".>		tws-path: ${IBC_TWS_PATH}"
+	echo ".>		tws-channel: ${IBC_TWS_CHANNEL}"
+	echo ".>		tws-settings-path: ${IBC_TWS_SETTINGS_PATH:-$IBC_TWS_PATH}"
+	echo ".>		mfa-timeout-action: ${IBC_MFA_TIMEOUT_ACTION:-exit}"
+	# no CLI flags: see run.sh
+	ibcontroller run &
 	_p="$!"
 	pid+=("$_p")
 	export pid
-	echo "$_p" >"/tmp/pid_${TRADING_MODE}"
+	echo "$_p" >"/tmp/pid_${IBC_TRADING_MODE}"
 }
 
 start_process() {
@@ -64,28 +88,8 @@ start_process() {
 	apply_settings
 	# forward ports, socat/ssh
 	port_forwarding
-	start_IBC
-}
 
-# shellcheck disable=SC2329
-stop_ibc() {
-	echo ".> 😘 Received SIGINT or SIGTERM. Shutting down TWS."
-	#
-	if [ -n "$SSH_TUNNEL" ]; then
-		echo ".> Stopping ssh."
-		pkill run_ssh.sh
-		pkill ssh
-	fi
-	echo ".> Stopping socat."
-	pkill run_socat.sh
-	pkill socat
-	# Set TERM
-	echo ".> Stopping IBC."
-	kill -SIGTERM "${pid[@]}"
-	# Wait for exit
-	wait "${pid[@]}"
-	# All done.
-	echo ".> Done... $?"
+	start_ibcontroller
 }
 
 ###############################################################################
@@ -107,52 +111,45 @@ disable_agents
 disable_compositing
 # SSH
 setup_ssh
-# Java heap size
-set_java_heap
 
 ###############################################################################
 #####		Paper, Live or both start process
 ###############################################################################
-if [ "$TRADING_MODE" == "both" ] || [ "$DUAL_MODE" == "yes" ]; then
+
+if [ "$IBC_TRADING_MODE" == "both" ] || [ "$DUAL_MODE" == "yes" ]; then
 	# start live and paper
 	DUAL_MODE=yes
 	export DUAL_MODE
 	# start live first
-	TRADING_MODE=live
+	IBC_TRADING_MODE=live
 	# add _live subfix
-	_IBC_INI="${IBC_INI}"
-	export _IBC_INI
-	IBC_INI="${_IBC_INI}_${TRADING_MODE}"
-	if [ -n "$TWS_SETTINGS_PATH" ]; then
-		_TWS_SETTINGS_PATH="${TWS_SETTINGS_PATH}"
+	if [ -n "$IBC_TWS_SETTINGS_PATH" ]; then
+		_TWS_SETTINGS_PATH="${IBC_TWS_SETTINGS_PATH}"
 		export _TWS_SETTINGS_PATH
-		TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${TRADING_MODE}"
+		IBC_TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${IBC_TRADING_MODE}"
 	else
 		# no TWS settings
-		_TWS_SETTINGS_PATH="${TWS_PATH}"
+		_TWS_SETTINGS_PATH="${IBC_TWS_PATH}"
 		export _TWS_SETTINGS_PATH
-		TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${TRADING_MODE}"
+		IBC_TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${IBC_TRADING_MODE}"
 	fi
 fi
 
 start_process
 
-# do it outside if dual mode, so the clean up is done anyway
-file_env 'TWS_PASSWORD_PAPER'
-
 if [ "$DUAL_MODE" == "yes" ]; then
 	# running dual mode, start paper
-	TRADING_MODE=paper
-	TWS_USERID="${TWS_USERID_PAPER}"
-	export TWS_USERID
+	IBC_TRADING_MODE=paper
+	IBC_USERID="${IBC_USERID_PAPER}"
+	export IBC_USERID
 
 	# handle password for dual mode
-	if [ -n "${TWS_PASSWORD_PAPER_FILE}" ]; then
-		TWS_PASSWORD_FILE="${TWS_PASSWORD_PAPER_FILE}"
-		export TWS_PASSWORD_FILE
+	if [ -n "${IBC_PASSWORD_PAPER_FILE}" ]; then
+		IBC_PASSWORD_FILE="${IBC_PASSWORD_PAPER_FILE}"
+		export IBC_PASSWORD_FILE
 	else
-		TWS_PASSWORD="${TWS_PASSWORD_PAPER}"
-		export TWS_PASSWORD
+		IBC_PASSWORD="${IBC_PASSWORD_PAPER}"
+		export IBC_PASSWORD
 	fi
 	# disable duplicate ssh for vnc/rdp
 	SSH_VNC_PORT=
@@ -163,21 +160,18 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	SSH_REMOTE_PORT=
 	export SSH_REMOTE_PORT
 	#
-	IBC_INI="${_IBC_INI}_${TRADING_MODE}"
-	TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${TRADING_MODE}"
+	IBC_TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${IBC_TRADING_MODE}"
 
 	sleep 15
 	start_process
 fi
-# outside if dual mode, to ensure cleanup/unset
-unset_env 'TWS_PASSWORD_PAPER'
 
-# run scripts once IBC is running
+# run scripts once ibcontroller is running
 if [ -n "$IBC_SCRIPTS" ]; then
 	run_scripts "$HOME/$IBC_SCRIPTS"
 fi
 
-trap stop_ibc SIGINT SIGTERM
+trap stop_ibcontroller SIGINT SIGTERM
 wait "${pid[@]}"
 _wait="$?"
 echo ".> ************************** End run_tws.sh ******************************** <."

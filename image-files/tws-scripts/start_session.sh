@@ -3,7 +3,7 @@
 set -Eeo pipefail
 
 echo "*************************************************************************"
-echo ".> Launching IBC/TWS service"
+echo ".> Launching ibcontroller/TWS service"
 echo "*************************************************************************"
 # shellcheck disable=SC1091
 # source common functions
@@ -67,7 +67,8 @@ if [ -n "$_display" ]; then
 fi
 
 # setting permissions
-echo ".> Setting permissions for ${TWS_PATH} and ${IBC_PATH}"
-chown abc:abc -R /opt "${TWS_PATH}" "${IBC_PATH}"
+echo ".> Setting permissions for ${TWS_PATH} and ${IBC_APP_DIR}"
+mkdir -p "${IBC_APP_DIR}"
+chown abc:abc -R /opt "${TWS_PATH}" "${IBC_APP_DIR}"
 
 exec sudo -EH -u abc "${SCRIPT_PATH}/run_tws.sh"

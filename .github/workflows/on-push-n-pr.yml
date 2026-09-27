@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   workflow_dispatch:
   push:
-    branches: ['*', '!update-*-to-*', '!IBC-update*']
+    branches: ['*', '!update-*-to-*', '!IBCONTROLLER-update*']
     tags-ignore:
       - 'v*'
   pull_request:
