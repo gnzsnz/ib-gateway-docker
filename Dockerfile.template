@@ -5,8 +5,13 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
+# Overridable at build time so publish.yml can pin both bases to a resolved digest
+# for a verifiable release; default stays a floating tag for everyday builds.
+ARG UBUNTU_BASE_IMAGE=ubuntu:26.04
+ARG TWS_BASE_IMAGE=ghcr.io/gnzsnz/rdesktop-xfce:latest
+
 # hadolint global ignore=DL3008,DL4006
-FROM ubuntu:26.04 AS setup
+FROM ${UBUNTU_BASE_IMAGE} AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_CHANNEL=$CHANNEL
@@ -78,7 +83,7 @@ COPY ./scripts /root/scripts
 # gateway target: IB Gateway + ibcontroller on Xvfb/x11vnc
 ##############################################################################
 
-FROM ubuntu:26.04 AS gateway
+FROM ${UBUNTU_BASE_IMAGE} AS gateway
 
 # IB Gateway user constants
 ARG USER_ID="${USER_ID:-1000}"
@@ -148,7 +153,7 @@ LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}
 ##############################################################################
 
 # hadolint global ignore=DL3007
-FROM ghcr.io/gnzsnz/rdesktop-xfce:latest AS tws
+FROM ${TWS_BASE_IMAGE} AS tws
 
 ENV TWS_PATH=/opt/ibkr
 ENV TWS_INI=jts.ini

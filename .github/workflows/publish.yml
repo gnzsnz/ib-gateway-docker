@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 jobs:
   publish-docker:
     name: Publish Docker Image
@@ -19,9 +24,11 @@ jobs:
       - name: Extract release channel
         id: channel
         run: |
-          # ie ref_name=10.50.1a-latest -> channel=stable
+          # ie ref_name=v10.50.1a-latest -> channel=stable, version=10.50.1a
           channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
+          version=$(sed -E "s/^v(.*)-${channel}\$/\1/" <<< "${{ github.ref_name }}")
           echo "channel=$channel" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -30,6 +37,19 @@ jobs:
         uses: docker/setup-qemu-action@v4
         with:
           platforms: linux/amd64,linux/arm64
+
+      ###############################################################
+      #   Resolve base image digests -- pins the floating tags baked
+      #   into Dockerfile.template's default ARGs, for this release only
+      ###############################################################
+      - name: Resolve base image digests
+        id: resolve-base
+        run: |
+          set -euo pipefail
+          ubuntu_digest=$(docker buildx imagetools inspect ubuntu:26.04 --format '{{json .Manifest}}' | jq -r '.digest')
+          tws_digest=$(docker buildx imagetools inspect ghcr.io/gnzsnz/rdesktop-xfce:latest --format '{{json .Manifest}}' | jq -r '.digest')
+          echo "ubuntu_pinned=ubuntu:26.04@${ubuntu_digest}" >> "$GITHUB_OUTPUT"
+          echo "tws_pinned=ghcr.io/gnzsnz/rdesktop-xfce@${tws_digest}" >> "$GITHUB_OUTPUT"
 
       ###############################################################
       #   Login container registry
@@ -66,11 +86,17 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build and push ibgateway
+        id: build
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
           target: gateway
+          build-args: |
+            UBUNTU_BASE_IMAGE=${{ steps.resolve-base.outputs.ubuntu_pinned }}
+            TWS_BASE_IMAGE=${{ steps.resolve-base.outputs.tws_pinned }}
+          provenance: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -96,13 +122,109 @@ jobs:
             type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
 
       - name: Build and push TWS
+        id: build-tws
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
           target: tws
+          build-args: |
+            UBUNTU_BASE_IMAGE=${{ steps.resolve-base.outputs.ubuntu_pinned }}
+            TWS_BASE_IMAGE=${{ steps.resolve-base.outputs.tws_pinned }}
+          provenance: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
           tags: ${{ steps.meta-tws.outputs.tags }}
           labels: ${{ steps.meta-tws.outputs.labels }}
+
+      ###############################################################
+      #   Sign, generate verification evidence, create release
+      ###############################################################
+      - name: Fetch IB Gateway installer checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release download \
+            "ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --pattern '*.sha256' \
+            --dir ibgateway-checksums
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign images (keyless)
+        run: |
+          set -euo pipefail
+          cosign sign --yes "ghcr.io/gnzsnz/ib-gateway@${{ steps.build.outputs.digest }}"
+          cosign sign --yes "docker.io/gnzsnz/ib-gateway@${{ steps.build.outputs.digest }}"
+          cosign sign --yes "ghcr.io/gnzsnz/tws-rdesktop@${{ steps.build-tws.outputs.digest }}"
+          cosign sign --yes "docker.io/gnzsnz/tws-rdesktop@${{ steps.build-tws.outputs.digest }}"
+
+      - name: Collect reproducibility evidence
+        run: |
+          set -euo pipefail
+          gw_digest="${{ steps.build.outputs.digest }}"
+          tws_digest="${{ steps.build-tws.outputs.digest }}"
+
+          {
+            echo "## Build info"
+            echo
+            echo "- Tag: ${GITHUB_REF_NAME}"
+            echo "- Channel: ${{ steps.channel.outputs.channel }}"
+            echo "- Git commit: ${GITHUB_SHA}"
+            echo "- Build timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Ubuntu base (pinned): ${{ steps.resolve-base.outputs.ubuntu_pinned }}"
+            echo "- TWS base (pinned): ${{ steps.resolve-base.outputs.tws_pinned }}"
+            echo "- Published ib-gateway digest: ${gw_digest}"
+            echo "- Published tws-rdesktop digest: ${tws_digest}"
+            echo "- Platforms: linux/amd64,linux/arm64"
+            echo "- Registries: ghcr.io/gnzsnz/ib-gateway, docker.io/gnzsnz/ib-gateway, ghcr.io/gnzsnz/tws-rdesktop, docker.io/gnzsnz/tws-rdesktop"
+            echo
+            echo "Tags \`${GITHUB_REF_NAME}\` and channel-latest float; pin by tag or digest for reproducibility."
+            echo
+            echo "### IB Gateway installer"
+            echo
+            echo "Checksums from release \`ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}\`, as fetched by the \`setup\` stage:"
+            echo '```'
+            cat ibgateway-checksums/*.sha256
+            echo '```'
+            echo
+            echo "### Verify"
+            echo '```bash'
+            echo "cosign verify ghcr.io/gnzsnz/ib-gateway@${gw_digest} \\"
+            echo "  --certificate-identity-regexp '.*' --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo "cosign verify ghcr.io/gnzsnz/tws-rdesktop@${tws_digest} \\"
+            echo "  --certificate-identity-regexp '.*' --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo
+            echo "docker buildx imagetools inspect ghcr.io/gnzsnz/ib-gateway@${gw_digest} --format '{{json .SBOM}}'"
+            echo "docker buildx imagetools inspect ghcr.io/gnzsnz/ib-gateway@${gw_digest} --format '{{json .Provenance}}'"
+            echo "docker buildx imagetools inspect ghcr.io/gnzsnz/tws-rdesktop@${tws_digest} --format '{{json .SBOM}}'"
+            echo "docker buildx imagetools inspect ghcr.io/gnzsnz/tws-rdesktop@${tws_digest} --format '{{json .Provenance}}'"
+            echo '```'
+          } > BUILD_INFO.md
+
+          sed \
+            -e "s#ghcr.io/gnzsnz/ib-gateway:latest#ghcr.io/gnzsnz/ib-gateway@${gw_digest}#g" \
+            docker-compose.yml > compose.release.yml
+          sed \
+            -e "s#ghcr.io/gnzsnz/tws-rdesktop:latest#ghcr.io/gnzsnz/tws-rdesktop@${tws_digest}#g" \
+            tws-docker-compose.yml > tws-compose.release.yml
+
+          cp ibgateway-checksums/*.sha256 .
+          sha256sum compose.release.yml tws-compose.release.yml *.sh.sha256 > SHA256SUMS
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          append_body: true
+          body_path: BUILD_INFO.md
+          files: |
+            compose.release.yml
+            tws-compose.release.yml
+            *.sh.sha256
+            SHA256SUMS
