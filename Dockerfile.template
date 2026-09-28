@@ -28,8 +28,6 @@ WORKDIR /tmp/setup
 RUN apt-get update -y && \
   apt-get install --no-install-recommends --yes \
   curl ca-certificates git && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/* && \
   if [ "$(uname -m)" = "aarch64" ]; then \
      ARCH="arm" ; \
   else \
@@ -49,14 +47,22 @@ RUN apt-get update -y && \
     echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
   fi && \
   # Install uv, then a managed python (never the distro one), then ibcontroller into it --
-  # IBCONTROLLER_SOURCE=git installs IBCONTROLLER_GIT_REF from IBCONTROLLER_GIT_REPO
-  # instead of the pinned PyPI release, for testing unreleased ibcontroller fixes
+  # IBCONTROLLER_SOURCE=git builds the Java agent jar from a git checkout of
+  # IBCONTROLLER_GIT_REF (branch or tag, shallow-cloned -- not an arbitrary commit SHA)
+  # in IBCONTROLLER_GIT_REPO, then installs that checkout, instead of the pinned PyPI
+  # wheel (which already ships the jar prebuilt). The JDK/git/make this needs stay in
+  # this discarded setup stage only, never copied to gateway/tws.
   curl -LsSf https://astral.sh/uv/install.sh | sh && \
   uv python install 3.12 && \
   PYTHON_BIN="$(uv python find 3.12)" && \
   if [ "${IBCONTROLLER_SOURCE}" = "git" ]; then \
+    apt-get install --no-install-recommends --yes openjdk-17-jdk-headless make && \
+    git clone --depth 1 --branch "${IBCONTROLLER_GIT_REF}" \
+      "${IBCONTROLLER_GIT_REPO}" /tmp/setup/ibcontroller-src && \
+    JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")" \
+      make -C /tmp/setup/ibcontroller-src build && \
     uv pip install --python "${PYTHON_BIN}" --break-system-packages \
-      "git+${IBCONTROLLER_GIT_REPO}@${IBCONTROLLER_GIT_REF}" ; \
+      /tmp/setup/ibcontroller-src ; \
   else \
     uv pip install --python "${PYTHON_BIN}" --break-system-packages \
       "py-ib-controller==${IBCONTROLLER_VERSION}" ; \
