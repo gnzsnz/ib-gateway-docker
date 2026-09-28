@@ -8,6 +8,11 @@ services:
       target: gateway
       tags:
         - "ghcr.io/gnzsnz/ib-gateway:latest"
+      # uncomment to build ibcontroller from a git branch instead of its pinned PyPI
+      # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
+      # args:
+      #   IBCONTROLLER_SOURCE: git
+      #   IBCONTROLLER_GIT_REF: feat/exit_codes
     image: ghcr.io/gnzsnz/ib-gateway:latest
     environment:
       # ibcontroller env vars, see README's "ibcontroller env vars and config volume"

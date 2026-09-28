@@ -13,6 +13,11 @@ ENV IB_GATEWAY_CHANNEL=$CHANNEL
 ENV IBCONTROLLER_VERSION=0.1.3
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
+# pypi (default) installs the pinned release; git installs IBCONTROLLER_GIT_REF from
+# IBCONTROLLER_GIT_REPO instead, for testing unreleased ibcontroller fixes
+ARG IBCONTROLLER_SOURCE=pypi
+ARG IBCONTROLLER_GIT_REPO="https://github.com/gnzsnz/ibcontroller"
+ARG IBCONTROLLER_GIT_REF=master
 # uv-managed python lives here so both stages agree on the path
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
 ENV UV_INSTALL_DIR=/usr/local/bin
@@ -22,7 +27,7 @@ WORKDIR /tmp/setup
 # Prepare system
 RUN apt-get update -y && \
   apt-get install --no-install-recommends --yes \
-  curl ca-certificates && \
+  curl ca-certificates git && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   if [ "$(uname -m)" = "aarch64" ]; then \
@@ -43,12 +48,19 @@ RUN apt-get update -y && \
   if [ -d "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
     echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
   fi && \
-  # Install uv, then a managed python (never the distro one), then ibcontroller into it
+  # Install uv, then a managed python (never the distro one), then ibcontroller into it --
+  # IBCONTROLLER_SOURCE=git installs IBCONTROLLER_GIT_REF from IBCONTROLLER_GIT_REPO
+  # instead of the pinned PyPI release, for testing unreleased ibcontroller fixes
   curl -LsSf https://astral.sh/uv/install.sh | sh && \
   uv python install 3.12 && \
   PYTHON_BIN="$(uv python find 3.12)" && \
-  uv pip install --python "${PYTHON_BIN}" --break-system-packages \
-    "py-ib-controller==${IBCONTROLLER_VERSION}" && \
+  if [ "${IBCONTROLLER_SOURCE}" = "git" ]; then \
+    uv pip install --python "${PYTHON_BIN}" --break-system-packages \
+      "git+${IBCONTROLLER_GIT_REPO}@${IBCONTROLLER_GIT_REF}" ; \
+  else \
+    uv pip install --python "${PYTHON_BIN}" --break-system-packages \
+      "py-ib-controller==${IBCONTROLLER_VERSION}" ; \
+  fi && \
   ln -sfn "$(dirname "${PYTHON_BIN}")" /opt/python/current
 
 COPY ./config/ibgateway/jts.ini.tmpl /root/Jts/jts.ini.tmpl

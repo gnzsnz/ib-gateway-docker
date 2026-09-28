@@ -8,8 +8,8 @@ services:
     # matching GID at container start -- remove this block entirely on a
     # host with no GPU (e.g. no /dev/dri at all), otherwise the container
     # fails to start.
-    devices:
-    - /dev/dri:/dev/dri #recomended, whole dir: card+render nodes, no fixed device number
+    # devices:
+    # - /dev/dri:/dev/dri #recomended, whole dir: card+render nodes, no fixed device number
     #- /dev/dri/renderD128:/dev/dri/renderD128 #narrower option (render node only), don't use both
     security_opt:
       - seccomp:unconfined # required
@@ -20,6 +20,11 @@ services:
       target: tws
       tags:
         - "ghcr.io/gnzsnz/tws-rdesktop:latest"
+      # uncomment to build ibcontroller from a git branch instead of its pinned PyPI
+      # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
+      # args:
+      #   IBCONTROLLER_SOURCE: git
+      #   IBCONTROLLER_GIT_REF: feat/exit_codes
     image: ghcr.io/gnzsnz/tws-rdesktop:latest
     environment:
       PUID: ${PUID:-1000}
@@ -75,7 +80,7 @@ services:
     ports:
       - "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper
-      - "127.0.0.1:3370:3389" # xrdp
+      - "3370:3389" # xrdp
 
 volumes:
   tws_tmp:
