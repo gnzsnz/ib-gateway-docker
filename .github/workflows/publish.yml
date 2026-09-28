@@ -19,6 +19,7 @@ jobs:
       - name: Extract release channel
         id: channel
         run: |
+          # ie ref_name=10.50.1a-latest -> channel=stable
           channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
           echo "channel=$channel" >> $GITHUB_OUTPUT
 
@@ -69,6 +70,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
+          target: gateway
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -98,7 +100,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ steps.channel.outputs.channel }}
-          file: ${{ steps.channel.outputs.channel }}/Dockerfile.tws
+          target: tws
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
