@@ -22,9 +22,9 @@ services:
         - "ghcr.io/gnzsnz/tws-rdesktop:latest"
       # uncomment to build ibcontroller from a git branch instead of its pinned PyPI
       # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
-      # args:
-      #   IBCONTROLLER_SOURCE: git
-      #   IBCONTROLLER_GIT_REF: feat/exit_codes
+      args:
+        IBCONTROLLER_SOURCE: ${IBCONTROLLER_SOURCE}
+        IBCONTROLLER_GIT_REF: ${IBCONTROLLER_GIT_REF}
     image: ghcr.io/gnzsnz/tws-rdesktop:latest
     environment:
       PUID: ${PUID:-1000}
@@ -52,8 +52,8 @@ services:
       IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
       # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
       # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see README
-      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
-      TZ: ${TIME_ZONE:-Etc/UTC}
+      IBC_TIME_ZONE: ${IBC_TIME_ZONE:-Etc/UTC}
+      TZ: ${IBC_TIME_ZONE:-Etc/UTC}
       # includes the unit, e.g. "1024m"/"4g"
       IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
       SSH_TUNNEL: ${SSH_TUNNEL:-}

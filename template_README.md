@@ -83,8 +83,8 @@ services:
       IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
       # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
       # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see below
-      TIME_ZONE: ${TIME_ZONE:-Etc/UTC}
-      TZ: ${TIME_ZONE:-Etc/UTC}
+      IBC_TIME_ZONE: ${IBC_TIME_ZONE:-Etc/UTC}
+      TZ: ${IBC_TIME_ZONE:-Etc/UTC}
       CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
       # includes the unit, e.g. "1024m"/"4g"
       IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
@@ -150,7 +150,7 @@ IBC_AUTO_RESTART_TIME=11:59 PM
 #IBC_MFA_EXIT_INTERVAL=60
 IBC_RELOGIN_AFTER_MFA_TIMEOUT=yes
 IBC_EXISTING_SESSION_ACTION=primary
-TIME_ZONE=Europe/Zurich
+IBC_TIME_ZONE=Europe/Zurich
 CUSTOM_CONFIG=
 #IBC_JAVA_HEAP_SIZE=1024m
 SSH_TUNNEL=
@@ -221,7 +221,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_COLD_RESTART_TIME` | `HH:MM`, weekly on Sunday: closes tidily and relaunches with a full fresh login, forcing IBKR's Sunday 01:00 US/Eastern token-invalidation reauth. | **not defined** |
 | `IBC_RELOGIN_AFTER_MFA_TIMEOUT` | Restart the login if the 2FA push times out. | no  |
 | `IBC_EXISTING_SESSION_ACTION` | `manual`/`primary`/`primaryoverride`/`secondary`. | primary |
-| `TIME_ZONE`  | Time zone, see your TWS `jts.ini` file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If `jts.ini` already exists (e.g. a preserved `IBC_TWS_SETTINGS_PATH` volume) this is not applied. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
+| `IBC_TIME_ZONE`  | Time zone, see your TWS `jts.ini` file for [valid values](https://ibkrguides.com/tws/usersguidebook/configuretws/configgeneral.htm) on a [tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If `jts.ini` already exists (e.g. a preserved `IBC_TWS_SETTINGS_PATH` volume) this is not applied. Examples `Europe/Paris`, `America/New_York`, `Asia/Tokyo` | "Etc/UTC"  |
 | `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. Use with a volume to preserve settings. If `IBC_TRADING_MODE=both` the image suffixes it with `_live`/`_paper`. |  |
 | `IBC_ACCEPT_INCOMING_CONNECTIONS` | `accept`, `reject`, or `manual` | `manual` |
 | *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Use `ibkr_settings.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
