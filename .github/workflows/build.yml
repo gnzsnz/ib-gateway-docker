@@ -61,12 +61,13 @@ jobs:
       # Dockerfile.tws's setup stage does `FROM ghcr.io/gnzsnz/ib-gateway:${IB_VERSION}` -- for
       # an in-progress version bump that tag doesn't exist in the registry yet, so the TWS build
       # below would otherwise always fail to pull it. Build ibgateway a second time, amd64-only,
-      # and export it as an OCI tarball, so the TWS build can be redirected to it via
-      # build-contexts instead. The builder here uses the docker-container driver, which runs
-      # BuildKit in an isolated container with no access to the host docker engine's local image
-      # store -- so `load: true` + a `docker-image://` named context (tried previously) silently
-      # falls back to a registry pull and fails. An `oci-layout://` context pointing at a tarball
-      # on disk works because BuildKit reads that directly, no daemon or registry involved.
+      # and export it as an unpacked OCI layout directory, so the TWS build can be redirected to
+      # it via build-contexts instead. The builder here uses the docker-container driver, which
+      # runs BuildKit in an isolated container with no access to the host docker engine's local
+      # image store -- so `load: true` + a `docker-image://` named context (tried previously)
+      # silently falls back to a registry pull and fails. An `oci-layout://` context pointing at
+      # a directory on disk works because BuildKit reads that directly, no daemon or registry
+      # involved (the directory, not a tarball, since `oci-layout://` expects an unpacked index).
       # amd64-only applies only to this local handoff build and the TWS build below --
       # ibgateway's own multi-arch validation above is unaffected, and TWS's real multi-arch
       # build+push still happens in publish.yml once ibgateway is actually published.
@@ -80,7 +81,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: false
-          outputs: type=oci,dest=/tmp/ibgateway-handoff.tar
+          outputs: type=oci,dest=/tmp/ibgateway-handoff,tar=false
           platforms: linux/amd64
           context: ./${{ env.CHANNEL }}
           cache-from: type=gha
@@ -112,7 +113,7 @@ jobs:
           context: ${{ env.CHANNEL }}
           file: ${{ env.CHANNEL }}/Dockerfile.tws
           build-contexts: |
-            ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}=oci-layout:///tmp/ibgateway-handoff.tar
+            ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}=oci-layout:///tmp/ibgateway-handoff
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta-tws.outputs.tags }}
