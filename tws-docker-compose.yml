@@ -3,11 +3,8 @@ services:
   tws:
     restart: unless-stopped
     shm_size: "1gb" #recomended
-    # GPU acceleration for TWS. Base image (rdesktop-xfce init-video) grants
-    # the abc user access to whatever /dev/dri nodes are mapped in here, by
-    # matching GID at container start -- remove this block entirely on a
-    # host with no GPU (e.g. no /dev/dri at all), otherwise the container
-    # fails to start.
+    # GPU acceleration for TWS.Remove this block entirely on a
+    # host with no GPU (e.g. no /dev/dri at all).
     devices:
     - /dev/dri:/dev/dri #recomended, whole dir: card+render nodes, no fixed device number
     #- /dev/dri/renderD128:/dev/dri/renderD128 #narrower option (render node only), don't use both
