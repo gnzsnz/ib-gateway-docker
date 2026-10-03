@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: false
-          load: true
+          outputs: type=oci,dest=/tmp/ibgateway-handoff,tar=false
           platforms: linux/amd64
           context: ./${{ env.CHANNEL }}
           cache-from: type=gha
@@ -108,7 +108,7 @@ jobs:
           context: ${{ env.CHANNEL }}
           file: ${{ env.CHANNEL }}/Dockerfile.tws
           build-contexts: |
-            ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}=docker-image://ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}
+            ghcr.io/gnzsnz/ib-gateway:${{ steps.ib_version.outputs.IB_VERSION }}=oci-layout:///tmp/ibgateway-handoff
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta-tws.outputs.tags }}
