@@ -23,8 +23,8 @@ services:
       # uncomment to build ibcontroller from a git branch instead of its pinned PyPI
       # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
       args:
-        IBCONTROLLER_SOURCE: ${IBCONTROLLER_SOURCE}
-        IBCONTROLLER_GIT_REF: ${IBCONTROLLER_GIT_REF}
+        IBCONTROLLER_SOURCE: ${IBCONTROLLER_SOURCE:-}
+        IBCONTROLLER_GIT_REF: ${IBCONTROLLER_GIT_REF:-}
     image: ghcr.io/gnzsnz/tws-rdesktop:latest
     environment:
       PUID: ${PUID:-1000}
@@ -39,14 +39,14 @@ services:
       IBC_USERID_PAPER: ${IBC_USERID_PAPER:-}
       IBC_PASSWORD_PAPER: ${IBC_PASSWORD_PAPER:-}
       # bare key: "" != unset for ibcontroller, see README
-      IBC_TWS_SETTINGS_PATH:
+      IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-}
       IBC_ACCEPT_INCOMING_CONNECTIONS: ${IBC_ACCEPT_INCOMING_CONNECTIONS:-manual}
-      IBC_READ_ONLY_API:
+      IBC_READ_ONLY_API: ${IBC_READ_ONLY_API:-}
       IBC_MFA_TIMEOUT_ACTION: ${IBC_MFA_TIMEOUT_ACTION:-exit}
-      IBC_AUTO_RESTART_TIME:
-      IBC_AUTO_LOGOFF_TIME:
+      IBC_AUTO_RESTART_TIME: ${IBC_AUTO_RESTART_TIME:-}
+      IBC_AUTO_LOGOFF_TIME: ${IBC_AUTO_LOGOFF_TIME:-}
       # "HH:MM", weekly on Sunday -- direct rename of TWS_COLD_RESTART, same format
-      IBC_COLD_RESTART_TIME:
+      IBC_COLD_RESTART_TIME: ${IBC_COLD_RESTART_TIME:-}
       IBC_RELOGIN_AFTER_MFA_TIMEOUT: ${IBC_RELOGIN_AFTER_MFA_TIMEOUT:-no}
       IBC_MFA_EXIT_INTERVAL: ${IBC_MFA_EXIT_INTERVAL:-60}
       IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
@@ -54,7 +54,6 @@ services:
       # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see README
       IBC_TIME_ZONE: ${IBC_TIME_ZONE:-Etc/UTC}
       TZ: ${IBC_TIME_ZONE:-Etc/UTC}
-      # includes the unit, e.g. "1024m"/"4g"
       IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
@@ -80,7 +79,7 @@ services:
     ports:
       - "127.0.0.1:7496:7498" # live
       - "127.0.0.1:7497:7499" # paper
-      - "3370:3389" # xrdp
+      - "127.0.0.1:3370:3389" # xrdp
 
 volumes:
   tws_tmp:
