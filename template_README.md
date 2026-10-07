@@ -218,8 +218,8 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `SSH_RDP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_RDP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
 | `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
 | `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
-| `PASSWD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
-| `PASSWD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
+| `RDP_PASSWORD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
+| `RDP_PASSWORD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
 | `START_SCRIPTS` | Directory with bash scripts to run **before** X environment is up. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `X_SCRIPTS` | Directory with bash scripts to run **after** X environment is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `IBC_SCRIPTS` | Directory with bash scripts to run **after** IBC is running. See [start-up scripts](#start-up-scripts) | **not defined** |
