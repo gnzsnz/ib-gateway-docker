@@ -26,6 +26,8 @@ ARG IBCONTROLLER_GIT_REF=master
 # uv-managed python lives here so both stages agree on the path
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
 ENV UV_INSTALL_DIR=/usr/local/bin
+ENV UV_NO_CACHE=1
+# no cache: gateway COPYs all of /root, so ~/.cache/uv would ship in the image
 
 WORKDIR /tmp/setup
 
