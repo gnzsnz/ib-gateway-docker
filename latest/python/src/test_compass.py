@@ -115,6 +115,11 @@ def get_trades(client: httpx.Client):
 
 
 def send_slack_notification(message: str):
+    # Staging's secret sets S3_PREFIX=staging/ (production has none): tag its
+    # messages so they can't be mistaken for production's.
+    environment = (config.get("S3_PREFIX") or "").strip("/")
+    if environment:
+        message = f"[{environment}] {message}"
     client = WebClient(token=config['SLACK_TOKEN'])
     try:
         response = client.chat_postMessage(
