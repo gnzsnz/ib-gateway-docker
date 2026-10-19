@@ -1,4 +1,5 @@
 import json
+from datetime import date as Date, timedelta
 
 import httpx
 
@@ -30,11 +31,27 @@ def _url(*parts: str) -> str:
     return "/".join([BASE_URL.rstrip("/"), "indexes", *parts])
 
 
+class CutoffError(RuntimeError):
+    """Compass refused an allocation because its date's cutoff has passed."""
+
+
 def _raise_for_status(response: httpx.Response, expected: int) -> None:
     if response.status_code == expected:
         return
     msg = f"HTTP {response.status_code} – {response.text}"
+    if response.status_code == httpx.codes.BAD_REQUEST and _is_cutoff(response):
+        raise CutoffError(msg)
     raise RuntimeError(msg)
+
+
+def _is_cutoff(response: httpx.Response) -> bool:
+    try:
+        details = response.json().get("detail", [])
+    except ValueError:
+        return False
+    return isinstance(details, list) and any(
+        isinstance(d, dict) and d.get("type") == "cutoff" for d in details
+    )
 
 
 def list_allocations(client: httpx.Client, index: str) -> list[dict]:
@@ -131,35 +148,68 @@ def send_slack_notification(message: str):
         print(exception)
 
 
+def next_weekday(day: Date) -> Date:
+    day += timedelta(days=1)
+    while day.weekday() >= 5:
+        day += timedelta(days=1)
+    return day
+
+
+def post_latest_trade(client: httpx.Client, allocation_dates: list[str], trades: list[dict]):
+    """
+    Send the latest trade to Compass, unless an allocation already covers it.
+
+    Compass only takes an allocation for date D until a cutoff early on D
+    (07:15 New York), while the trade for D is computed in the afternoon of
+    D. When D's cutoff has passed, the allocation goes to the next weekday
+    whose cutoff hasn't, i.e. the first day the position can take effect.
+    Older trades are already in Compass (or past their cutoff for good), so
+    only the latest one is sent.
+    """
+    if not trades:
+        print("No trades.")
+        return None
+
+    latest = max(trades, key=lambda item: parse_date(item['date']))
+    trade_date = parse_date(latest['date'])
+    if any(d >= trade_date for d in allocation_dates):
+        print(f"Trade of {trade_date} already allocated.")
+        return None
+
+    weights = {"MXSUGAFE": latest['trade']}
+    day = Date.fromisoformat(trade_date)
+    for _ in range(7):
+        try:
+            created = post_allocation(client, INDEX, f"{day.isoformat()}T00:00:00Z", weights)
+            print(created)
+            return day.isoformat()
+        except CutoffError:
+            print(f"Cutoff passed for {day.isoformat()}, trying the next weekday.")
+            day = next_weekday(day)
+    raise RuntimeError(f"No allocation date accepted for the trade of {trade_date}")
+
+
 def main():
     try:
         with httpx.Client(headers=HEADERS) as client:
-            dates = []
-
             # 1. List existing allocations
             print("=== Listing allocations ===")
             allocations = list_allocations(client, INDEX)
-            for alloc in allocations:
-                date = parse_date(alloc['date'])
-                dates.append(date)
+            dates = [parse_date(alloc['date']) for alloc in allocations]
 
-            # 2. Create new allocations
+            # 2. Create the allocation of the latest trade
             print("=== Create allocations ===")
-            response = get_trades(client)
-            for item in response:
-                d = parse_date(item['date'])
-                if d not in dates:
-                    date = f"{d}T00:00:00Z"
-                    weights = {"MXSUGAFE": item['trade']}
-                    created = post_allocation(client, INDEX, date, weights)
-                    print(created)
+            posted = post_latest_trade(client, dates, get_trades(client))
 
-            send_slack_notification("✅ [compass] Updated data successfully")
+            if posted:
+                send_slack_notification(f"✅ [compass] Updated data successfully (allocation of {posted})")
+            else:
+                send_slack_notification("✅ [compass] Updated data successfully (nothing new)")
     except Exception as e:
         import traceback
         traceback.print_exc()
         send_slack_notification(f"❌ [compass] Failed to update data: {type(e).__name__}: {e}")
-            
+
 
 if __name__ == "__main__":
     main()
