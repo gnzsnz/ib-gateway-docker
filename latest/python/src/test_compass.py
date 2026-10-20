@@ -156,6 +156,14 @@ def next_weekday(day: Date) -> Date:
     return day
 
 
+# Sentinels returned by post_latest_trade for the two "nothing to post" cases.
+# RESULT_NO_TRADES means the trade list is empty (trade data not yet written for
+# today — a retry is pertinent). RESULT_ALREADY_COVERED means the latest trade
+# is already covered by an existing allocation (fully done — no retry needed).
+RESULT_NO_TRADES = "no_trades"
+RESULT_ALREADY_COVERED = "already_covered"
+
+
 def post_latest_trade(client: httpx.Client, allocation_dates: list[str], trades: list[dict]):
     """
     Send the latest trade to Compass, unless an allocation already covers it.
@@ -166,16 +174,22 @@ def post_latest_trade(client: httpx.Client, allocation_dates: list[str], trades:
     whose cutoff hasn't, i.e. the first day the position can take effect.
     Older trades are already in Compass (or past their cutoff for good), so
     only the latest one is sent.
+
+    Returns one of:
+      - RESULT_NO_TRADES         when the trades list is empty (retry pertinent)
+      - RESULT_ALREADY_COVERED   when an existing allocation already covers the
+                                 latest trade (no retry needed)
+      - the posted ISO date string when a new allocation was created
     """
     if not trades:
         print("No trades.")
-        return None
+        return RESULT_NO_TRADES
 
     latest = max(trades, key=lambda item: parse_date(item['date']))
     trade_date = parse_date(latest['date'])
     if any(d >= trade_date for d in allocation_dates):
         print(f"Trade of {trade_date} already allocated.")
-        return None
+        return RESULT_ALREADY_COVERED
 
     weights = {"MXSUGAFE": latest['trade']}
     day = Date.fromisoformat(trade_date)
@@ -190,17 +204,20 @@ def post_latest_trade(client: httpx.Client, allocation_dates: list[str], trades:
     raise RuntimeError(f"No allocation date accepted for the trade of {trade_date}")
 
 
-# Exit codes, read by app.py to decide whether to retry.
+# Exit codes, read by app.py to decide whether to retry. EXIT_NOTHING_NEW is 10
+# rather than 2 to avoid colliding with Python's standard exit code 2 (argparse
+# errors, SystemExit(2) from vendored libs, interpreter flags like -W error):
+# an unrelated SystemExit(2) must not be silently treated as "nothing new".
 EXIT_POSTED = 0
 EXIT_FAILED = 1
-EXIT_NOTHING_NEW = 2
+EXIT_NOTHING_NEW = 10
 
 
 def main(retry: bool = False) -> int:
-    # The first attempt is retried 10 minutes later (see app.py) when it
-    # fails or finds nothing to post; say so in Slack.
+    # Retry runs are tagged in Slack so they're visibly distinguishable from the
+    # first attempt. app.py decides whether to schedule a retry (based on this
+    # script's exit code) and posts its own notice when it does.
     label = "[compass] (retry)" if retry else "[compass]"
-    retry_note = "" if retry else " – retrying in 10 min"
     try:
         with httpx.Client(headers=HEADERS) as client:
             # 1. List existing allocations
@@ -212,15 +229,18 @@ def main(retry: bool = False) -> int:
             print("=== Create allocations ===")
             posted = post_latest_trade(client, dates, get_trades(client))
 
-            if posted:
-                send_slack_notification(f"✅ {label} Updated data successfully (allocation of {posted})")
+            if posted == RESULT_NO_TRADES:
+                send_slack_notification(f"✅ {label} Updated data successfully (nothing new)")
+                return EXIT_NOTHING_NEW
+            if posted == RESULT_ALREADY_COVERED:
+                send_slack_notification(f"✅ {label} Updated data successfully (already covered)")
                 return EXIT_POSTED
-            send_slack_notification(f"✅ {label} Updated data successfully (nothing new){retry_note}")
-            return EXIT_NOTHING_NEW
+            send_slack_notification(f"✅ {label} Updated data successfully (allocation of {posted})")
+            return EXIT_POSTED
     except Exception as e:
         import traceback
         traceback.print_exc()
-        send_slack_notification(f"❌ {label} Failed to update data: {type(e).__name__}: {e}{retry_note}")
+        send_slack_notification(f"❌ {label} Failed to update data: {type(e).__name__}: {e}")
         return EXIT_FAILED
 
 
