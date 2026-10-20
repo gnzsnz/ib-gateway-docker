@@ -4,6 +4,7 @@ from datetime import date
 import hmac
 import json
 import subprocess
+import threading
 import logging
 
 logging.basicConfig(
@@ -97,11 +98,44 @@ def handle_trades():
         headers=[]
     )
 
+# test_compass.py exit codes (see EXIT_* there).
+COMPASS_NOTHING_NEW = 2
+# the-deepcore-app calls /handle_compass once a day, right after
+# /handle_trades. When that first attempt fails, or finds no new trade to
+# post (the trades may not be written yet), it is run once more 10 minutes
+# later, in the background so the caller's request doesn't wait for it.
+COMPASS_RETRY_DELAY = 600
+compass_retry_lock = threading.Lock()
+compass_retry_timer = None
+
+
+def retry_compass():
+    global compass_retry_timer
+    with compass_retry_lock:
+        compass_retry_timer = None
+    result = run_script('test_compass.py', '--retry')
+    logger.info("Compass retry finished with exit code %s", result.returncode)
+
+
+def schedule_compass_retry():
+    global compass_retry_timer
+    with compass_retry_lock:
+        if compass_retry_timer is not None:
+            logger.info("Compass retry already scheduled")
+            return
+        compass_retry_timer = threading.Timer(COMPASS_RETRY_DELAY, retry_compass)
+        compass_retry_timer.daemon = True
+        compass_retry_timer.start()
+    logger.info("Compass retry scheduled in %ss", COMPASS_RETRY_DELAY)
+
+
 @app.route('/handle_compass', methods=['GET'])
 
 def handle_compass():
     result = run_script('test_compass.py')
     if result.returncode != 0:
+        schedule_compass_retry()
+    if result.returncode not in (0, COMPASS_NOTHING_NEW):
         return Response(
             response=json.dumps({'error': f'{request.path} failed'}),
             status=500,

@@ -1,4 +1,5 @@
 import json
+import sys
 from datetime import date as Date, timedelta
 
 import httpx
@@ -189,7 +190,17 @@ def post_latest_trade(client: httpx.Client, allocation_dates: list[str], trades:
     raise RuntimeError(f"No allocation date accepted for the trade of {trade_date}")
 
 
-def main():
+# Exit codes, read by app.py to decide whether to retry.
+EXIT_POSTED = 0
+EXIT_FAILED = 1
+EXIT_NOTHING_NEW = 2
+
+
+def main(retry: bool = False) -> int:
+    # The first attempt is retried 10 minutes later (see app.py) when it
+    # fails or finds nothing to post; say so in Slack.
+    label = "[compass] (retry)" if retry else "[compass]"
+    retry_note = "" if retry else " – retrying in 10 min"
     try:
         with httpx.Client(headers=HEADERS) as client:
             # 1. List existing allocations
@@ -202,14 +213,16 @@ def main():
             posted = post_latest_trade(client, dates, get_trades(client))
 
             if posted:
-                send_slack_notification(f"✅ [compass] Updated data successfully (allocation of {posted})")
-            else:
-                send_slack_notification("✅ [compass] Updated data successfully (nothing new)")
+                send_slack_notification(f"✅ {label} Updated data successfully (allocation of {posted})")
+                return EXIT_POSTED
+            send_slack_notification(f"✅ {label} Updated data successfully (nothing new){retry_note}")
+            return EXIT_NOTHING_NEW
     except Exception as e:
         import traceback
         traceback.print_exc()
-        send_slack_notification(f"❌ [compass] Failed to update data: {type(e).__name__}: {e}")
+        send_slack_notification(f"❌ {label} Failed to update data: {type(e).__name__}: {e}{retry_note}")
+        return EXIT_FAILED
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(retry="--retry" in sys.argv[1:]))
