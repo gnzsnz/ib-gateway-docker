@@ -2,7 +2,7 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="pandas.core.nanops")
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-from mvc_app.view import export_profile_trades_csv
+from mvc_app.view import export_profile_trades_csv, export_fusion_trades_csv
 from mvc_core.adapters.db_connection.postgres_connection import PostgresConfig, get_postgres, init_postgres
 from mvc_core.adapters.s3_AWS.s3_services import upload_file, generate_presigned_url
 from mvc_core.adapters.IBKR.ibkr_services import fetch_and_upsert_trades
@@ -17,6 +17,16 @@ def get_trades(profile: str):
     file_name = f"trades_{profile}.csv"
     file_path = f"/tmp/{file_name}"
     export_profile_trades_csv(profile, file_path)
+    upload_file(file_path, file_name)
+    url = generate_presigned_url(file_name)
+    print(url)
+
+
+def get_fusion_trades():
+    """Get the Sigma Fusion strategy's trades and save to CSV."""
+    file_name = "trades_sb11_fusion.csv"
+    file_path = f"/tmp/{file_name}"
+    export_fusion_trades_csv(file_path)
     upload_file(file_path, file_name)
     url = generate_presigned_url(file_name)
     print(url)
@@ -64,6 +74,8 @@ def main():
 
         get_trades("sb11_rsi_fut_shifted")
         fetch_and_upsert_trades("sb11_rsi_fut_shifted")
+
+        get_fusion_trades()
 
         get_trades("arabica_zscore_fut_shifted_wf")
         fetch_and_upsert_trades("arabica_zscore_fut_shifted_wf")

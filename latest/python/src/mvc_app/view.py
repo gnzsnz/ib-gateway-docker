@@ -186,3 +186,69 @@ def export_profile_trades_csv(profile_name: str, output_path: str) -> None:
 
     signals.to_csv(output_path, index=False)
     print(f"Trades saved to {Path(output_path).resolve()}")
+
+
+# Sigma Fusion: the three calibrated sugar strategies fused into one position
+# (same parameters as test_fusion_strat_signals in test_jobs.py).
+FUSION_PROFILES = ["wf_sb11", "wf_rsi_sb11", "sb11_rsi_fut_shifted"]
+FUSION_INSTRUMENT = "SB11"
+FUSION_THRESHOLD = 1
+FUSION_INITIAL_INV = 200_000_000
+FUSION_POSITION_NOTIONAL = 30_000_000
+
+
+def _run_sigma_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
+    from mvc_core.engine.run.vectorized_backtest import run_fusion_backtest
+
+    return run_fusion_backtest(
+        profile_names=FUSION_PROFILES,
+        instrument=FUSION_INSTRUMENT,
+        initial_inv=FUSION_INITIAL_INV,
+        position_notional=FUSION_POSITION_NOTIONAL,
+        threshold=FUSION_THRESHOLD,
+        start_date=start_date,
+        debug=False,
+    )
+
+
+def build_fusion_figure(start_date: Optional[str] = None):
+    """
+    Graphique prix + equity de la stratégie Sigma Fusion, recadré à partir de
+    start_date (equity rebasée sur l'investissement initial).
+    """
+    fusion = _run_sigma_fusion(start_date=start_date)
+    return plot_price_equity(
+        price=fusion["price_aligned"],
+        equity=fusion["equity_df"],
+        instrument=FUSION_INSTRUMENT,
+        decisions=fusion["all_decisions"],
+        title="Sigma Fusion Strategy",
+    )
+
+
+def export_fusion_trades_csv(output_path: str) -> None:
+    """
+    Exporte les trades de la stratégie Sigma Fusion en CSV, au même format
+    que export_profile_trades_csv : date (yyyy-mm-dd), trade (+1 = LONG, -1 = SHORT).
+    """
+    from pathlib import Path
+
+    from mvc_core.performances.trades_reconstruction import build_trades_dataframe, print_trades_summary
+
+    fusion = _run_sigma_fusion()
+    decisions = fusion["trade_decisions"]
+    if not decisions:
+        print("No decisions found for the Sigma Fusion strategy.")
+        return
+
+    trades_df = build_trades_dataframe(decisions, initial_inv=FUSION_POSITION_NOTIONAL, include_open_positions=True)
+    print_trades_summary(trades_df)
+
+    signals = trades_df[["entry_date", "side"]].copy()
+    signals["trade"] = signals["side"].map({"LONG": 1, "SHORT": -1})
+    signals = signals.rename(columns={"entry_date": "date"})
+    signals["date"] = pd.to_datetime(signals["date"]).dt.strftime("%Y-%m-%d")
+    signals = signals[["date", "trade"]].sort_values("date").reset_index(drop=True)
+
+    signals.to_csv(output_path, index=False)
+    print(f"Trades saved to {Path(output_path).resolve()}")
