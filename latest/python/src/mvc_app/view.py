@@ -233,6 +233,20 @@ def build_fusion_figure(start_date: Optional[str] = None):
     )
 
 
+def build_fusion_client_figure(start_date: Optional[str] = None):
+    """
+    Version client du graphique Fusion : prix et entrées uniquement, sans
+    suivi PnL (comme build_wf_oos_figure_price_only).
+    """
+    fusion = _run_fusion(start_date=start_date)
+    return plot_price_only(
+        price=fusion["price_aligned"],
+        instrument=FUSION_INSTRUMENT,
+        decisions=fusion["all_decisions"],
+        title="Fusion Strategy",
+    )
+
+
 def export_fusion_trades_csv(output_path: str) -> None:
     """
     Exporte les trades de la stratégie Fusion en CSV, au même format
