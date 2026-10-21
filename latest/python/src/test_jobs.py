@@ -3,7 +3,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning, module="pandas.core.n
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 from mvc_app.jobs import JobConfig, run_wf_update_job, get_backtest_view
-from mvc_app.view import build_wf_oos_figure_from_oos, build_wf_oos_figure_price_only, export_profile_trades_csv
+from mvc_app.view import build_wf_oos_figure_from_oos, build_wf_oos_figure_price_only, export_profile_trades_csv, build_fusion_figure
 
 from mvc_core.performances.trades_reconstruction import build_trades_dataframe, print_trades_summary
 from mvc_core.engine.run.vectorized_backtest import run_fusion_backtest
@@ -42,6 +42,25 @@ def cropped_view_admin(profile):
     # webbrowser subprocess that touches file_path in the background, racing
     # with the upload_file() call below. That race is the source of the
     # `IncompleteBody` error we saw on the S3 PutObject.
+    fig.write_html(
+        file_path,
+        full_html=True,
+        include_plotlyjs=True,
+        auto_open=False,
+    )
+
+    upload_file(file_path, file_name)
+    url = generate_presigned_url(file_name)
+    print(url)
+
+
+def cropped_view_fusion():
+    """Sigma Fusion of the three sugar strategies; run after their calibrations."""
+    fig = build_fusion_figure(start_date="2023-01-01")
+
+    file_name = 'sb11_fusion.html'
+    file_path = '/tmp/' + file_name
+
     fig.write_html(
         file_path,
         full_html=True,
@@ -151,6 +170,8 @@ def main():
         profile = "sb11_rsi_fut_shifted" # rsi-futures
         update_calibration(profile)
         cropped_view_admin(profile=profile)
+
+        cropped_view_fusion()
 
         profile = "arabica_zscore_fut_shifted_wf" # zscore
         update_calibration(profile)
