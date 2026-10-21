@@ -188,16 +188,23 @@ def export_profile_trades_csv(profile_name: str, output_path: str) -> None:
     print(f"Trades saved to {Path(output_path).resolve()}")
 
 
-# Sigma Fusion: the three calibrated sugar strategies fused into one position
+# Fusion: the three calibrated sugar strategies fused into one position
 # (same parameters as test_fusion_strat_signals in test_jobs.py).
 FUSION_PROFILES = ["wf_sb11", "wf_rsi_sb11", "sb11_rsi_fut_shifted"]
+# Names shown in the chart legend instead of the profile names, which must not
+# reveal how a strategy works (same names as in the-deepcore-app).
+FUSION_PROFILE_LABELS = {
+    "wf_sb11": "Sigma",
+    "wf_rsi_sb11": "Alpha",
+    "sb11_rsi_fut_shifted": "Future",
+}
 FUSION_INSTRUMENT = "SB11"
 FUSION_THRESHOLD = 1
 FUSION_INITIAL_INV = 200_000_000
 FUSION_POSITION_NOTIONAL = 30_000_000
 
 
-def _run_sigma_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
+def _run_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
     from mvc_core.engine.run.vectorized_backtest import run_fusion_backtest
 
     return run_fusion_backtest(
@@ -213,32 +220,32 @@ def _run_sigma_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
 
 def build_fusion_figure(start_date: Optional[str] = None):
     """
-    Graphique prix + equity de la stratégie Sigma Fusion, recadré à partir de
+    Graphique prix + equity de la stratégie Fusion, recadré à partir de
     start_date (equity rebasée sur l'investissement initial).
     """
-    fusion = _run_sigma_fusion(start_date=start_date)
+    fusion = _run_fusion(start_date=start_date)
     return plot_price_equity(
         price=fusion["price_aligned"],
-        equity=fusion["equity_df"],
+        equity=fusion["equity_df"].rename(columns=FUSION_PROFILE_LABELS),
         instrument=FUSION_INSTRUMENT,
         decisions=fusion["all_decisions"],
-        title="Sigma Fusion Strategy",
+        title="Fusion Strategy",
     )
 
 
 def export_fusion_trades_csv(output_path: str) -> None:
     """
-    Exporte les trades de la stratégie Sigma Fusion en CSV, au même format
+    Exporte les trades de la stratégie Fusion en CSV, au même format
     que export_profile_trades_csv : date (yyyy-mm-dd), trade (+1 = LONG, -1 = SHORT).
     """
     from pathlib import Path
 
     from mvc_core.performances.trades_reconstruction import build_trades_dataframe, print_trades_summary
 
-    fusion = _run_sigma_fusion()
+    fusion = _run_fusion()
     decisions = fusion["trade_decisions"]
     if not decisions:
-        print("No decisions found for the Sigma Fusion strategy.")
+        print("No decisions found for the Fusion strategy.")
         return
 
     trades_df = build_trades_dataframe(decisions, initial_inv=FUSION_POSITION_NOTIONAL, include_open_positions=True)

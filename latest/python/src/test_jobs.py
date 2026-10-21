@@ -55,7 +55,7 @@ def cropped_view_admin(profile):
 
 
 def cropped_view_fusion():
-    """Sigma Fusion of the three sugar strategies; run after their calibrations."""
+    """Fusion of the three sugar strategies; run after their calibrations."""
     fig = build_fusion_figure(start_date="2023-01-01")
 
     file_name = 'sb11_fusion.html'

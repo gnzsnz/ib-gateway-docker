@@ -23,7 +23,7 @@ def get_trades(profile: str):
 
 
 def get_fusion_trades():
-    """Get the Sigma Fusion strategy's trades and save to CSV."""
+    """Get the Fusion strategy's trades and save to CSV."""
     file_name = "trades_sb11_fusion.csv"
     file_path = f"/tmp/{file_name}"
     export_fusion_trades_csv(file_path)
