@@ -191,9 +191,12 @@ def export_profile_trades_csv(profile_name: str, output_path: str) -> None:
 # Fusion: the three calibrated sugar strategies fused into one position
 # (same parameters as test_fusion_strat_signals in test_jobs.py).
 FUSION_PROFILES = ["wf_sb11", "wf_rsi_sb11", "sb11_rsi_fut_shifted"]
-# Names shown in the chart legend instead of the profile names, which must not
-# reveal how a strategy works (same names as in the-deepcore-app).
+# Names shown in the chart legend instead of the column names: the fusion's own
+# equity (TotalValue) and the profile names, which must not reveal how a
+# strategy works (same names as in the-deepcore-app). TotalValue stays the first
+# column once renamed, so plot_price_equity still picks it as the main equity.
 FUSION_PROFILE_LABELS = {
+    "TotalValue": "Fusion",
     "wf_sb11": "Sigma",
     "wf_rsi_sb11": "Alpha",
     "sb11_rsi_fut_shifted": "Future",
@@ -230,6 +233,7 @@ def build_fusion_figure(start_date: Optional[str] = None):
         instrument=FUSION_INSTRUMENT,
         decisions=fusion["all_decisions"],
         title="Fusion Strategy",
+        equity_name=FUSION_PROFILE_LABELS["TotalValue"],
     )
 
 

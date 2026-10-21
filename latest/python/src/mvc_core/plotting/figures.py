@@ -364,10 +364,12 @@ def plot_price_equity(
     decisions=None,                           
     risk_free_rate: float = DEFAULT_RISK_FREE,
     periods_per_year: int = DEFAULT_PERIODS_PER_YEAR,
+    equity_name: str = "Equity",
 ) -> go.Figure:
     """
     Plot price and equity without the indicator panel.
     Same as plot_price_equity_indicator but with only 2 panels.
+    equity_name: legend name of the main equity line.
     """
     px = _slice_series(price, start, end)
     eq = _pick_equity_series(equity, start, end)
@@ -399,9 +401,9 @@ def plot_price_equity(
     # Panel 2: equity vs buy&hold (and other series if present)
     if eq is not None and not eq.empty:
         fig.add_trace(
-            go.Scatter(x=eq.index, y=eq.values, mode="lines", name="Equity",
+            go.Scatter(x=eq.index, y=eq.values, mode="lines", name=equity_name,
                        line=dict(color=COLORS["equity"], width=2),
-                       hovertemplate="Equity : %{y:.2f}<extra></extra>"),
+                       hovertemplate=f"{equity_name} : "+"%{y:.2f}<extra></extra>"),
             row=2, col=1
         )
         if isinstance(equity, pd.DataFrame):
