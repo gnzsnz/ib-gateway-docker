@@ -188,37 +188,43 @@ def export_profile_trades_csv(profile_name: str, output_path: str) -> None:
     print(f"Trades saved to {Path(output_path).resolve()}")
 
 
-# Fusion: the three calibrated sugar strategies fused into one position
-# (same parameters as test_fusion_strat_signals in test_jobs.py).
-FUSION_PROFILES = ["wf_sb11", "wf_rsi_sb11", "sb11_rsi_fut_shifted"]
-# Names shown in the chart legend instead of the column names: the fusion's own
-# equity (TotalValue) and the profile names, which must not reveal how a
-# strategy works (same names as in the-deepcore-app). TotalValue stays the first
-# column once renamed, so plot_price_equity still picks it as the main equity.
-FUSION_PROFILE_LABELS = {
-    "TotalValue": "Fusion",
-    "wf_sb11": "Sigma",
-    "wf_rsi_sb11": "Alpha",
-    "sb11_rsi_fut_shifted": "Future",
-}
+# Fusion: majority vote of six sugar strategies (see mvc_app/fusion). Its PnL is
+# shown like the other sugar strategies': one FUSION_POSITION_NOTIONAL position
+# on a FUSION_INITIAL_INV capital.
 FUSION_INSTRUMENT = "SB11"
-FUSION_THRESHOLD = 1
 FUSION_INITIAL_INV = 200_000_000
 FUSION_POSITION_NOTIONAL = 30_000_000
 
 
 def _run_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
-    from mvc_core.engine.run.vectorized_backtest import run_fusion_backtest
+    """
+    Prix, equity (Fusion, Buy&Hold) et entrées de la stratégie Fusion,
+    recadrés à partir de start_date (equity rebasée sur l'investissement initial).
+    """
+    from mvc_app.fusion.fusion_services import run_fusion
 
-    return run_fusion_backtest(
-        profile_names=FUSION_PROFILES,
-        instrument=FUSION_INSTRUMENT,
-        initial_inv=FUSION_INITIAL_INV,
-        position_notional=FUSION_POSITION_NOTIONAL,
-        threshold=FUSION_THRESHOLD,
-        start_date=start_date,
-        debug=False,
-    )
+    result = run_fusion(notional=FUSION_POSITION_NOTIONAL)
+    bt = result["data"].set_index("Date")
+    trades = result["combined_trades"]
+    open_trades = pd.DataFrame(result["combined_open_positions"], columns=trades.columns)
+    entries = pd.concat([trades, open_trades], ignore_index=True)[["entry_date", "direction", "entry_price"]]
+
+    if start_date is not None:
+        bt = bt.loc[start_date:]
+        entries = entries[entries["entry_date"] >= pd.Timestamp(start_date)]
+
+    price = bt["Close"]
+    pnl = bt["Equity_Fixed_Notional"] - bt["Equity_Fixed_Notional"].iloc[0]
+    equity = pd.DataFrame({
+        "Fusion": FUSION_INITIAL_INV + pnl,
+        "Buy&Hold": FUSION_INITIAL_INV + FUSION_POSITION_NOTIONAL * (price / price.iloc[0] - 1),
+    })
+    decisions = pd.DataFrame({
+        "date": entries["entry_date"],
+        "action": entries["direction"].map({"Long": "OPEN_LONG", "Short": "OPEN_SHORT"}),
+        "price": entries["entry_price"],
+    }).sort_values("date").reset_index(drop=True)
+    return {"price": price, "equity": equity, "decisions": decisions}
 
 
 def build_fusion_figure(start_date: Optional[str] = None):
@@ -228,12 +234,12 @@ def build_fusion_figure(start_date: Optional[str] = None):
     """
     fusion = _run_fusion(start_date=start_date)
     return plot_price_equity(
-        price=fusion["price_aligned"],
-        equity=fusion["equity_df"].rename(columns=FUSION_PROFILE_LABELS),
+        price=fusion["price"],
+        equity=fusion["equity"],
         instrument=FUSION_INSTRUMENT,
-        decisions=fusion["all_decisions"],
+        decisions=fusion["decisions"],
         title="Fusion Strategy",
-        equity_name=FUSION_PROFILE_LABELS["TotalValue"],
+        equity_name="Fusion",
     )
 
 
@@ -244,9 +250,9 @@ def build_fusion_client_figure(start_date: Optional[str] = None):
     """
     fusion = _run_fusion(start_date=start_date)
     return plot_price_only(
-        price=fusion["price_aligned"],
+        price=fusion["price"],
         instrument=FUSION_INSTRUMENT,
-        decisions=fusion["all_decisions"],
+        decisions=fusion["decisions"],
         title="Fusion Strategy",
     )
 
@@ -258,22 +264,16 @@ def export_fusion_trades_csv(output_path: str) -> None:
     """
     from pathlib import Path
 
-    from mvc_core.performances.trades_reconstruction import build_trades_dataframe, print_trades_summary
-
-    fusion = _run_fusion()
-    decisions = fusion["trade_decisions"]
-    if not decisions:
+    decisions = _run_fusion()["decisions"]
+    if decisions.empty:
         print("No decisions found for the Fusion strategy.")
         return
 
-    trades_df = build_trades_dataframe(decisions, initial_inv=FUSION_POSITION_NOTIONAL, include_open_positions=True)
-    print_trades_summary(trades_df)
-
-    signals = trades_df[["entry_date", "side"]].copy()
-    signals["trade"] = signals["side"].map({"LONG": 1, "SHORT": -1})
-    signals = signals.rename(columns={"entry_date": "date"})
-    signals["date"] = pd.to_datetime(signals["date"]).dt.strftime("%Y-%m-%d")
-    signals = signals[["date", "trade"]].sort_values("date").reset_index(drop=True)
+    signals = pd.DataFrame({
+        "date": pd.to_datetime(decisions["date"]).dt.strftime("%Y-%m-%d"),
+        "trade": decisions["action"].map({"OPEN_LONG": 1, "OPEN_SHORT": -1}),
+    })
+    print(f"Fusion: {len(signals)} trades, last {signals.iloc[-1].tolist()}")
 
     signals.to_csv(output_path, index=False)
     print(f"Trades saved to {Path(output_path).resolve()}")
