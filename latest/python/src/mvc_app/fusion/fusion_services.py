@@ -5,7 +5,8 @@ backtest_engine.py.
 backtest_engine.py and strategies/ come unchanged from Benoit Decomps' repository
 (ben-245dev/strategies_benoit_decomps, commit ea23962), except that
 strat_2_fixed.py no longer writes zscore.csv. FUSION_STRATEGIES and the
-run_backtest arguments below are those of its run.py. Keep these files as close
+run_backtest arguments below are those of its run.py, without the portfolio
+stop (removed at Benoit's request). Keep these files as close
 as possible to that repository so its updates can be diffed and copied over.
 """
 from __future__ import annotations
@@ -40,7 +41,6 @@ FUSION_BACKTEST_ARGS = dict(
     min_hold_unit="trading",
     equity_mode="fixed_notional",
     execution="close",
-    stop={"lookback": 10, "threshold": 0.10, "cooldown": 10},
 )
 
 # The seasonal strategies need two years of history before their 2018-01-01
