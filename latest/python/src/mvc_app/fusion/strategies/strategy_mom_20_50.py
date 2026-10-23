@@ -1,7 +1,7 @@
 """
 strat_mom_20_50.py
 ====================
-Croisement de moyennes mobiles (rapide/lente) sur le Close, filtre par le
+Croisement de moyennes mobiles (rapide/lente) sur l'Open, filtre par le
 regime de volatilite du spread pairs-trade MID_THP/MID_VHP (memes
 briques Hedge_Ratio/Spread/Vol que le reste de la famille de strategies).
 
@@ -59,7 +59,7 @@ import pandas as pd
 NAME = "strat_mom_20_50"
 
 DESCRIPTION = (
-    "Croisement de moyennes mobiles sur le Close (rapide `ma_fast_window` "
+    "Croisement de moyennes mobiles sur l'Open (rapide `ma_fast_window` "
     "vs lente `ma_slow_window`) : Long si MA rapide > MA lente, Short si "
     "MA rapide < MA lente. Filtre : on ne prend/renverse une position que "
     "si la volatilite recente du spread pairs-trade MID_THP/MID_VHP est "
@@ -69,8 +69,8 @@ DESCRIPTION = (
 
 PARAMS = {
     "hedge_window": 5,          # fenetre du hedge ratio (cov/var + lissage)
-    "ma_fast_window": 20,       # fenetre de la moyenne mobile rapide (Close)
-    "ma_slow_window": 50,       # fenetre de la moyenne mobile lente (Close)
+    "ma_fast_window": 20,       # fenetre de la moyenne mobile rapide (Open)
+    "ma_slow_window": 50,       # fenetre de la moyenne mobile lente (Open)
     "vol_window": 14,           # fenetre de la vol (std du niveau du spread)
     "vol_quantile_window": 5,   # fenetre glissante du quantile de vol
     "vol_quantile": 1,          # quantile utilise comme seuil -- voir avertissement en tete de fichier
@@ -114,7 +114,7 @@ def compute_features(df):
 
     # Spread instantane avec le ratio dynamique -- sert uniquement de base
     # au filtre de vol ci-dessous (le signal lui-meme vient du croisement
-    # de MA sur Close, pas du spread).
+    # de MA sur Open, pas du spread).
     df["Spread"] = y - df["Hedge_Ratio"] * x
 
     # Vol calculee sur le NIVEAU du spread (peut changer de signe, un
@@ -122,9 +122,10 @@ def compute_features(df):
     df["Vol"] = df["Spread"].rolling(p["vol_window"]).std()
     df["Vol_Threshold"] = df["Vol"].rolling(p["vol_quantile_window"]).quantile(p["vol_quantile"])
 
-    # Croisement de moyennes mobiles sur le Close (l'instrument trade).
-    df["MA_Fast"] = df["Close"].rolling(p["ma_fast_window"]).mean()
-    df["MA_Slow"] = df["Close"].rolling(p["ma_slow_window"]).mean()
+    # Croisement de moyennes mobiles sur l'Open (l'instrument trade) : connu en
+    # seance, l'ordre passe au close du jour.
+    df["MA_Fast"] = df["Open"].rolling(p["ma_fast_window"]).mean()
+    df["MA_Slow"] = df["Open"].rolling(p["ma_slow_window"]).mean()
 
     return df
 
