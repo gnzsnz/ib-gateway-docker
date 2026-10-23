@@ -4,7 +4,9 @@ backtest_engine.py.
 
 backtest_engine.py and strategies/ come unchanged from Benoit Decomps' repository
 (ben-245dev/strategies_benoit_decomps, commit ea23962), except that
-strat_2_fixed.py no longer writes zscore.csv. FUSION_STRATEGIES and the
+strat_2_fixed.py no longer writes zscore.csv and, at Benoit's request, the
+RSI, reversal and momentum strategies compute on the Open instead of the
+Close. FUSION_STRATEGIES and the
 run_backtest arguments below are those of its run.py, without the portfolio
 stop (removed at Benoit's request). Keep these files as close
 as possible to that repository so its updates can be diffed and copied over.
@@ -19,6 +21,9 @@ import pandas as pd
 
 from mvc_app.helpers.data_builder.data_sb11 import data_sb11_builder
 from mvc_app.helpers.data_loader.data_loader_data import DataSource
+from mvc_core.adapters.data.db_loading.postgres_futures_loader import load_futures
+from mvc_core.adapters.data.price_source_data import PriceSource
+from mvc_core.adapters.data.price_source_services import select_futures_price
 
 from .backtest_engine import run_backtest
 
@@ -51,25 +56,30 @@ FUSION_START_LOAD = "2013-05-01"
 
 def load_fusion_input() -> pd.DataFrame:
     """
-    The engine's input: one row per SB11 date, with Close = SB11 close,
-    MID_VHP / MID_THP = VHP / THP spot mids (forward-filled, as for the other
-    sugar strategies). Orders execute at the close, so Open (required by the
-    engine) is only a copy of Close.
+    The engine's input: one row per SB11 date, with Open / Close = SB11 open /
+    close, MID_VHP / MID_THP = VHP / THP spot mids (forward-filled, as for the
+    other sugar strategies). The RSI, reversal and momentum strategies compute
+    their signal on the Open, known during the day, and orders execute at the
+    Close of that same day (execution="close").
     """
     today = datetime.today().strftime("%Y-%m-%d")
     clock, price_series = data_sb11_builder(
         FUSION_START_LOAD, "2027-01-01", FUSION_START_LOAD, today,
         "ffill", "dropna", source=DataSource.POSTGRES,
     )()
+    sb11_open = select_futures_price(
+        load_futures(asset_name="SB11"), PriceSource(kind="open"), clock,
+        fill_method="dropna", as_date_index=False,
+    )
 
     df = pd.DataFrame({
+        "Open": sb11_open,
         "Close": price_series["SB11"],
         "MID_VHP": price_series["VHP"],
         "MID_THP": price_series["THP"],
     }).reindex(clock.index)
     df.index = df.index.tz_localize(None).normalize()
-    df = df.dropna(subset=["Close"]).rename_axis("Date").reset_index()
-    df["Open"] = df["Close"]
+    df = df.dropna(subset=["Open", "Close"]).rename_axis("Date").reset_index()
     return df[["Date", "Open", "Close", "MID_VHP", "MID_THP"]]
 
 

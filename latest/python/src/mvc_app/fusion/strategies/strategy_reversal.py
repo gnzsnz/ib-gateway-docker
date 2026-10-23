@@ -124,8 +124,9 @@ def compute_features(df):
         cond = (c_2 == roll_max.shift(1)) & (c_1 < c_2)
         return cond.astype(float)
     
-    df['reversal_up'] = reversal_up(df['Close'], 20)
-    df['reversal_down'] = reversal_down(df['Close'], 20)
+    # Open : connu en seance, l'ordre passe au close du jour.
+    df['reversal_up'] = reversal_up(df['Open'], 20)
+    df['reversal_down'] = reversal_down(df['Open'], 20)
     
 
     return df

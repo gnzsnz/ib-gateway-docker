@@ -108,7 +108,7 @@ def compute_features(df):
         rsi = 100.0 - (100.0 / (1.0 + rs))
         return rsi
     
-    df['rsi'] = rsi_wilder(df['Close'],14)
+    df['rsi'] = rsi_wilder(df['Open'],14)   # Open : connu en seance, ordre au close du jour
 
     return df
 
