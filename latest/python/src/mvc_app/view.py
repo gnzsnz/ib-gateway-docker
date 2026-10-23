@@ -193,7 +193,7 @@ def export_profile_trades_csv(profile_name: str, output_path: str) -> None:
 # on a FUSION_INITIAL_INV capital.
 FUSION_INSTRUMENT = "SB11"
 FUSION_INITIAL_INV = 200_000_000
-FUSION_POSITION_NOTIONAL = 30_000_000
+FUSION_POSITION_NOTIONAL = 200_000_000
 
 
 def _run_fusion(start_date: Optional[str] = None) -> Dict[str, Any]:
