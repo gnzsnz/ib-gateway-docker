@@ -5,7 +5,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 from mvc_app.view import export_profile_trades_csv, export_fusion_trades_csv
 from mvc_core.adapters.db_connection.postgres_connection import PostgresConfig, get_postgres, init_postgres
 from mvc_core.adapters.s3_AWS.s3_services import upload_file, generate_presigned_url
-from mvc_core.adapters.IBKR.ibkr_services import fetch_and_upsert_trades
+from mvc_core.adapters.IBKR.ibkr_services import fetch_and_upsert_trades, upsert_trades_csv
 
 from dotenv import dotenv_values
 
@@ -23,13 +23,14 @@ def get_trades(profile: str):
 
 
 def get_fusion_trades():
-    """Get the Fusion strategy's trades and save to CSV."""
+    """Get the Fusion strategy's trades, save to CSV and upsert them into the database."""
     file_name = "trades_sb11_fusion.csv"
     file_path = f"/tmp/{file_name}"
     export_fusion_trades_csv(file_path)
     upload_file(file_path, file_name)
     url = generate_presigned_url(file_name)
     print(url)
+    upsert_trades_csv("sb11_fusion", file_path)
 
 
 def init_db():

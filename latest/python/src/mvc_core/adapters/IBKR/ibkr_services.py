@@ -52,7 +52,8 @@ def upsert_futures_row(name: str, date: str, open_: str, high: str, low: str, cl
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
     existing = db.select_from_query(
-        f"SELECT id FROM public.data_market_intelligence_futures WHERE name = '{name}' AND date = '{date}' LIMIT 1"
+        "SELECT id FROM public.data_market_intelligence_futures WHERE name = %s AND date = %s LIMIT 1",
+        (name, date),
     )
 
     if existing.empty:
@@ -76,8 +77,8 @@ def upsert_trade_row(name: str, date: str, trade: int):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
     existing = db.select_from_query(
-        f"SELECT id FROM public.data_market_intelligence_trades "
-        f"WHERE name = '{name}' AND date = '{date}' LIMIT 1"
+        "SELECT id FROM public.data_market_intelligence_trades WHERE name = %s AND date = %s LIMIT 1",
+        (name, date),
     )
 
     if existing.empty:
@@ -117,6 +118,22 @@ def fetch_and_upsert_trades(profile: str):
         print(f"{profile} -> upserted {date}: trade={trade}")
 
     print(f"Done. {len(trades_df)} trade(s) upserted for {profile}.")
+
+
+def upsert_trades_csv(name: str, csv_path: str):
+    """
+    Upsert the trades of a trades CSV (date / +1|-1) into the database under `name`,
+    for strategies that aren't walk-forward profiles (Fusion).
+    """
+    trades_df = pd.read_csv(csv_path)
+
+    for _, row in trades_df.iterrows():
+        date = pd.to_datetime(row["date"]).strftime("%Y-%m-%d %H:%M:%S")
+        trade = int(row["trade"])
+        upsert_trade_row(name=name, date=date, trade=trade)
+        print(f"{name} -> upserted {date}: trade={trade}")
+
+    print(f"Done. {len(trades_df)} trade(s) upserted for {name}.")
 
 ### LEGACY VERSION
 

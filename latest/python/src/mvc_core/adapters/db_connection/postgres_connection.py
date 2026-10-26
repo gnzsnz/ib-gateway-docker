@@ -70,12 +70,13 @@ class PostgresConnection:
             port=self.config.port
         )
     
-    def select_from_query(self, query: str) -> pd.DataFrame:
+    def select_from_query(self, query: str, params: tuple = ()) -> pd.DataFrame:
         """
         Execute a SELECT query and return results as a DataFrame.
         
         Args:
-            query: SQL SELECT query
+            query: SQL SELECT query with %s placeholders for parameters
+            params: Tuple of parameter values
         
         Returns:
             DataFrame with query results
@@ -88,7 +89,7 @@ class PostgresConnection:
             # Suppress pandas warning about DBAPI2 (psycopg2 works fine)
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", message="pandas only supports SQLAlchemy")
-                df = pd.read_sql(query, conn)
+                df = pd.read_sql(query, conn, params=params or None)
         finally:
             conn.close()
         
