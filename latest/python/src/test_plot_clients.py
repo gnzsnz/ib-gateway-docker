@@ -31,8 +31,7 @@ def cropped_view_client(profile):
     fig = build_wf_oos_figure_price_only(
         oos=res["oos"],
         instrument=res["instrument"],
-        title_suffix="cropped calibration",
-        start_date = f"2023-01-01"
+        title_suffix="cropped calibration"
     )
 
     file_name = profile + '_client.html'
@@ -56,7 +55,7 @@ def cropped_view_client(profile):
 
 def cropped_view_client_fusion():
     """Fusion of the three sugar strategies; run after their calibrations."""
-    fig = build_fusion_client_figure(start_date="2023-01-01")
+    fig = build_fusion_client_figure()
 
     file_name = 'sb11_fusion_client.html'
     file_path = '/tmp/' + file_name
