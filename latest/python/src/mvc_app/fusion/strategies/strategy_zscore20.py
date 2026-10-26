@@ -76,9 +76,7 @@ def compute_features(df):
     var_x = x.rolling(hw).var()
 
     hedge_ratio = cov_xy / var_x
-    # Variance quasi nulle = fenetre plate (spot reconduit) : pandas 3 y renvoie
-    # un bruit d'arrondi (~1e-17) au lieu de 0, d'ou une tolerance.
-    hedge_ratio = hedge_ratio.where(var_x.abs() > 1e-12).ffill()   # ffill causal: uniquement du passe
+    hedge_ratio = hedge_ratio.where(var_x != 0).ffill()   # ffill causal: uniquement du passe
     hedge_ratio = hedge_ratio.rolling(hw).mean()
     df["Hedge_Ratio"] = hedge_ratio
 
