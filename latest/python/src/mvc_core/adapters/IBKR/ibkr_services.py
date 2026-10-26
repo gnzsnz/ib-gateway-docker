@@ -118,6 +118,22 @@ def fetch_and_upsert_trades(profile: str):
 
     print(f"Done. {len(trades_df)} trade(s) upserted for {profile}.")
 
+
+def upsert_trades_csv(name: str, csv_path: str):
+    """
+    Upsert the trades of a trades CSV (date / +1|-1) into the database under `name`,
+    for strategies that aren't walk-forward profiles (Fusion).
+    """
+    trades_df = pd.read_csv(csv_path)
+
+    for _, row in trades_df.iterrows():
+        date = pd.to_datetime(row["date"]).strftime("%Y-%m-%d %H:%M:%S")
+        trade = int(row["trade"])
+        upsert_trade_row(name=name, date=date, trade=trade)
+        print(f"{name} -> upserted {date}: trade={trade}")
+
+    print(f"Done. {len(trades_df)} trade(s) upserted for {name}.")
+
 ### LEGACY VERSION
 
 # def fetch_and_upsert():
