@@ -70,28 +70,37 @@ def load_sb11_prices() -> pd.DataFrame:
     return pd.concat([benoit, db]).dropna(subset=["Open", "Close"])
 
 
-def load_spot_mid(asset_name: str, dates: pd.DatetimeIndex) -> pd.Series:
+def load_spot_mid(asset_name: str) -> pd.Series:
     """
-    Spot mid (VHP / THP) on `dates`: the quote of the date, or the last one
-    before it when there is none that day (forward fill, causal).
+    Spot mid (VHP / THP) on its own quote dates, as in Benoit's preprocessing:
+    BID and OFFER are each forward-filled, then MID = (BID + OFFER) / 2.
     """
-    spot = format_sugar_spot(load_sugar_spot_raw(asset_name=asset_name))["MID"]
+    spot = format_sugar_spot(load_sugar_spot_raw(asset_name=asset_name), keep_bid_offer=True)
     spot.index = pd.DatetimeIndex(spot.index).tz_localize(None).normalize()
     spot = spot[~spot.index.duplicated(keep="last")].sort_index()
-    return spot.reindex(spot.index.union(dates)).ffill().reindex(dates)
+    bid, offer = spot["BID"].ffill(), spot["OFFER"].ffill()
+    return (bid + offer) / 2
 
 
 def load_fusion_input() -> pd.DataFrame:
     """
-    The engine's input: one row per SB11 date, with Open / Close = SB11 open /
-    close (load_sb11_prices), MID_VHP / MID_THP = VHP / THP spot mids
-    forward-filled on those dates. The RSI, reversal and momentum strategies
-    compute their signal on the Open, known during the day, and orders execute
-    at the Close of that same day (execution="close").
+    The engine's input, built exactly as Benoit's preprocessing: SB11 Open /
+    Close (load_sb11_prices) and the VHP / THP spot mids side by side on the
+    union of their dates, every column forward-filled, then the rows without
+    Close, MID_VHP or MID_THP dropped. A spot-only date therefore carries the
+    previous SB11 prices. The RSI, reversal and momentum strategies compute
+    their signal on the Open, known during the day, and orders execute at the
+    Close of that same day (execution="close").
     """
-    df = load_sb11_prices()
-    df["MID_VHP"] = load_spot_mid("VHP", df.index)
-    df["MID_THP"] = load_spot_mid("THP", df.index)
+    df = pd.concat(
+        [
+            load_sb11_prices(),
+            load_spot_mid("VHP").rename("MID_VHP"),
+            load_spot_mid("THP").rename("MID_THP"),
+        ],
+        axis=1,
+    ).sort_index()
+    df = df.ffill().dropna(subset=["Close", "MID_THP", "MID_VHP"])
     df = df.rename_axis("Date").reset_index()
     return df[["Date", "Open", "Close", "MID_VHP", "MID_THP"]]
 
