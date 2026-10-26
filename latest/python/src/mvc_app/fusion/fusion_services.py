@@ -13,17 +13,16 @@ as possible to that repository so its updates can be diffed and copied over.
 """
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
 import pandas as pd
 
-from mvc_app.helpers.data_builder.data_sb11 import data_sb11_builder
-from mvc_app.helpers.data_loader.data_loader_data import DataSource
 from mvc_core.adapters.data.db_loading.postgres_futures_loader import load_futures
-from mvc_core.adapters.data.price_source_data import PriceSource
-from mvc_core.adapters.data.price_source_services import select_futures_price
+from mvc_core.adapters.data.db_loading.postgres_sugar_spot_loader import (
+    format_sugar_spot,
+    load_sugar_spot_raw,
+)
 
 from .backtest_engine import run_backtest
 
@@ -48,38 +47,61 @@ FUSION_BACKTEST_ARGS = dict(
     execution="close",
 )
 
-# The seasonal strategies need two years of history before their 2018-01-01
-# eval_start_date: load from the start of the SB11 history, like the other
-# sugar profiles.
-FUSION_START_LOAD = "2013-05-01"
+# SB11 daily prices sent by Benoit (date, close, open, high, low, volume in
+# c/lb), kept exactly as he sent them: his series rolls to the next contract
+# about two weeks before expiry, ours (IBKR / DB) only at expiry. They cover
+# 2014-01-02 to 2026-10-23; later dates come from the DB futures.
+BENOIT_SB11_FILE = Path(__file__).resolve().parent / "data" / "dataset_sb11_benoit.csv"
+
+
+def load_sb11_prices() -> pd.DataFrame:
+    """
+    SB11 Open / Close per date: Benoit's file, then the DB futures for the
+    dates after its last one.
+    """
+    benoit = pd.read_csv(BENOIT_SB11_FILE, parse_dates=["date"]).set_index("date")
+    benoit = benoit.rename(columns={"open": "Open", "close": "Close"})[["Open", "Close"]]
+
+    db = load_futures(asset_name="SB11")[["Open", "Close"]]
+    db.index = pd.DatetimeIndex(db.index).tz_localize(None).normalize()
+    db = db[~db.index.duplicated(keep="last")]
+    db = db[db.index > benoit.index.max()]
+
+    return pd.concat([benoit, db]).dropna(subset=["Open", "Close"])
+
+
+def load_spot_mid(asset_name: str) -> pd.Series:
+    """
+    Spot mid (VHP / THP) on its own quote dates, as in Benoit's preprocessing:
+    BID and OFFER are each forward-filled, then MID = (BID + OFFER) / 2.
+    """
+    spot = format_sugar_spot(load_sugar_spot_raw(asset_name=asset_name), keep_bid_offer=True)
+    spot.index = pd.DatetimeIndex(spot.index).tz_localize(None).normalize()
+    spot = spot[~spot.index.duplicated(keep="last")].sort_index()
+    bid, offer = spot["BID"].ffill(), spot["OFFER"].ffill()
+    return (bid + offer) / 2
 
 
 def load_fusion_input() -> pd.DataFrame:
     """
-    The engine's input: one row per SB11 date, with Open / Close = SB11 open /
-    close, MID_VHP / MID_THP = VHP / THP spot mids (forward-filled, as for the
-    other sugar strategies). The RSI, reversal and momentum strategies compute
+    The engine's input, built exactly as Benoit's preprocessing: SB11 Open /
+    Close (load_sb11_prices) and the VHP / THP spot mids side by side on the
+    union of their dates, every column forward-filled, then the rows without
+    Close, MID_VHP or MID_THP dropped. A spot-only date therefore carries the
+    previous SB11 prices. The RSI, reversal and momentum strategies compute
     their signal on the Open, known during the day, and orders execute at the
     Close of that same day (execution="close").
     """
-    today = datetime.today().strftime("%Y-%m-%d")
-    clock, price_series = data_sb11_builder(
-        FUSION_START_LOAD, "2027-01-01", FUSION_START_LOAD, today,
-        "ffill", "dropna", source=DataSource.POSTGRES,
-    )()
-    sb11_open = select_futures_price(
-        load_futures(asset_name="SB11"), PriceSource(kind="open"), clock,
-        fill_method="dropna", as_date_index=False,
-    )
-
-    df = pd.DataFrame({
-        "Open": sb11_open,
-        "Close": price_series["SB11"],
-        "MID_VHP": price_series["VHP"],
-        "MID_THP": price_series["THP"],
-    }).reindex(clock.index)
-    df.index = df.index.tz_localize(None).normalize()
-    df = df.dropna(subset=["Open", "Close"]).rename_axis("Date").reset_index()
+    df = pd.concat(
+        [
+            load_sb11_prices(),
+            load_spot_mid("VHP").rename("MID_VHP"),
+            load_spot_mid("THP").rename("MID_THP"),
+        ],
+        axis=1,
+    ).sort_index()
+    df = df.ffill().dropna(subset=["Close", "MID_THP", "MID_VHP"])
+    df = df.rename_axis("Date").reset_index()
     return df[["Date", "Open", "Close", "MID_VHP", "MID_THP"]]
 
 
