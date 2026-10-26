@@ -52,7 +52,8 @@ def upsert_futures_row(name: str, date: str, open_: str, high: str, low: str, cl
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
     existing = db.select_from_query(
-        f"SELECT id FROM public.data_market_intelligence_futures WHERE name = '{name}' AND date = '{date}' LIMIT 1"
+        "SELECT id FROM public.data_market_intelligence_futures WHERE name = %s AND date = %s LIMIT 1",
+        (name, date),
     )
 
     if existing.empty:
@@ -76,8 +77,8 @@ def upsert_trade_row(name: str, date: str, trade: int):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
     existing = db.select_from_query(
-        f"SELECT id FROM public.data_market_intelligence_trades "
-        f"WHERE name = '{name}' AND date = '{date}' LIMIT 1"
+        "SELECT id FROM public.data_market_intelligence_trades WHERE name = %s AND date = %s LIMIT 1",
+        (name, date),
     )
 
     if existing.empty:
