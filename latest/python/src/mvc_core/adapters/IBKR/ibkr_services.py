@@ -98,10 +98,26 @@ def upsert_trade_row(name: str, date: str, trade: int):
 
 
 
+def delete_trades_not_in(name: str, dates: list):
+    """
+    Delete the trades of `name` whose date isn't in `dates` (the latest run's
+    trades): a trade that moved to another date or disappeared would otherwise
+    stay in the table next to the new ones.
+    """
+    if not dates:
+        return
+    db = get_postgres()
+    db.execute_write_querry(
+        "DELETE FROM public.data_market_intelligence_trades WHERE name = %s AND NOT (date = ANY(%s::timestamp[]))",
+        (name, list(dates)),
+    )
+
+
 def fetch_and_upsert_trades(profile: str):
     """
     Rebuild trades of a profile and upsert them (name / date / +1|-1) into the database.
-    Existing rows (same name + date) are updated, new ones inserted.
+    Existing rows (same name + date) are updated, new ones inserted, and the
+    profile's rows on other dates deleted.
     """
     res = get_backtest_view(JobConfig(profile_name=profile))
     decisions = res["oos"].get("decisions", [])
@@ -111,28 +127,35 @@ def fetch_and_upsert_trades(profile: str):
         print(f"Warning: No trades for {profile}. Skipping.")
         return
 
+    dates = []
     for _, row in trades_df.iterrows():
         date = pd.to_datetime(row["entry_date"]).strftime("%Y-%m-%d %H:%M:%S")
         trade = 1 if row["side"] == "LONG" else -1
         upsert_trade_row(name=profile, date=date, trade=trade)
+        dates.append(date)
         print(f"{profile} -> upserted {date}: trade={trade}")
 
+    delete_trades_not_in(profile, dates)
     print(f"Done. {len(trades_df)} trade(s) upserted for {profile}.")
 
 
 def upsert_trades_csv(name: str, csv_path: str):
     """
     Upsert the trades of a trades CSV (date / +1|-1) into the database under `name`,
-    for strategies that aren't walk-forward profiles (Fusion).
+    for strategies that aren't walk-forward profiles (Fusion), and delete the
+    rows of `name` on dates the CSV no longer has.
     """
     trades_df = pd.read_csv(csv_path)
 
+    dates = []
     for _, row in trades_df.iterrows():
         date = pd.to_datetime(row["date"]).strftime("%Y-%m-%d %H:%M:%S")
         trade = int(row["trade"])
         upsert_trade_row(name=name, date=date, trade=trade)
+        dates.append(date)
         print(f"{name} -> upserted {date}: trade={trade}")
 
+    delete_trades_not_in(name, dates)
     print(f"Done. {len(trades_df)} trade(s) upserted for {name}.")
 
 ### LEGACY VERSION
