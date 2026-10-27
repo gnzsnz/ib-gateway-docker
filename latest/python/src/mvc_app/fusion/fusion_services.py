@@ -87,8 +87,10 @@ def load_fusion_input() -> pd.DataFrame:
     The engine's input, built exactly as Benoit's preprocessing: SB11 Open /
     Close (load_sb11_prices) and the VHP / THP spot mids side by side on the
     union of their dates, every column forward-filled, then the rows without
-    Close, MID_VHP or MID_THP dropped. A spot-only date therefore carries the
-    previous SB11 prices. The RSI, reversal and momentum strategies compute
+    Close, MID_VHP or MID_THP dropped. A spot-only date (ICE closed, e.g. a US
+    holiday) therefore carries the previous SB11 prices: it still counts for the
+    signals, but Tradable is False there, so the engine delays any order to the
+    next SB11 trading day (Benoit's rule). The RSI, reversal and momentum strategies compute
     their signal on the Open, known during the day, and orders execute at the
     Close of that same day (execution="close").
     """
@@ -100,9 +102,10 @@ def load_fusion_input() -> pd.DataFrame:
         ],
         axis=1,
     ).sort_index()
+    df["Tradable"] = df["Close"].notna()
     df = df.ffill().dropna(subset=["Close", "MID_THP", "MID_VHP"])
     df = df.rename_axis("Date").reset_index()
-    return df[["Date", "Open", "Close", "MID_VHP", "MID_THP"]]
+    return df[["Date", "Open", "Close", "MID_VHP", "MID_THP", "Tradable"]]
 
 
 def run_fusion(notional: float) -> Dict[str, Any]:

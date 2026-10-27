@@ -41,6 +41,13 @@ MODIFICATION : unite de min_hold_days via run_backtest(..., min_hold_unit=...)
   - min_hold_unit="trading" : min_hold_days = BARRES de trading (lignes du jeu de
     donnees) entre deux changements du signal -> la position executee est tenue au
     moins min_hold_days barres, week-ends et jours feries ne comptant pas.
+
+MODIFICATION : jours sans cotation de l'instrument (colonne optionnelle "Tradable")
+  - Si le dataset contient une colonne booleenne "Tradable", les lignes a False
+    (ex. jour ferie ICE avec des cotations spot, prix SB11 reportes) restent dans
+    le calcul des signaux, mais aucun ordre n'y est execute : la position de la
+    veille est conservee et l'ordre part a la prochaine barre Tradable, au prix
+    d'execution de cette barre. Sans la colonne : comportement historique.
 """
 
 import copy
@@ -235,6 +242,14 @@ def load_strategy(path):
         if not hasattr(module, attr):
             raise AttributeError(f"La strategie '{path}' doit definir '{attr}'")
     return module
+
+
+def _hold_on_closed_days(position, tradable):
+    """
+    Conserve la position precedente sur les barres non cotees (tradable False) :
+    un ordre qui tombe sur l'une d'elles est execute a la prochaine barre cotee.
+    """
+    return position.where(np.asarray(tradable, dtype=bool)).ffill()
 
 
 def _validate_base(df):
@@ -611,6 +626,8 @@ def run_backtest(df, strategy_specs, notional=100_000, annualization=252,
     # Signal connu au close de t -> position detenue a partir de la barre
     # d'execution t+lag (lag=0 : close de t ; lag=1 : open ou close de t+1).
     bt["Position"] = bt["Signal"].shift(lag)
+    if "Tradable" in bt.columns:
+        bt["Position"] = _hold_on_closed_days(bt["Position"], bt["Tradable"])
     bt["Strategy_Return"] = (bt["Position"] * bt["Exec_Return"]).shift(1)
 
     bt["Position"] = bt["Position"].fillna(0.0)
@@ -655,7 +672,10 @@ def run_backtest(df, strategy_specs, notional=100_000, annualization=252,
         weight_i = d["weight"]
 
         aligned = raw_signal_i.reindex(bt["Date"].values)
-        position_i = (aligned * weight_i).shift(lag).fillna(0.0)
+        position_i = (aligned * weight_i).shift(lag)
+        if "Tradable" in bt.columns:
+            position_i = _hold_on_closed_days(position_i, bt["Tradable"])
+        position_i = position_i.fillna(0.0)
         return_i = pd.Series(
             position_i.values * bt["Exec_Return"].values, index=bt.index
         ).shift(1).fillna(0.0)
