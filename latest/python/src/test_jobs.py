@@ -31,7 +31,8 @@ def cropped_view_admin(profile):
     fig = build_wf_oos_figure_from_oos(
         oos=res["oos"],
         instrument=res["instrument"],
-        title_suffix="cropped calibration"
+        title_suffix="cropped calibration",
+        start_date = f"2023-01-01"
     )
 
     file_name = profile + '.html'
@@ -55,7 +56,7 @@ def cropped_view_admin(profile):
 
 def cropped_view_fusion():
     """Fusion of the three sugar strategies; run after their calibrations."""
-    fig = build_fusion_figure()
+    fig = build_fusion_figure(start_date="2023-01-01")
 
     file_name = 'sb11_fusion.html'
     file_path = '/tmp/' + file_name
@@ -108,6 +109,7 @@ def test_fusion_strat_signals():
         initial_inv=200_000_000,
         position_notional=30_000_000,
         threshold=thresh,
+        start_date="2023-01-01",
         debug=False,
     )
     fig_cropped = plot_price_equity(
