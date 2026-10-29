@@ -39,7 +39,9 @@ def fetch_daily_history(ib: IB, asset: str, duration: str = "30 D", barSizeSetti
         useRTH=False,
         formatDate=1,
     )
-    return util.df(bars)
+    # On a reqHistoricalData timeout ib_insync returns no bars and util.df()
+    # gives None: return an empty frame so callers only have to check .empty.
+    return util.df(bars) if bars else pd.DataFrame()
 
 
 def to_db_str(value: float) -> str:
@@ -246,11 +248,14 @@ def fetch_and_upsert(nb_periods: int = 2):
         db_name = IBKR_TO_DB_NAME[asset]
 
         df = fetch_daily_history(ib, asset, duration=f"{nb_periods} D")
-        df.index = pd.to_datetime(df["date"]).dt.date
 
+        # Skipping is safe: every run re-fetches the last nb_periods days,
+        # so the next one fills the gap.
         if df.empty:
             print(f"Warning: No data fetched for {asset} ({db_name}). Skipping.")
             continue
+
+        df.index = pd.to_datetime(df["date"]).dt.date
 
         for date, row in df.iterrows():
             upsert_futures_row(
