@@ -13,8 +13,6 @@ from mvc_core.adapters.db_connection.postgres_connection import PostgresConfig, 
 from mvc_core.adapters.IBKR.ibkr_services import fetch_and_upsert
 from mvc_core.adapters.s3_AWS.s3_services import upload_file, generate_presigned_url, bulk_upload_calibrations
 
-from job_reporting import failure_detail, skipped_detail
-
 from dotenv import dotenv_values
 
 import glob
@@ -108,7 +106,7 @@ def send_slack_notification(message: str):
 def main():
     try:
         init_db()
-        fetch_result = fetch_and_upsert(nb_periods=20)
+        fetch_and_upsert(nb_periods=20)
 
         profile = "wf_sb11"  # zscore-spot
         update_calibration(profile)
@@ -132,15 +130,11 @@ def main():
         update_calibration(profile)
         cropped_view_client(profile=profile)
 
-        skipped = skipped_detail(fetch_result)
-        if skipped:
-            send_slack_notification(f"⚠️ [client] Updated data and html files, but {skipped}")
-        else:
-            send_slack_notification("✅ [client] Updated data and html files successfully")
+        send_slack_notification("✅ [client] Updated data and html files successfully")
     except Exception as e:
         import traceback
         traceback.print_exc()
-        send_slack_notification(f"❌ [client] Failed to update data and html files: {failure_detail(e)}")
+        send_slack_notification(f"❌ [client] Failed to update data and html files: {type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":

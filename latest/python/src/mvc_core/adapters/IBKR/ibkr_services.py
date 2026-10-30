@@ -225,12 +225,7 @@ def upsert_trades_csv(name: str, csv_path: str):
 #         print(f"Done. {len(results)} asset(s) upserted for {date_today}.")
 
 
-# Farm "connection is OK" notices IB sends on every connection: logged, but
-# not worth repeating in a Slack report.
-IB_OK_NOTICE_CODES = {2104, 2106, 2158}
-
-
-def fetch_and_upsert(nb_periods: int = 2) -> dict:
+def fetch_and_upsert(nb_periods: int = 2):
     """
     Connect to IBKR, fetch the last nb_periods days of daily bars for each asset,
     and upsert all retrieved rows into the database.
@@ -241,16 +236,10 @@ def fetch_and_upsert(nb_periods: int = 2) -> dict:
     (rather than a per-script fixed value) also covers the case where
     the same script gets fired twice in parallel — which is exactly what
     we suspect happens at 17:30 with the double trigger.
-
-    Returns {"skipped": [...], "ib_errors": [...]}: the assets that came back
-    without data and the IB error messages seen (OK notices left out), so
-    the calling job can report a partial update instead of a plain success.
     """
     config = dotenv_values("/tmp/secrets/.env")
 
     ib = IB()
-    ib_errors = []
-    skipped = []
 
     # Subscribed before connect() so a clientId clash (326) is caught too.
     # Printed with a timestamp: the gateway only logs this script's output
@@ -259,8 +248,6 @@ def fetch_and_upsert(nb_periods: int = 2) -> dict:
         symbol = f", {contract.symbol}" if contract else ""
         message = f"IB {errorCode} (reqId {reqId}{symbol}): {errorString}"
         print(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S} {message}")
-        if errorCode not in IB_OK_NOTICE_CODES:
-            ib_errors.append(message)
 
     ib.errorEvent += on_ib_error
     ib.connect(config['IBGATEWAY_HOST'], config['IBGATEWAY_PORT'], clientId=random.randint(10, 31))
@@ -276,7 +263,6 @@ def fetch_and_upsert(nb_periods: int = 2) -> dict:
         # so the next one fills the gap.
         if df.empty:
             print(f"Warning: No data fetched for {asset} ({db_name}). Skipping.")
-            skipped.append(f"{asset} ({db_name})")
             continue
 
         df.index = pd.to_datetime(df["date"]).dt.date
@@ -301,5 +287,3 @@ def fetch_and_upsert(nb_periods: int = 2) -> dict:
         print("No data upserted.")
     else:
         print(f"Done. {total_upserted} row(s) upserted across all assets.")
-
-    return {"skipped": skipped, "ib_errors": ib_errors}
