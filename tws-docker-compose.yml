@@ -38,18 +38,32 @@ services:
       # image-only: paper process's own credentials when IBC_TRADING_MODE=both
       IBC_USERID_PAPER: ${IBC_USERID_PAPER:-}
       IBC_PASSWORD_PAPER: ${IBC_PASSWORD_PAPER:-}
-      # bare key: "" != unset for ibcontroller, see README
-      IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-}
+      IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-/config/tws_settings}
       IBC_ACCEPT_INCOMING_CONNECTIONS: ${IBC_ACCEPT_INCOMING_CONNECTIONS:-manual}
       IBC_READ_ONLY_API: ${IBC_READ_ONLY_API:-}
       IBC_MFA_TIMEOUT_ACTION: ${IBC_MFA_TIMEOUT_ACTION:-exit}
       IBC_AUTO_RESTART_TIME: ${IBC_AUTO_RESTART_TIME:-}
       IBC_AUTO_LOGOFF_TIME: ${IBC_AUTO_LOGOFF_TIME:-}
-      # "HH:MM", weekly on Sunday -- direct rename of TWS_COLD_RESTART, same format
+      # "HH:MM" 24-hour, weekly on Sunday
       IBC_COLD_RESTART_TIME: ${IBC_COLD_RESTART_TIME:-}
+      IBC_CLOSEDOWN_AT: ${IBC_CLOSEDOWN_AT:-}
       IBC_RELOGIN_AFTER_MFA_TIMEOUT: ${IBC_RELOGIN_AFTER_MFA_TIMEOUT:-no}
       IBC_MFA_EXIT_INTERVAL: ${IBC_MFA_EXIT_INTERVAL:-60}
       IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
+      # login/MFA timeout and retry, defaults from ibcontroller
+      # TWS only: click "Enter Read Only" on the 2FA frame instead of the push
+      IBC_READ_ONLY_LOGIN: ${IBC_READ_ONLY_LOGIN:-}
+      IBC_LOGIN_DIALOG_DISPLAY_TIMEOUT: ${IBC_LOGIN_DIALOG_DISPLAY_TIMEOUT:-}
+      IBC_MFA_TIMEOUT: ${IBC_MFA_TIMEOUT:-}
+      IBC_RESTART_CAP: ${IBC_RESTART_CAP:-}
+      # logging and diagnostics, defaults from ibcontroller
+      IBC_LOG_LEVEL: ${IBC_LOG_LEVEL:-}
+      IBC_LOG_MAX_BYTES: ${IBC_LOG_MAX_BYTES:-}
+      IBC_LOG_BACKUP_COUNT: ${IBC_LOG_BACKUP_COUNT:-}
+      IBC_TRACE_ENABLED: ${IBC_TRACE_ENABLED:-}
+      IBC_DIAGNOSTIC_SCOPE: ${IBC_DIAGNOSTIC_SCOPE:-}
+      IBC_DIAGNOSTIC_WHEN: ${IBC_DIAGNOSTIC_WHEN:-}
+      IBC_DIAGNOSTIC_SETTINGS_SWEEP: ${IBC_DIAGNOSTIC_SETTINGS_SWEEP:-}
       # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
       # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see README
       IBC_TIME_ZONE: ${IBC_TIME_ZONE:-Etc/UTC}

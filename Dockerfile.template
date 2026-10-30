@@ -15,7 +15,7 @@ FROM ${UBUNTU_BASE_IMAGE} AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_CHANNEL=$CHANNEL
-ENV IBCONTROLLER_VERSION=0.1.3
+ENV IBCONTROLLER_VERSION=0.1.5
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
 # pypi (default) installs the pinned release; git installs IBCONTROLLER_GIT_REF from
@@ -105,6 +105,8 @@ ENV IBC_APP_DIR=${HOME}/ibcontroller
 # no other step needed
 ENV IBC_SETTINGS_FILE=${IBC_APP_DIR}/config/ibkr_settings.toml
 ENV IBC_PROGRAM=gateway
+# "std" (default) keeps ibcontroller's own log on the console -> docker logs
+ENV IBC_LOG_SINK=std
 ENV IBC_TWS_PATH=${HOME}/Jts
 ENV IBC_TWS_CHANNEL=$CHANNEL
 # explicit, so ibcontroller skips auto-detecting it from the install dir --
@@ -167,6 +169,8 @@ ENV NO_AT_BRIDGE=1
 ENV IBC_APP_DIR=/config/ibcontroller
 ENV IBC_SETTINGS_FILE=${IBC_APP_DIR}/config/ibkr_settings.toml
 ENV IBC_PROGRAM=tws
+# "std" (default) keeps ibcontroller's own log on the console -> docker logs
+ENV IBC_LOG_SINK=std
 ENV IBC_TWS_PATH=${TWS_PATH}
 ENV IBC_TWS_CHANNEL=$CHANNEL
 # see gateway target above -- same consolidation, drops IB_GATEWAY_VERSION/
