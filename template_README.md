@@ -6,30 +6,30 @@
 
 ## What is it?
 
-A docker image to run Interactive Brokers Gateway and TWS without any human
-interaction on a docker container
+A Docker image to run Interactive Brokers Gateway and TWS without any human
+interaction in a Docker container
 
 It includes:
 
 - [IB Gateway](https://www.interactivebrokers.com/en/index.php?f=16457) ([stable](https://www.interactivebrokers.com/en/trading/ibgateway-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/ibgateway-latest.php))
 - Trader Workstation [TWS](https://www.interactivebrokers.com/en/trading/tws-offline-installers.php) ([stable](https://www.interactivebrokers.com/en/trading/tws-offline-stable.php) or [latest](https://www.interactivebrokers.com/en/trading/tws-offline-latest.php)), from `10.26.1h`
 - [ibcontroller](https://github.com/gnzsnz/ibcontroller) - to control TWS/IB Gateway (simulates user input).
-- [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - a X11
-  virtual framebuffer to run IB Gateway Application without graphics hardware.
+- [Xvfb](https://www.x.org/releases/X11R7.6/doc/man/man1/Xvfb.1.xhtml) - an X11
+  virtual framebuffer to run the IB Gateway application without graphics hardware.
 - [x11vnc](https://wiki.archlinux.org/title/x11vnc) - a VNC server to interact
   with the IB Gateway user interface (optional, for development / maintenance purpose).
-- xrdp/xfce enviroment for TWS. Build on top of [linuxserver/rdesktop](https://github.com/linuxserver/docker-rdesktop/).
-- [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) a
+- xrdp/xfce environment for TWS. Build on top of [linuxserver/rdesktop](https://github.com/linuxserver/docker-rdesktop/).
+- [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html), a
   tool to accept TCP connection from non-localhost and relay it to IB Gateway
   from localhost (IB Gateway restricts connections to container's 127.0.0.1 by
   default).
 - Optional remote [SSH tunnel](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html)
-  to provide secure connections for both IB Gateway and VNC. Only available for
-  `10.19.2g-stable` and `10.25.1o-latest` or greater.
-- Support parallel execution of `live` and `paper` trading mode.
+  to provide secure connections for both IB Gateway and VNC. Available in
+  `10.19.2g-stable` and `10.25.1o-latest` or later.
+- Supports parallel execution of live and paper trading modes.
 - [Secrets](#credentials) support (latest `10.29.1e`, stable `10.19.2m` or greater)
 - [aarch64](#aarch64-support) support, ex raspberry pi, M1,M2,M3,.., since `10.37.1l`/`10.39.1e`
-- Execution of custom scripts during [star-up process](#start-up-scripts).
+- Execution of custom scripts during [startup process](#start-up-scripts).
 - Works well together with [Jupyter Quant](https://github.com/quantbelt/jupyter-quant)
   docker image.
 
@@ -49,8 +49,8 @@ All tags are available in the container repository for [ib-gateway][1] and
 
 ## How to use it?
 
-Create a `docker-compose.yml` file (or include ib-gateway services on your existing
-one). The sample files provided can be used as starting point,
+Create a `docker-compose.yml` file (or include ib-gateway services in your existing
+one). The sample files provided can be used as a starting point,
 [ib-gateway-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/docker-compose.yml) and
 [tws-rdesktop-compose](https://github.com/gnzsnz/ib-gateway-docker/blob/master/tws-docker-compose.yml).
 
@@ -179,7 +179,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_CLOSEDOWN_AT` | `HH:MM` daily or `<Weekday> HH:MM` weekly: closes tidily without relaunch. If also set with `IBC_COLD_RESTART_TIME`, whichever occurs first wins. | **not defined** |
 | `IBC_RELOGIN_AFTER_MFA_TIMEOUT` | Restart the login if the 2FA push times out. | no  |
 | `IBC_EXISTING_SESSION_ACTION` | `manual`/`primary`/`primaryoverride`/`secondary`. ibcontroller defaults to `manual`; the compose files select `primary`. | primary (compose) |
-| `IBC_TIME_ZONE` | IANA time zone, e.g. `Europe/Paris`, `America/New_York`, `Asia/Tokyo`. ibcontroller auto-detects from `TZ`, then `/etc/localtime`. The compose files set this variable and `TZ` to `Etc/UTC` unless overridden. Existing `jts.ini` timezone settings are preserved. | Etc/UTC (compose) |
+| `IBC_TIME_ZONE` | IANA time zone, e.g. `Europe/Paris`, `America/New_York`, `Asia/Tokyo`. ibcontroller auto-detects from `TZ`, then `/etc/localtime`; the compose files set this variable and `TZ` to `Etc/UTC` unless overridden. `.env-dist` sets `Europe/Zurich`. Existing `jts.ini` timezone settings are preserved. | Etc/UTC (compose) |
 | `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. In `both` mode, the image adds `_live`/`_paper`; Gateway needs separate mounts for these directories. See [preserve settings](#preserve-settings-across-containers). | `/home/ibgateway/tws_settings` (Gateway compose), `/config/tws_settings` (TWS compose) |
 | `IBC_ACCEPT_INCOMING_CONNECTIONS` | `accept`, `reject`, or `manual` | `manual` |
 | `IBC_SETTINGS_FILE` | Extra declarative settings file. Rename the scaffolded `ibkr_settings.toml.example` to activate it on the [config volume](#ibcontroller-env-vars-and-config-volume). Set by the image. | `${IBC_APP_DIR}/config/ibkr_settings.toml` |
@@ -192,7 +192,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_DIAGNOSTIC_WHEN` | When to log a window structure dump: `open`/`openclose`/`never`. | never |
 | `IBC_DIAGNOSTIC_SETTINGS_SWEEP` | Log a dump of each Global Configuration tree node in `labels.settings.sweep_paths`. | false |
 | *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Use `ibkr_settings.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
-| `CUSTOM_CONFIG` | If set to `yes`, then `run.sh` will not write `jts.ini` itself -- mount your own instead. | NO |
+| `CUSTOM_CONFIG` | If set to `yes`, then the container entrypoint will not write `jts.ini` itself -- mount your own instead. | NO |
 | `IBC_JAVA_HEAP_SIZE` | JVM heap for TWS/Gateway at launch. Includes the unit, e.g. `1024m`/`4g`. Leave unset to keep the installed `.vmoptions` file's `-Xmx` value. | **not defined** |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. if set to `both` then `socat` AND remote ssh tunnel are started. SSH keys should be provided to container through ~/.ssh volume.  | **not defined**                                      |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) client | **not defined** |
@@ -200,7 +200,7 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `SSH_ALIVE_COUNT`  | [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) `ServerAliveCountMax` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | **not defined** |
 | `SSH_PASSPHRASE`   | passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys   | **not defined**   |
 | `SSH_PASSPHRASE_FILE`   | file containing passphrase for ssh keys. If set the container will start ssh-agent and add ssh keys   | **not defined**   |
-| `SSH_REMOTE_PORT`   | Remote port for ssh tunnel. If `IBC_TRADING_MODE=both` then `SSH_REMOTE_PORT` is set to paper port `4002/7498`  | Same port than IB gateway `4001/4002` or `7497/7498` |
+| `SSH_REMOTE_PORT`   | Remote port for ssh tunnel. If `IBC_TRADING_MODE=both` then `SSH_REMOTE_PORT` is set to paper port `4002/7498`  | Same port as IB Gateway `4001/4002` or `7497/7498` |
 | `SSH_USER_TUNNEL`   | `user@server` to connect to    | **not defined**   |
 | `SSH_RESTART`  | Number of seconds to wait before restarting tunnel in case of disconnection.  | 5  |
 | `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`. Specific to ibgateway, ignored by TWS.  | **not defined**   |
@@ -231,7 +231,7 @@ TWS image uses the following ports
 | 7499 | TWS API port for paper accounts. Through socat, internal TWS API port 7497. Mapped **externally** to 7497 in sample `tws-docker-compose.yml`. |
 | 3389 | Port for RDP server. Mapped **externally** to 3370 in sample `tws-docker-compose.yml`.  |
 
-Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) is used to publish TWS API port from container's `127.0.0.1:4001/4002` to container's `0.0.0.0:4003/4004`, the sample `docker-compose.yml` maps ports to the host back to `4001/4002`. This way any application can use the "standard" IB Gateway ports. For TWS `127.0.0.1:7496/7497` to container's `0.0.0.0:7498/7499`, and `tws-docker-compose.yml` will map ports to host back to `7496/7497`.
+Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) publishes the IB Gateway API ports from `127.0.0.1:4001/4002` to `0.0.0.0:4003/4004`; `docker-compose.yml` maps them back to `4001/4002` on the host. For TWS, `127.0.0.1:7496/7497` is published to `0.0.0.0:7498/7499`, and `tws-docker-compose.yml` maps them back to `7496/7497`.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
@@ -248,11 +248,11 @@ In [tws-docker-compose.yml](https://github.com/gnzsnz/ib-gateway-docker/blob/mas
 - shm_size: "1gb"
 - `seccomp:unconfined`
 - `apparmor:unconfined`, required. Docker's default AppArmor profile blocks the sandboxed SVG icon loader GNOME/XFCE uses, which can crash the desktop session mid-use.
-- `IBC_JAVA_HEAP_SIZE`, depending your TWS you might need to increase it. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm)
+- `IBC_JAVA_HEAP_SIZE`: depending on your TWS, you might need to increase it. See [Increase Memory Size for TWS](https://ibkrguides.com/tws/usersguidebook/priceriskanalytics/custommemory.htm)
 - Volumes, set a volume for `/tmp`. ex `tws_tmp:/tmp`
-- Volumes, set a volumen for `/config`
+- Volumes: set a volume for `/config`
 
-The start up script will disable xfce compositing, as this has a significant impact on performance.
+The startup script will disable xfce compositing, as this has a significant impact on performance.
 
 ## Customizing the image
 
@@ -281,7 +281,7 @@ For TWS image config file locations are:
 | TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
 | ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `ibkr_settings.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
 
-Sample Gateway service settings:
+Example Gateway service settings:
 
 ```yaml
 environment:
@@ -343,7 +343,7 @@ your settings.
 You can run scripts during start up to automate tasks or install additional
 tools. This can be done by setting environment variables `START_SCRIPTS`,
 `X_SCRIPTS` and `IBC_SCRIPTS` with a path containing start-up scripts.
-Scripts files should have `.sh` extension. Files will be executed in
+Script files should have the `.sh` extension. Files will be executed in
 order, so `00-script.sh` will be executed before that `99-other-script.sh`.
 Start-up directory should be available in the container through a volume.
 
@@ -363,8 +363,8 @@ volumes:
   - ${PWD}/init-scripts:/home/ibgateway/init-scripts
 ```
 
-For TWS you can set your `.env` file as in the example and create a directory
-with your scripts in `/config/init-scripts/`. In TWS `$HOME=/config/`, while
+For TWS, use the same `.env` values and create the script directory under
+`/config/init-scripts/`. In TWS `$HOME=/config/`, while
 ib-gateway uses `$HOME=/home/ibgateway`.
 
 The start up process will search for start-up scripts in `$HOME/START_SCRIPTS`,
@@ -431,10 +431,10 @@ Suitable for testing. It does not expose API port to host network, host must be 
 
 ### SSH Tunnel
 
-You can optionally setup an SSH tunnel to avoid exposing IB Gateway port. The
+You can optionally set up an SSH tunnel to avoid exposing IB Gateway port. The
 container DOES NOT run an SSH server (sshd), what it does is to create a
 [remote tunnel](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html)
-using ssh client. So basically it will connect to an ssh server and expose IB
+using an SSH client. So basically it will connect to an SSH server and expose IB
 Gateway port there.
 
 An example setup would be to run
@@ -457,7 +457,7 @@ Sample ssh tunnels for reference.
 ```bash
 # on ib gateway - this is managed by the container
 ssh -NR 4001:localhost:4001 ibgateway@bastion
-# on juypter-quant container.
+# on jupyter-quant container.
 eval $(ssh-agent) # start agent
 ssh-add # add keys to agent
 #  -f will send it to foreground
@@ -522,8 +522,8 @@ Make sure that:
 
 This image does not contain nor store any user credentials.
 
-They are provided as environment variable during the container startup and
-the host is responsible to properly protect it.
+They are provided as environment variables during container startup, and
+the host is responsible for protecting them.
 
 From `10.29.1e` and `10.19.2m` it's possible to use `docker secrets`. If the
 `_FILE` environment variable is defined, then that file will be used to get
@@ -554,14 +554,14 @@ secrets:
 
 ```
 
-In "discussion" section you will find full examples for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
+In the Discussions section you will find full examples for [ib-gateway](https://github.com/gnzsnz/ib-gateway-docker/discussions/103) and [tws-rdesktop](https://github.com/gnzsnz/ib-gateway-docker/discussions/105)
 
 ### RDP
 
 [tws-rdesktop][2] will create a new TLS certificate every time the container
-starts. You can create your own certificate following this
+starts. You can create your own certificate following these
 [instructions](https://github.com/gnzsnz/ib-gateway-docker/discussions/104).
-Once this steps are put in place the same TLS certificate will be used every
+Once these steps are put in place the same TLS certificate will be used every
 time, which will allow you to trust it in your RDP client.
 
 ## Troubleshooting socat and ssh
@@ -586,13 +586,13 @@ value in seconds defined in `SSH_RESTART`.
 
 ## aarch64 support
 
-IBKR's has started releasing an installer for `linux-arm`. And this image is
-using it. While the official installer is for `ib-gateway`, we provide an TWS
-image too. So please take into account that TWS image might have unexpected
+IBKR has started releasing an installer for `linux-arm`. And this image is
+using it. While the official installer is for `ib-gateway`, we provide a TWS
+image too. So please take into account that the TWS image might have unexpected
 bugs.
 
-Please go to discussions section to see common problems. Avoid creating issues unless
-you have empirically probed that is a bug, ie it does not work to me is not a bug.
+Please go to the Discussions section to see common problems. Avoid creating issues unless
+you have confirmed a reproducible bug.
 
 To use aarch64 you just need to run:
 
@@ -616,22 +616,22 @@ project**.
 
 This is because it shall be possible to (re-)build the image, targeting a
 specific Gateway version,
-but IB only provide download links for the `latest` or `stable` version (there
+but IB only provides download links for the `latest` or `stable` version (there
 is no 'old version' download archive).
 
 The installer files stored on
 [releases](https://github.com/gnzsnz/ib-gateway-docker/releases) have been
 downloaded from IB homepage and renamed to reflect the version.
 
-IF you feel adventurous and you want to download Gateway installer from IB
-homepage directly, or use your local installation file, change this line
+If you feel adventurous and you want to download the Gateway installer from the
+IB homepage directly, or use your local installation file, change this line
 on [Dockerfile](https://github.com/gnzsnz/ib-gateway-docker/blob/master/Dockerfile)
 `RUN curl -sSL
 https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh
 --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` to download
 (or copy) the file from the source you prefer.
 
-**Example:** change to `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh` for using current stable version from IB homepage.
+**Example:** to use the current stable version from the IB homepage, replace the command with: `RUN curl -sSL https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh --output ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh`
 
 ### How to build locally step by step
 
@@ -642,8 +642,8 @@ https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibga
     ```
 
 1. Change docker file to use your local IB Gateway installer file, instead of
-   Loading it from this project releases: Open `Dockerfile` on editor and
-   replace this lines:
+   Loading from this project's releases: Open `Dockerfile` in an editor and
+   replace these lines:
 
    ```docker
    RUN curl -sSL https://github.com/gnzsnz/ib-gateway-docker/raw/gh-pages/ibgateway-releases/ibgateway-${IB_GATEWAY_VERSION}-standalone-linux-x64.sh \
