@@ -8,11 +8,14 @@ services:
       target: gateway
       tags:
         - "ghcr.io/gnzsnz/ib-gateway:latest"
-      # uncomment to build ibcontroller from a git branch instead of its pinned PyPI
-      # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
-      # args:
-      #   IBCONTROLLER_SOURCE: git
-      #   IBCONTROLLER_GIT_REF: feat/exit_codes
+      args:
+        # the gateway user is baked in at build time, a runtime `user:` can't write its home
+        USER_ID: ${PUID:-1000}
+        USER_GID: ${PGID:-1000}
+        # set to build ibcontroller from a git branch instead of its pinned PyPI
+        # release -- for testing an unreleased fix, e.g. gitea ibcontroller#66
+        IBCONTROLLER_SOURCE: ${IBCONTROLLER_SOURCE:-}
+        IBCONTROLLER_GIT_REF: ${IBCONTROLLER_GIT_REF:-}
     image: ghcr.io/gnzsnz/ib-gateway:latest
     # ibcontroller settings (credentials included) live in ib.env, see README
     env_file:
@@ -34,7 +37,7 @@ services:
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
     volumes:
     #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-      # config/log persistence, see README; host dir must be owned by USER_ID:USER_GID
+      # config/log persistence, see README; host dir must be owned by PUID:PGID
       - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller
       - ${PWD}/tws_settings/:${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
     #      - ${PWD}/ssh/:/home/ibgateway/.ssh

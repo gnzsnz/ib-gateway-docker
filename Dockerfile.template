@@ -141,7 +141,7 @@ CMD ["/home/ibgateway/scripts/run.sh"]
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
 LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway
 LABEL org.opencontainers.image.description="Docker image with IB Gateway and ibcontroller "
-LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
+LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}
 
 ##############################################################################
@@ -200,5 +200,5 @@ fi
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
 LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop
 LABEL org.opencontainers.image.description="Docker image with XFCE, TWS and ibcontroller"
-LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
+LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}

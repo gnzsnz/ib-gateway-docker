@@ -85,7 +85,7 @@ services:
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
     volumes:
 #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-      # config/log persistence, see below; host dir must be owned by USER_ID:USER_GID
+      # config/log persistence, see below; host dir must be owned by PUID:PGID
       - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller
       - ${PWD}/tws_settings/:${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
 #      - ${PWD}/ssh/:/home/ibgateway/.ssh
@@ -187,7 +187,7 @@ Each entry is set as `IBKR_<NAME>` or `IBKR_<NAME>_FILE` (value read from a file
 | --- | --- | --- |
 | `IBKR_READ_ONLY_API` | API read-only mode, **true** or **false**. Leave unset to leave Gateway/TWS's own setting unchanged. | not defined (`ib.env-dist` sets `no`) |
 | `IBKR_AUTO_RESTART_TIME` | Daily restart time, format `hh:mm AM/PM`; does not require daily 2FA validation. | not defined (`ib.env-dist` sets `11:59 PM`) |
-| `IBKR_AUTO_LOGOFF_TIME` | At this daily time, closes tidily without restarting. Format `hh:mm AM/PM`. If both times are set, the restart wins. Not verified on a live run yet. | not defined |
+| `IBKR_AUTO_LOGOFF_TIME` | At this daily time, closes tidily without restarting. Format `hh:mm AM/PM`. If both times are set, the restart wins. | not defined |
 | `IBKR_SOCKET_PORT` | API socket port. Do not set in this image: socat and the ssh tunnel forward the fixed ports (Gateway 4002 paper / 4001 live, TWS 7497 / 7496) and dual mode shares one value. On TWS a confirmation dialog follows, see `IBKR_SOCKET_PORT_CONFIRMATION`. | not defined |
 | `IBKR_MASTER_API_CLIENT_ID` | API master client ID, a number. | not defined |
 | `IBKR_SEND_MARKET_DATA_IN_LOTS_US_STOCKS` | Send market data in lots for US stocks. **Do not set to true**: it opens a confirmation dialog ibcontroller cannot handle yet (ibcontroller #132). | not defined |
@@ -201,12 +201,12 @@ Each entry is set as `IBKR_<NAME>` or `IBKR_<NAME>_FILE` (value read from a file
 | `IBKR_API_PRECAUTIONS_BYPASS_NO_OVERFILL_PROTECTION` | **true** bypasses the no overfill protection warning, **false** keeps it. | not defined |
 | `IBKR_API_PRECAUTIONS_BYPASS_ROUTE_MARKETABLE_TO_BBO` | Route marketable orders to BBO. **Do not set to true**: it opens a confirmation dialog ibcontroller cannot handle yet (ibcontroller #132). | not defined |
 | `IBKR_NON_BROKERAGE_ACCOUNT` | "This is not a brokerage account" warning: clicks "I understand and accept". `off`/`on`. | on |
-| `IBKR_AUTO_RESTART_CONFIRMATION` | Confirmation shown after Gateway/TWS is set to restart automatically: clicks "OK". `off`/`on`. Not verified live. | on |
-| `IBKR_PASSWORD_EXPIRY_WARNING` | Password expiry notice: clicks "OK". `off`/`on`. Not verified live. | off |
-| `IBKR_BLIND_TRADING` | Blind trading warning for a product without market data: clicks "Override and Transmit" or "Yes". `off`/`on`. Not verified live. | off |
+| `IBKR_AUTO_RESTART_CONFIRMATION` | Confirmation shown after Gateway/TWS is set to restart automatically: clicks "OK". `off`/`on`. | on |
+| `IBKR_PASSWORD_EXPIRY_WARNING` | Password expiry notice: clicks "OK". `off`/`on`. | off |
+| `IBKR_BLIND_TRADING` | Blind trading warning for a product without market data: clicks "Override and Transmit" or "Yes". `off`/`on`. | off |
 | `IBKR_SOCKET_PORT_CONFIRMATION` | TWS only: asks whether the new socket port applies at once. `on` clicks "Yes", `no` clicks "No", `off` leaves it to you. | off |
-| `IBKR_ACCEPT_INCOMING_CONNECTIONS` | "Accept incoming connection" dialog: `accept` clicks "OK" or "Yes", `reject` clicks "No", `manual` leaves it to you. Not verified live. | manual |
-| `IBKR_CRYPTO_ORDER_CONFIRMATION` | Cryptocurrency order confirmation: `transmit` clicks "Transmit" and places the order unchecked, `cancel` clicks "Cancel", `manual` leaves it to you. Not verified live. | manual |
+| `IBKR_ACCEPT_INCOMING_CONNECTIONS` | "Accept incoming connection" dialog: `accept` clicks "OK" or "Yes", `reject` clicks "No", `manual` leaves it to you. | manual |
+| `IBKR_CRYPTO_ORDER_CONFIRMATION` | Cryptocurrency order confirmation: `transmit` clicks "Transmit" and places the order unchecked, `cancel` clicks "Cancel", `manual` leaves it to you. | manual |
 
 #### Container variables (`.env`)
 
@@ -227,8 +227,8 @@ Each entry is set as `IBKR_<NAME>` or `IBKR_<NAME>_FILE` (value read from a file
 | `SSH_RESTART`  | Number of seconds to wait before restarting tunnel in case of disconnection.  | 5  |
 | `SSH_VNC_PORT`   | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_VNC_PORT`. Specific to ibgateway, ignored by TWS.  | **not defined**   |
 | `SSH_RDP_PORT`  | If set, then a remote ssh tunnel will be created with remote port equal to `SSH_RDP_PORT`. Specific to TWS, ignored by ibgateway.  | **not defined** |
-| `PUID` | User `uid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | 1000   |
-| `PGID` | User `gid` for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway.  | 1000   |
+| `PUID` | User `uid` for user `abc` (linuxserver default user name) on TWS. On ibgateway it is the `USER_ID` build arg, so rebuild the image to change it. | 1000   |
+| `PGID` | User `gid` for user `abc` (linuxserver default user name) on TWS. On ibgateway it is the `USER_GID` build arg, so rebuild the image to change it. | 1000   |
 | `RDP_PASSWORD` | Password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. | abc  |
 | `RDP_PASSWORD_FILE` | File containing password for user `abc` (linuxserver default user name). Specific to TWS, ignored by ibgateway. See [credentials section](#credentials). | abc  |
 | `START_SCRIPTS` | Directory with bash scripts to run **before** X environment is up. See [start-up scripts](#start-up-scripts) | **not defined** |

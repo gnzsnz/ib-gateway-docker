@@ -17,6 +17,8 @@ if [ "$channel" != "stable" ] && [ "$channel" != "latest" ]; then
 fi
 
 echo ".> Setting channle: $channel and version: $version"
+# drop generated dirs first so files removed from image-files/ don't linger
+rm -rf "$channel/config" "$channel/scripts" "$channel/tws-scripts"
 cp -r image-files/. "$channel/."
 
 # Dockerfile -- one file, "gateway" and "tws" targets built with --target
