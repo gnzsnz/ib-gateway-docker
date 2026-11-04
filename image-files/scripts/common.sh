@@ -1,35 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC1091
 
-apply_settings() {
-	# apply env variables into gateway/TWS config files (ibcontroller owns its
-	# own config.ini equivalent -- this is jts.ini only)
-	if [ "$CUSTOM_CONFIG" != "yes" ]; then
-		# where are settings stored
-		if [ -n "$IBC_TWS_SETTINGS_PATH" ]; then
-			echo ".> Settings directory set to: $IBC_TWS_SETTINGS_PATH"
-			_JTS_PATH=$IBC_TWS_SETTINGS_PATH
-			if [ ! -d "$IBC_TWS_SETTINGS_PATH" ]; then
-				# if IBC_TWS_SETTINGS_PATH does not exists, create it
-				echo ".> Creating directory: $IBC_TWS_SETTINGS_PATH"
-				mkdir "$IBC_TWS_SETTINGS_PATH"
-			fi
-		else
-			echo ".> Settings directory NOT set, defaulting to: $IBC_TWS_PATH"
-			_JTS_PATH=$IBC_TWS_PATH
-		fi
-		# only if jts.ini does not exists
-		if [ ! -f "$_JTS_PATH/$TWS_INI" ]; then
-			echo ".> Setting timezone in ${_JTS_PATH}/${TWS_INI}"
-			envsubst <"${IBC_TWS_PATH}/${TWS_INI_TMPL}" >"${_JTS_PATH}/${TWS_INI}"
-		else
-			echo ".> File jts.ini already exists, not setting timezone"
-		fi
-	else
-		echo ".> Using CUSTOM_CONFIG, (value:${CUSTOM_CONFIG})"
-	fi
-}
-
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of

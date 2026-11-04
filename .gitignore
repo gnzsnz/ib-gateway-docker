@@ -1,4 +1,5 @@
 /.env
+/ib.env
 tws_settings/
 ibcontroller/
 ssh/

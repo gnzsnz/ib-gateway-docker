@@ -64,29 +64,13 @@ services:
       tags:
         - "ghcr.io/gnzsnz/ib-gateway:stable"
     image: ghcr.io/gnzsnz/ib-gateway:stable
+    # ibcontroller settings (credentials included) live in ib.env, see below
+    env_file:
+      - ib.env
     environment:
-      # ibcontroller env vars, see "ibcontroller env vars and config volume" below
-      IBC_USERID: ${IBC_USERID}
-      IBC_PASSWORD: ${IBC_PASSWORD}
-      IBC_TRADING_MODE: ${IBC_TRADING_MODE:-paper}
       IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
-      IBC_ACCEPT_INCOMING_CONNECTIONS: ${IBC_ACCEPT_INCOMING_CONNECTIONS:-manual}
-      IBC_READ_ONLY_API: ${IBC_READ_ONLY_API:-}
       VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
-      IBC_MFA_TIMEOUT_ACTION: ${IBC_MFA_TIMEOUT_ACTION:-exit}
-      IBC_AUTO_RESTART_TIME: ${IBC_AUTO_RESTART_TIME:-}
-      IBC_AUTO_LOGOFF_TIME: ${IBC_AUTO_LOGOFF_TIME:-}
-      IBC_COLD_RESTART_TIME: ${IBC_COLD_RESTART_TIME:-}
-      IBC_RELOGIN_AFTER_MFA_TIMEOUT: ${IBC_RELOGIN_AFTER_MFA_TIMEOUT:-no}
-      IBC_MFA_EXIT_INTERVAL: ${IBC_MFA_EXIT_INTERVAL:-60}
-      IBC_EXISTING_SESSION_ACTION: ${IBC_EXISTING_SESSION_ACTION:-primary}
-      # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
-      # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use ibkr_settings.toml, see below
-      IBC_TIME_ZONE: ${IBC_TIME_ZONE:-Etc/UTC}
-      TZ: ${IBC_TIME_ZONE:-Etc/UTC}
-      CUSTOM_CONFIG: ${CUSTOM_CONFIG:-NO}
-      # includes the unit, e.g. "1024m"/"4g"
-      IBC_JAVA_HEAP_SIZE: ${IBC_JAVA_HEAP_SIZE:-}
+      TZ: ${TZ:-Etc/UTC}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}
       SSH_ALIVE_INTERVAL: ${SSH_ALIVE_INTERVAL:-}
@@ -118,13 +102,20 @@ services:
 
 ```
 
-Create `.env` in the project root by copying
-[.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/.env-dist),
-which lists all supported user-configurable environment variables.
-Set your credentials and adjust the values you need. The compose example above
-shows a subset; use the provided compose files for the full wiring.
+Create two files in the project root:
 
-Once `docker-compose.yml` and `.env` are in place you can start the container with:
+- `.env`, copied from
+  [.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/.env-dist).
+  Container variables (VNC/RDP, SSH, time zone, start scripts).
+- `ib.env`, copied from
+  [ib.env-dist](https://github.com/gnzsnz/ib-gateway-docker/blob/master/ib.env-dist).
+  All ibcontroller variables, credentials included. Set `IBC_USERID` and
+  `IBC_PASSWORD` here.
+
+The compose example above shows a subset; use the provided compose files for the
+full wiring.
+
+Once `docker-compose.yml`, `.env` and `ib.env` are in place you can start the container with:
 
 ```bash
 docker compose up
@@ -140,20 +131,23 @@ problems and solutions. If you have problems please go through the [troubleshoot
 
 ### ibcontroller env vars and config volume
 
-`ibcontroller` reads `IBC_*` env vars directly -- most are forwarded as
-`IBC_VAR: ${IBC_VAR:-default}` in `docker-compose.yml`. An empty or unset value counts as
-unset, so the corresponding setting is left unchanged; set the variable in `.env` to
-override it.
+`ibcontroller` reads `IBC_*` and `IBKR_*` env vars directly. They live in `ib.env`
+(template: `ib.env-dist`), which the compose files load with `env_file:`. An empty or
+unset value counts as unset, so the corresponding setting is left unchanged. A commented
+line in `ib.env` is never passed.
 
-The optional `${PWD}/ibcontroller/` volume persists `ibcontroller.toml`/`ibkr_settings.toml`/
-`labels.json` (rename the scaffolded `*.example` files to activate). Its `run/` subdirectory
+The optional `${PWD}/ibcontroller/` volume persists `ibcontroller.toml`/`labels.json`
+(rename the scaffolded `*.example` files to activate). Add your own `[[setting]]`/`[[dialog]]`
+entries to `ibcontroller.toml`. Its `run/` subdirectory
 (the agent's Unix-domain sockets) is deliberately *not* part of that mount -- it's a separate
 `tmpfs`, since some Docker backends can't host real sockets on a bind-mounted directory. That
 `tmpfs` needs an explicit `mode: 0o1777` (`/tmp`-style permissions) too, or it defaults to
 `root:root`/`0755` and the container's non-root user can't create sockets in it -- use the
 YAML octal literal (`0o1777`), not a bare decimal `1777`, which parses to the wrong bits.
 
-All environment variables are common between ibgateway and TWS image, unless specifically stated. The container can be configured with the following environment variables:
+All environment variables are common between ibgateway and TWS image, unless specifically stated.
+
+#### ibcontroller variables (`ib.env`)
 
 | Variable | Description | Default |
 | --- | --- | --- |
@@ -164,25 +158,16 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_USERID_PAPER`  | If `IBC_TRADING_MODE=both`, the paper account username (image-only: fed to the second process, no ibcontroller-side pair) | **not defined** |
 | `IBC_PASSWORD_PAPER` | If `IBC_TRADING_MODE=both`, the paper account password (image-only)  | **not defined**  |
 | `IBC_PASSWORD_PAPER_FILE` | Same as above, from a file. See [credentials section](#credentials).  | **not defined**  |
-| `IBC_READ_ONLY_API`  | **true** or **false**. Leave unset to leave Gateway/TWS's own setting unchanged.  | **not defined** |
 | `IBC_READ_ONLY_LOGIN` | TWS only: **true** clicks "Enter Read Only" on the 2FA frame instead of waiting for the push. | false |
-| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
-| `VNC_SERVER_PASSWORD_FILE`  | Same as above, from a file. | **not defined** (VNC disabled) |
-| `IBC_MFA_TIMEOUT_ACTION`      | `exit` or `restart` when a 2FA push goes unanswered. `restart` also needs `IBC_RELOGIN_AFTER_MFA_TIMEOUT=yes`.  | exit  |
+| `IBC_MFA_TIMEOUT_ACTION`      | `exit` or `restart` when a 2FA push goes unanswered. `restart` also needs `IBC_RELOGIN_AFTER_MFA_TIMEOUT=yes`.  | exit (`ib.env-dist` sets `restart`) |
 | `IBC_MFA_EXIT_INTERVAL` | Seconds ibcontroller waits for login to complete after the 2FA push is acknowledged. | 60 |
 | `IBC_LOGIN_DIALOG_DISPLAY_TIMEOUT` | Seconds to wait for the login dialog. | 60 |
 | `IBC_MFA_TIMEOUT` | IB's 2FA limit in seconds; a dialog closing at or after this limit counts as timed out. | 180 |
 | `IBC_RESTART_CAP` | Maximum consecutive relaunches that never reach READY; then exit code 70. | 3 |
-| `IBC_AUTO_RESTART_TIME`  | Daily restart time, format `hh:mm AM/PM`; does not require daily 2FA validation. | **not defined**  |
-| `IBC_AUTO_LOGOFF_TIME` | At this daily time, closes tidily without restarting. Shares one radio-button pair with `IBC_AUTO_RESTART_TIME` -- if both are set, the restart wins.   | **not defined**   |
 | `IBC_COLD_RESTART_TIME` | `HH:MM` 24-hour local time, weekly on Sunday: closes tidily and relaunches with a full fresh login for weekly reauthentication. If also set with `IBC_CLOSEDOWN_AT`, whichever occurs first wins; closedown does not relaunch. | **not defined** |
 | `IBC_CLOSEDOWN_AT` | `HH:MM` daily or `<Weekday> HH:MM` weekly: closes tidily without relaunch. If also set with `IBC_COLD_RESTART_TIME`, whichever occurs first wins. | **not defined** |
-| `IBC_RELOGIN_AFTER_MFA_TIMEOUT` | Restart the login if the 2FA push times out. | no  |
-| `IBC_EXISTING_SESSION_ACTION` | `manual`/`primary`/`primaryoverride`/`secondary`. ibcontroller defaults to `manual`; the compose files select `primary`. | primary (compose) |
-| `IBC_TIME_ZONE` | IANA time zone, e.g. `Europe/Paris`, `America/New_York`, `Asia/Tokyo`. ibcontroller auto-detects from `TZ`, then `/etc/localtime`; the compose files set this variable and `TZ` to `Etc/UTC` unless overridden. `.env-dist` sets `Europe/Zurich`. Existing `jts.ini` timezone settings are preserved. | Etc/UTC (compose) |
-| `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. In `both` mode, the image adds `_live`/`_paper`; Gateway needs separate mounts for these directories. See [preserve settings](#preserve-settings-across-containers). | `/home/ibgateway/tws_settings` (Gateway compose), `/config/tws_settings` (TWS compose) |
-| `IBC_ACCEPT_INCOMING_CONNECTIONS` | `accept`, `reject`, or `manual` | `manual` |
-| `IBC_SETTINGS_FILE` | Extra declarative settings file. Rename the scaffolded `ibkr_settings.toml.example` to activate it on the [config volume](#ibcontroller-env-vars-and-config-volume). Set by the image. | `${IBC_APP_DIR}/config/ibkr_settings.toml` |
+| `IBC_RELOGIN_AFTER_MFA_TIMEOUT` | Restart the login if the 2FA push times out. | no (`ib.env-dist` sets `yes`) |
+| `IBC_EXISTING_SESSION_ACTION` | `manual`/`primary`/`primaryoverride`/`secondary`. ibcontroller defaults to `manual`; `ib.env-dist` selects `primary`. | primary (`ib.env-dist`) |
 | `IBC_LOG_SINK` | Set to `std` in the image: ibcontroller and Gateway/TWS console output goes to `docker logs`. Agent logs and wire traces remain files. | std |
 | `IBC_LOG_LEVEL` | Verbosity of ibcontroller and Java agent logs: `debug`/`info`/`warning`/`error`, case-insensitive. | info |
 | `IBC_LOG_MAX_BYTES` | Rotate log/trace files at this size in bytes; `0` disables rotation. Only applies when `IBC_LOG_SINK=file`. | 10485760 (10 MiB) |
@@ -191,9 +176,46 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_DIAGNOSTIC_SCOPE` | Windows that get a structure dump logged: `known`/`unknown`/`all`. | known |
 | `IBC_DIAGNOSTIC_WHEN` | When to log a window structure dump: `open`/`openclose`/`never`. | never |
 | `IBC_DIAGNOSTIC_SETTINGS_SWEEP` | Log a dump of each Global Configuration tree node in `labels.settings.sweep_paths`. | false |
-| *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Use `ibkr_settings.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
-| `CUSTOM_CONFIG` | If set to `yes`, then the container entrypoint will not write `jts.ini` itself -- mount your own instead. | NO |
 | `IBC_JAVA_HEAP_SIZE` | JVM heap for TWS/Gateway at launch. Includes the unit, e.g. `1024m`/`4g`. Leave unset to keep the installed `.vmoptions` file's `-Xmx` value. | **not defined** |
+| *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Add `[[setting]]` entries to `ibcontroller.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
+
+#### IBKR settings and pop-ups (`ib.env`)
+
+Each entry is set as `IBKR_<NAME>` or `IBKR_<NAME>_FILE` (value read from a file). An empty value counts as unset. Toggles take `true`/`false`/`yes`/`no` in any case. Settings and pop-ups left unset stay as they are in Gateway/TWS.
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `IBKR_READ_ONLY_API` | API read-only mode, **true** or **false**. Leave unset to leave Gateway/TWS's own setting unchanged. | not defined (`ib.env-dist` sets `no`) |
+| `IBKR_AUTO_RESTART_TIME` | Daily restart time, format `hh:mm AM/PM`; does not require daily 2FA validation. | not defined (`ib.env-dist` sets `11:59 PM`) |
+| `IBKR_AUTO_LOGOFF_TIME` | At this daily time, closes tidily without restarting. Format `hh:mm AM/PM`. If both times are set, the restart wins. Not verified on a live run yet. | not defined |
+| `IBKR_SOCKET_PORT` | API socket port. Do not set in this image: socat and the ssh tunnel forward the fixed ports (Gateway 4002 paper / 4001 live, TWS 7497 / 7496) and dual mode shares one value. On TWS a confirmation dialog follows, see `IBKR_SOCKET_PORT_CONFIRMATION`. | not defined |
+| `IBKR_MASTER_API_CLIENT_ID` | API master client ID, a number. | not defined |
+| `IBKR_SEND_MARKET_DATA_IN_LOTS_US_STOCKS` | Send market data in lots for US stocks. **Do not set to true**: it opens a confirmation dialog ibcontroller cannot handle yet (ibcontroller #132). | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_ORDER_PRECAUTIONS` | **true** bypasses the API order precautions warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_BOND_WARNING` | **true** bypasses the bond warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_NEGATIVE_YIELD_TO_WORST` | **true** bypasses the negative yield to worst warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_CALLED_BOND_WARNING` | **true** bypasses the called bond warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_SAME_ACTION_PAIR_TRADE` | **true** bypasses the same action pair trade warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_PRICE_BASED_VOLATILITY` | **true** bypasses the price based volatility warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_REDIRECT_ORDER_WARNING` | **true** bypasses the redirect order warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_NO_OVERFILL_PROTECTION` | **true** bypasses the no overfill protection warning, **false** keeps it. | not defined |
+| `IBKR_API_PRECAUTIONS_BYPASS_ROUTE_MARKETABLE_TO_BBO` | Route marketable orders to BBO. **Do not set to true**: it opens a confirmation dialog ibcontroller cannot handle yet (ibcontroller #132). | not defined |
+| `IBKR_NON_BROKERAGE_ACCOUNT` | "This is not a brokerage account" warning: clicks "I understand and accept". `off`/`on`. | on |
+| `IBKR_AUTO_RESTART_CONFIRMATION` | Confirmation shown after Gateway/TWS is set to restart automatically: clicks "OK". `off`/`on`. Not verified live. | on |
+| `IBKR_PASSWORD_EXPIRY_WARNING` | Password expiry notice: clicks "OK". `off`/`on`. Not verified live. | off |
+| `IBKR_BLIND_TRADING` | Blind trading warning for a product without market data: clicks "Override and Transmit" or "Yes". `off`/`on`. Not verified live. | off |
+| `IBKR_SOCKET_PORT_CONFIRMATION` | TWS only: asks whether the new socket port applies at once. `on` clicks "Yes", `no` clicks "No", `off` leaves it to you. | off |
+| `IBKR_ACCEPT_INCOMING_CONNECTIONS` | "Accept incoming connection" dialog: `accept` clicks "OK" or "Yes", `reject` clicks "No", `manual` leaves it to you. Not verified live. | manual |
+| `IBKR_CRYPTO_ORDER_CONFIRMATION` | Cryptocurrency order confirmation: `transmit` clicks "Transmit" and places the order unchecked, `cancel` clicks "Cancel", `manual` leaves it to you. Not verified live. | manual |
+
+#### Container variables (`.env`)
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `TZ` | Container time zone, IANA name (e.g. `Europe/Zurich`, `America/New_York`). Set it in `.env`; the compose default is `Etc/UTC`. ibcontroller reads it to set `jts.ini`'s `TimeZone`. Set `IBC_TIME_ZONE` in `ib.env` to override it (optional; defaults to `TZ`). | Etc/UTC (compose) |
+| `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. In `both` mode, the image adds `_live`/`_paper`; Gateway needs separate mounts for these directories. See [preserve settings](#preserve-settings-across-containers). | `/home/ibgateway/tws_settings` (Gateway compose), `/config/tws_settings` (TWS compose) |
+| `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
+| `VNC_SERVER_PASSWORD_FILE`  | Same as above, from a file. | **not defined** (VNC disabled) |
 | `SSH_TUNNEL` | If set to `yes` then `socat` won't start, instead a remote ssh tunnel is started. if set to `both` then `socat` AND remote ssh tunnel are started. SSH keys should be provided to container through ~/.ssh volume.  | **not defined**                                      |
 | `SSH_OPTIONS` | additional options for [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) client | **not defined** |
 | `SSH_ALIVE_INTERVAL`   | [ssh](https://manpages.ubuntu.com/manpages/noble/en/man1/ssh.1.html) `ServerAliveInterval` setting. Don't set it in `SSH_OPTIONS` as this behavior is undefined. | 20   |
@@ -213,6 +235,25 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `X_SCRIPTS` | Directory with bash scripts to run **after** X environment is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 | `IBC_SCRIPTS` | Directory with bash scripts to run **after** ibcontroller is running. See [start-up scripts](#start-up-scripts) | **not defined** |
 
+### ibcontroller variable rules and upgrading
+
+- `IBKR_*` is reserved for ibcontroller's declarative settings. Do not define image variables with that prefix. An `IBKR_*` name that matches no setting or dialog is logged as a warning and ignored.
+- `ib.env` values are literal: no quotes, no `$` expansion. A value set in the compose `environment:` block overrides the same name in `env_file:`, so define each variable in one place only.
+- Credentials and all other ibcontroller variables belong in `ib.env`. Keep container variables (`PUID`, `PGID`, `VNC_SERVER_PASSWORD`, `RDP_PASSWORD`, `SSH_*`, `START_SCRIPTS`, `X_SCRIPTS`, `TZ`) in `.env`.
+
+#### Upgrading from ibcontroller 0.1.x
+
+ibcontroller 0.2.0 has no compatibility layer. Before upgrading:
+
+- ibcontroller variables moved from `.env` to `ib.env`. Copy `ib.env-dist` to `ib.env` and move your `IBC_*` values there.
+- `IBC_READ_ONLY_API`, `IBC_AUTO_RESTART_TIME`, `IBC_AUTO_LOGOFF_TIME` and `IBC_ACCEPT_INCOMING_CONNECTIONS` are now `IBKR_READ_ONLY_API`, `IBKR_AUTO_RESTART_TIME`, `IBKR_AUTO_LOGOFF_TIME` and `IBKR_ACCEPT_INCOMING_CONNECTIONS`. The old names are silently ignored. `IBC_SETTINGS_FILE` is gone too.
+- A flat `ibcontroller.toml` from 0.1.x makes ibcontroller exit with code 78: keys must sit under `[ibcontroller]` / `[ibkr]`. The keys `read_only_api`, `auto_restart_time`, `auto_logoff_time`, `accept_incoming_connections` and `settings_file` under `[ibcontroller]` are rejected the same way.
+- A leftover `ibkr_settings.toml` on the config volume is never loaded. Move its entries to `[[setting]]`/`[[dialog]]` in `ibcontroller.toml`.
+- `CUSTOM_CONFIG` and `IBC_TIME_ZONE` forwarding are gone from the compose files. Set `TZ` in `.env`. The image no longer writes `TrustedIPs`/`WriteDebug` into a new `jts.ini`.
+- `JAVA_HEAP_SIZE` (old image scripts, still shipped by `stable`) is now `IBC_JAVA_HEAP_SIZE` in `ib.env`, read by ibcontroller. The value now includes the unit (`1024m`; the old one was a bare number, `1024`). No image script handles it any more.
+
+See [ibcontroller's Upgrading guide](https://github.com/gnzsnz/ibcontroller/blob/main/docs/Upgrading.md).
+
 ## Ports
 
 The following ports will be ready for usage on the ib-gateway container and docker host:
@@ -231,7 +272,7 @@ TWS image uses the following ports
 | 7499 | TWS API port for paper accounts. Through socat, internal TWS API port 7497. Mapped **externally** to 7497 in sample `tws-docker-compose.yml`. |
 | 3389 | Port for RDP server. Mapped **externally** to 3370 in sample `tws-docker-compose.yml`.  |
 
-Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) publishes the IB Gateway API ports from `127.0.0.1:4001/4002` to `0.0.0.0:4003/4004`; `docker-compose.yml` maps them back to `4001/4002` on the host. For TWS, `127.0.0.1:7496/7497` is published to `0.0.0.0:7498/7499`, and `tws-docker-compose.yml` maps them back to `7496/7497`.
+Utility [socat](https://manpages.ubuntu.com/manpages/noble/en/man1/socat.1.html) publishes the IB Gateway API ports from `127.0.0.1:4001/4002` to `0.0.0.0:4003/4004`; `docker-compose.yml` maps them back to `4001/4002` on the host. For TWS, `127.0.0.1:7496/7497` is published to `0.0.0.0:7498/7499`, and `tws-docker-compose.yml` maps them back to `7496/7497`. Because of this fixed forwarding, do not set `IBKR_SOCKET_PORT` in this image: socat and the ssh tunnel would keep pointing at the old port.
 
 Note that with the above `docker-compose.yml`, ports are only exposed to the docker host (127.0.0.1), but not to the host network. To expose it to the host network change the port mappings on accordingly (remove the '127.0.0.1:'). **Attention**: See [Leaving localhost](#leaving-localhost)
 
@@ -259,33 +300,36 @@ The startup script will disable xfce compositing, as this has a significant impa
 Most if not all of the settings needed to run IB Gateway in a container are available as environment variables.
 
 However, if you need to go beyond what's available as env vars, `ibcontroller`
-itself is configured through a **flat** TOML file (`ibcontroller.toml`) and a
-declarative settings file (`ibkr_settings.toml`), both under the [config
+itself is configured through a TOML file (`ibcontroller.toml`, with
+`[ibcontroller]` and `[ibkr]` tables, plus your own `[[setting]]`/`[[dialog]]`
+entries) under the [config
 volume](#ibcontroller-env-vars-and-config-volume) -- see there for the mount
 and [ibcontroller's own README](https://github.com/gnzsnz/ibcontroller/blob/main/README.md)
-for the full field reference. `CUSTOM_CONFIG=yes` is unrelated to that: it
-only tells `run.sh` to leave `jts.ini` alone (see the table below) rather than
-write it itself, for when you want to mount your own.
+for the full field reference.
+
+`jts.ini` is no longer rendered by the image. ibcontroller creates the settings
+directory and `jts.ini`, and edits only the keys it owns (`UseSSL`, `Locale`,
+`displayedproxymsg`, `s3store`, `TimeZone`, and `ApiOnly` on Gateway), leaving
+every other key. Mounting your own `jts.ini` still works and needs no extra
+variable.
 
 Image config file locations:
 
 | App  | Config file  | Default  |
 | --- | --- | --- |
-| IB Gateway | /home/ibgateway/Jts/jts.ini    | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `ibkr_settings.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
+| IB Gateway | /home/ibgateway/Jts/jts.ini    | created by ibcontroller |
+| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
 
 For TWS image config file locations are:
 
 | App | Config file  | Default  |
 | --- | --- | --- |
-| TWS | /opt/ibkr/jts.ini   | [jts.ini](https://github.com/gnzsnz/ib-gateway-docker/blob/master/image-files/config/ibgateway/jts.ini.tmpl) |
-| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `ibkr_settings.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
+| TWS | /opt/ibkr/jts.ini   | created by ibcontroller |
+| ibcontroller | `${IBC_APP_DIR}/config/ibcontroller.toml`, `labels.json` | scaffolded on first run, see the [config volume](#ibcontroller-env-vars-and-config-volume) |
 
-Example Gateway service settings:
+Example Gateway service settings with a mounted `jts.ini`:
 
 ```yaml
-environment:
-  CUSTOM_CONFIG: "yes"
 volumes:
   - ${PWD}/ibcontroller/:/home/ibgateway/ibcontroller # ibcontroller config/log
   - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini # for IB Gateway
@@ -334,9 +378,9 @@ and `/config/tws_settings_paper`. A custom settings path outside `/config`
 needs separate mounts for both suffixed directories.
 
 **Important**: when you save your config in a volume, file `jts.ini` will be
-saved. `IBC_TIME_ZONE` will only be applied to `jts.ini` if the file does not
-exist (first run) but not once the file exists. This is to avoid overwriting
-your settings.
+saved. The auto-detected time zone (from `TZ`) never overwrites an existing
+`TimeZone`. An explicit `IBC_TIME_ZONE` that differs from the auto-detected one
+does.
 
 ## Start-up scripts
 

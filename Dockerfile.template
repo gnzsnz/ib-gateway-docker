@@ -76,8 +76,6 @@ RUN apt-get update -y && \
   fi && \
   ln -sfn "$(dirname "${PYTHON_BIN}")" /opt/python/current
 
-COPY ./config/ibgateway/jts.ini.tmpl /root/Jts/jts.ini.tmpl
-
 # Copy scripts
 COPY ./scripts /root/scripts
 
@@ -91,20 +89,14 @@ FROM ${UBUNTU_BASE_IMAGE} AS gateway
 ARG USER_ID="${USER_ID:-1000}"
 ARG USER_GID="${USER_GID:-1000}"
 ENV HOME=/home/ibgateway
-ENV TWS_INI=jts.ini
-ENV TWS_INI_TMPL=${TWS_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
 # ibcontroller env vars, native names -- ibcontroller reads these directly, no
 # CLI-flag translation, so there is exactly one place each value lives.
 # IBC_APP_DIR is mountable so a user can override
-# ibcontroller.toml/ibkr_settings.toml/labels.json without rebuilding the image
+# ibcontroller.toml/labels.json without rebuilding the image
 ENV IBC_APP_DIR=${HOME}/ibcontroller
-# points at the mounted config volume's ibkr_settings.toml; harmless if the
-# file doesn't exist yet (ibcontroller logs it and falls back to built-in
-# settings only) -- renaming ibkr_settings.toml.example there activates it,
-# no other step needed
-ENV IBC_SETTINGS_FILE=${IBC_APP_DIR}/config/ibkr_settings.toml
 ENV IBC_PROGRAM=gateway
+ENV IBC_TRADING_MODE=paper
 # "std" (default) keeps ibcontroller's own log on the console -> docker logs
 ENV IBC_LOG_SINK=std
 ENV IBC_TWS_PATH=${HOME}/Jts
@@ -160,14 +152,12 @@ LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}
 FROM ${TWS_BASE_IMAGE} AS tws
 
 ENV TWS_PATH=/opt/ibkr
-ENV TWS_INI=jts.ini
-ENV TWS_INI_TMPL=${TWS_INI}.tmpl
 ENV SCRIPT_PATH=/defaults
 ENV NO_AT_BRIDGE=1
 # ibcontroller env vars, native names -- see gateway target above for details.
 # IBC_APP_DIR lives under /config, the persistent volume this base already uses
 ENV IBC_APP_DIR=/config/ibcontroller
-ENV IBC_SETTINGS_FILE=${IBC_APP_DIR}/config/ibkr_settings.toml
+ENV IBC_TRADING_MODE=paper
 ENV IBC_PROGRAM=tws
 # "std" (default) keeps ibcontroller's own log on the console -> docker logs
 ENV IBC_LOG_SINK=std

@@ -84,8 +84,6 @@ start_ibcontroller() {
 start_process() {
 	# set API and socat ports
 	set_ports
-	# apply settings
-	apply_settings
 	# forward ports, socat/ssh
 	port_forwarding
 
