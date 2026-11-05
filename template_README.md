@@ -341,7 +341,9 @@ the existing `/config` mount for ibcontroller config and logs.
 ### Preserve settings across containers
 
 The provided compose files set `IBC_TWS_SETTINGS_PATH` and mount its settings
-directory for persistence. For a custom compose file, use these service settings.
+directory for persistence. The image also sets a default
+(`/home/ibgateway/tws_settings` for Gateway, `/config/tws_settings` for TWS), so
+set the variable in `.env` only to change it. For a custom compose file, use these service settings.
 
 IB Gateway:
 

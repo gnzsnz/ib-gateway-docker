@@ -35,6 +35,7 @@ services:
       START_SCRIPTS: ${START_SCRIPTS:-}
       X_SCRIPTS: ${X_SCRIPTS:-}
       IBC_SCRIPTS: ${IBC_SCRIPTS:-}
+      IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-/home/ibgateway/tws_settings}
     volumes:
     #      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
       # config/log persistence, see README; host dir must be owned by PUID:PGID

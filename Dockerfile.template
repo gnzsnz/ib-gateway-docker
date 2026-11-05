@@ -100,6 +100,8 @@ ENV IBC_TRADING_MODE=paper
 # "std" (default) keeps ibcontroller's own log on the console -> docker logs
 ENV IBC_LOG_SINK=std
 ENV IBC_TWS_PATH=${HOME}/Jts
+# matches the compose mount; without it ibcontroller falls back to ~/Jts
+ENV IBC_TWS_SETTINGS_PATH=${HOME}/tws_settings
 ENV IBC_TWS_CHANNEL=$CHANNEL
 # explicit, so ibcontroller skips auto-detecting it from the install dir --
 # also doubles as this target's only copy of the installer version, replacing
@@ -162,6 +164,7 @@ ENV IBC_PROGRAM=tws
 # "std" (default) keeps ibcontroller's own log on the console -> docker logs
 ENV IBC_LOG_SINK=std
 ENV IBC_TWS_PATH=${TWS_PATH}
+ENV IBC_TWS_SETTINGS_PATH=/config/tws_settings
 ENV IBC_TWS_CHANNEL=$CHANNEL
 # see gateway target above -- same consolidation, drops IB_GATEWAY_VERSION/
 # IB_GATEWAY_RELEASE_CHANNEL/TWS_MAJOR_VRSN
