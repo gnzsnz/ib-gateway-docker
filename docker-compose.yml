@@ -2,6 +2,7 @@ name: algo-trader
 services:
   ib-gateway:
     restart: always
+    stop_grace_period: 30s
     build:
       context: ./latest
       dockerfile: Dockerfile

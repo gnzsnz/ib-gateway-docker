@@ -20,9 +20,13 @@ stop_ibcontroller() {
 	# first and wait for it to actually exit before tearing down X, or its
 	# graceful close has no display left to act on
 	echo ".> Stopping ibcontroller."
-	kill -SIGTERM "${pid[@]}"
-	wait "${pid[@]}"
-	echo ".> Done... $?"
+	if [ "${#pid[@]}" -gt 0 ]; then
+		kill -SIGTERM "${pid[@]}"
+		wait "${pid[@]}"
+		echo ".> Done... $?"
+	else
+		echo ".> ibcontroller not started yet."
+	fi
 
 	#
 	if pgrep x11vnc >/dev/null; then
@@ -31,19 +35,20 @@ stop_ibcontroller() {
 	fi
 	#
 	echo ".> Stopping Xvfb."
-	pkill Xvfb
+	# may not be running yet if signalled during startup
+	pkill Xvfb || true
 	#
 	if [ -n "$SSH_TUNNEL" ]; then
 		echo ".> Stopping ssh."
-		pkill run_ssh.sh
-		pkill ssh
+		pkill run_ssh.sh || true
+		pkill ssh || true
 		echo ".> Stopping socat."
-		pkill run_socat.sh
-		pkill socat
+		pkill run_socat.sh || true
+		pkill socat || true
 	else
 		echo ".> Stopping socat."
-		pkill run_socat.sh
-		pkill socat
+		pkill run_socat.sh || true
+		pkill socat || true
 	fi
 
 	# exit here, explicitly -- the outer `wait "${pid[@]}"; exit $?` this trap
@@ -103,6 +108,9 @@ start_process() {
 
 	start_ibcontroller
 }
+
+# install early so a stop during startup is handled
+trap stop_ibcontroller SIGINT SIGTERM
 
 ###############################################################################
 #####		Common Start
@@ -176,7 +184,8 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	#
 	IBC_TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${IBC_TRADING_MODE}"
 
-	sleep 15
+	sleep 15 & # background so the trap can run at once
+	wait $!
 	start_process
 fi
 
@@ -185,6 +194,5 @@ if [ -n "$IBC_SCRIPTS" ]; then
 	run_scripts "$HOME/$IBC_SCRIPTS"
 fi
 
-trap stop_ibcontroller SIGINT SIGTERM
 wait "${pid[@]}"
 exit $?

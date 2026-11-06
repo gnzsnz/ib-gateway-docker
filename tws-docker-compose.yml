@@ -2,6 +2,7 @@ name: algo-trader
 services:
   tws:
     restart: unless-stopped
+    stop_grace_period: 30s
     shm_size: "1gb" #recomended
     # GPU acceleration for TWS. Base image (rdesktop-xfce init-video) grants
     # the abc user access to whatever /dev/dri nodes are mapped in here, by

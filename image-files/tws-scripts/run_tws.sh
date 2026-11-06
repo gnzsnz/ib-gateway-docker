@@ -49,18 +49,23 @@ stop_ibcontroller() {
 	# up while it does that -- stop ibcontroller first and wait for it to
 	# actually exit, same order as run.sh
 	echo ".> Stopping ibcontroller."
-	kill -SIGTERM "${pid[@]}"
-	wait "${pid[@]}"
-	echo ".> Done... $?"
+	if [ "${#pid[@]}" -gt 0 ]; then
+		kill -SIGTERM "${pid[@]}"
+		wait "${pid[@]}"
+		echo ".> Done... $?"
+	else
+		echo ".> ibcontroller not started yet."
+	fi
 
+	# may not be running yet if signalled during startup
 	if [ -n "$SSH_TUNNEL" ]; then
 		echo ".> Stopping ssh."
-		pkill run_ssh.sh
-		pkill ssh
+		pkill run_ssh.sh || true
+		pkill ssh || true
 	fi
 	echo ".> Stopping socat."
-	pkill run_socat.sh
-	pkill socat
+	pkill run_socat.sh || true
+	pkill socat || true
 
 	# exit here, explicitly -- see run.sh for why
 	exit 0
@@ -89,6 +94,9 @@ start_process() {
 
 	start_ibcontroller
 }
+
+# install early so a stop during startup is handled
+trap stop_ibcontroller SIGINT SIGTERM
 
 ###############################################################################
 #####		Common Start
@@ -160,7 +168,8 @@ if [ "$DUAL_MODE" == "yes" ]; then
 	#
 	IBC_TWS_SETTINGS_PATH="${_TWS_SETTINGS_PATH}_${IBC_TRADING_MODE}"
 
-	sleep 15
+	sleep 15 & # background so the trap can run at once
+	wait $!
 	start_process
 fi
 
@@ -169,7 +178,6 @@ if [ -n "$IBC_SCRIPTS" ]; then
 	run_scripts "$HOME/$IBC_SCRIPTS"
 fi
 
-trap stop_ibcontroller SIGINT SIGTERM
 wait "${pid[@]}"
 _wait="$?"
 echo ".> ************************** End run_tws.sh ******************************** <."

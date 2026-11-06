@@ -59,6 +59,7 @@ name: algo-trader
 services:
   ib-gateway:
     restart: always
+    stop_grace_period: 30s
     build:
       context: ./stable
       tags:
@@ -122,6 +123,10 @@ docker compose up
 ```
 
 To get a GUI you can use vnc for ib-gateway or RDP for TWS.
+
+The compose files set `stop_grace_period: 30s` because a clean ibcontroller
+shutdown can take longer than Docker's default 10 s before SIGKILL. With
+`docker run` use `docker stop -t 30`; custom compose files should keep it.
 
 Looking for help? Please keep reading below, or go to
 [discussion](https://github.com/gnzsnz/ib-gateway-docker/discussions) section for common
