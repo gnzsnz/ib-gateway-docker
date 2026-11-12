@@ -28,6 +28,13 @@ id
 if [ -n "${TZ}" ]; then
 	echo ".> Setting timezone to: ${TZ}"
 	echo "${TZ}" >/etc/timezone
+	# xrdp sessions do not inherit TZ (sesman builds their env from PAM and
+	# sesman.ini), so the desktop clock needs the system zone file as well
+	if [ -f "/usr/share/zoneinfo/${TZ}" ]; then
+		ln -sfn "/usr/share/zoneinfo/${TZ}" /etc/localtime
+	else
+		echo ".> Warning: unknown time zone '${TZ}', /etc/localtime left unchanged"
+	fi
 fi
 
 # run start scripts

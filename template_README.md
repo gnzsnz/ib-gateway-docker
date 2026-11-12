@@ -217,7 +217,7 @@ Each entry is set as `IBKR_<NAME>` or `IBKR_<NAME>_FILE` (value read from a file
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `TZ` | Container time zone, IANA name (e.g. `Europe/Zurich`, `America/New_York`). Set it in `.env`; the compose default is `Etc/UTC`. ibcontroller reads it to set `jts.ini`'s `TimeZone`. Set `IBC_TIME_ZONE` in `ib.env` to override it (optional; defaults to `TZ`). | Etc/UTC (compose) |
+| `TZ` | Container time zone, IANA name (e.g. `Europe/Zurich`, `America/New_York`). Set it in `.env`; the compose default is `Etc/UTC`. ibcontroller reads it to set `jts.ini`'s `TimeZone`. On TWS it also points `/etc/localtime` at the zone, which the RDP desktop session uses for its clock (reconnect an open session after changing it). Set `IBC_TIME_ZONE` in `ib.env` to override the `jts.ini` value (optional; defaults to `TZ`). | Etc/UTC (compose) |
 | `IBC_TWS_SETTINGS_PATH` | Where TWS/Gateway stores its own settings. In `both` mode, the image adds `_live`/`_paper`; Gateway needs separate mounts for these directories. See [preserve settings](#preserve-settings-across-containers). | `/home/ibgateway/tws_settings` (Gateway compose), `/config/tws_settings` (TWS compose) |
 | `VNC_SERVER_PASSWORD`  | VNC server password. If not defined, then VNC server will NOT start. Specific to ibgateway, ignored by TWS. See [credentials section](#credentials). | **not defined** (VNC disabled) |
 | `VNC_SERVER_PASSWORD_FILE`  | Same as above, from a file. | **not defined** (VNC disabled) |
