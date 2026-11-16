@@ -50,9 +50,11 @@ stop_ibcontroller() {
 	# actually exit, same order as run.sh
 	echo ".> Stopping ibcontroller."
 	if [ "${#pid[@]}" -gt 0 ]; then
-		kill -SIGTERM "${pid[@]}"
-		wait "${pid[@]}"
-		echo ".> Done... $?"
+		kill -SIGTERM "${pid[@]}" || true # one instance may have ended already (both mode)
+		local rc=0
+		# killed before its own handler is up, ibcontroller returns 143; don't let set -e abort the trap
+		wait "${pid[@]}" || rc=$?
+		echo ".> Done... $rc"
 	else
 		echo ".> ibcontroller not started yet."
 	fi
