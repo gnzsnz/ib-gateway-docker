@@ -5,26 +5,36 @@
 # production image and consume unnecessary space.
 ##############################################################################
 
-# hadolint global ignore=DL3008,DL4006
-FROM ubuntu:24.04 AS setup
+# Overridable at build time so publish.yml can pin both bases to a resolved digest
+# for a verifiable release; default stays a floating tag for everyday builds.
+ARG UBUNTU_BASE_IMAGE=ubuntu:26.04
+ARG TWS_BASE_IMAGE=ghcr.io/gnzsnz/rdesktop-xfce:latest
 
-ENV IB_GATEWAY_VERSION=10.51.1a
+# hadolint global ignore=DL3008,DL4006
+FROM ${UBUNTU_BASE_IMAGE} AS setup
+
+ENV IB_GATEWAY_VERSION=10.52.1d
 ENV IB_GATEWAY_CHANNEL=latest
-ENV IBC_VERSION=3.24.2
+ENV IBCONTROLLER_VERSION=0.2.0
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
-ARG IBC_FILE="IBCLinux-${IBC_VERSION}.zip"
-ARG IBC_REPO="https://github.com/IbcAlpha/IBC"
-ARG IBC_URL="${IBC_REPO}/releases/download/${IBC_VERSION}/${IBC_FILE}"
+# pypi (default) installs the pinned release; git installs IBCONTROLLER_GIT_REF from
+# IBCONTROLLER_GIT_REPO instead, for testing unreleased ibcontroller fixes
+ARG IBCONTROLLER_SOURCE=pypi
+ARG IBCONTROLLER_GIT_REPO="https://github.com/gnzsnz/ibcontroller"
+ARG IBCONTROLLER_GIT_REF=master
+# uv-managed python lives here so both stages agree on the path
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_INSTALL_DIR=/usr/local/bin
+ENV UV_NO_CACHE=1
+# no cache: gateway COPYs all of /root, so ~/.cache/uv would ship in the image
 
 WORKDIR /tmp/setup
 
 # Prepare system
 RUN apt-get update -y && \
   apt-get install --no-install-recommends --yes \
-  curl ca-certificates unzip && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/* && \
+  curl ca-certificates git && \
   if [ "$(uname -m)" = "aarch64" ]; then \
      ARCH="arm" ; \
   else \
@@ -43,43 +53,65 @@ RUN apt-get update -y && \
   if [ -d "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" ]; then \
     echo "/home/ibgateway/Jts/ibgateway/${IB_GATEWAY_VERSION}/jre" > "/root/Jts/ibgateway/${IB_GATEWAY_VERSION}/.install4j/inst_jre.cfg" ; \
   fi && \
-  # Install IBC
-  curl -sSOL "${IBC_URL}" && \
-  mkdir /root/ibc && \
-  unzip "./${IBC_FILE}" -d /root/ibc && \
-  chmod -R u+x /root/ibc/*.sh && \
-  chmod -R u+x /root/ibc/scripts/*.sh
-
-COPY ./config/ibgateway/jts.ini.tmpl /root/Jts/jts.ini.tmpl
-COPY ./config/ibc/config.ini.tmpl /root/ibc/config.ini.tmpl
+  # Install uv, then a managed python (never the distro one), then ibcontroller into it --
+  # IBCONTROLLER_SOURCE=git builds the Java agent jar from a git checkout of
+  # IBCONTROLLER_GIT_REF (branch or tag, shallow-cloned -- not an arbitrary commit SHA)
+  # in IBCONTROLLER_GIT_REPO, then installs that checkout, instead of the pinned PyPI
+  # wheel (which already ships the jar prebuilt). The JDK/git/make this needs stay in
+  # this discarded setup stage only, never copied to gateway/tws.
+  curl -LsSf https://astral.sh/uv/install.sh | sh && \
+  uv python install 3.12 && \
+  PYTHON_BIN="$(uv python find 3.12)" && \
+  if [ "${IBCONTROLLER_SOURCE}" = "git" ]; then \
+    apt-get install --no-install-recommends --yes openjdk-17-jdk-headless make && \
+    git clone --depth 1 --branch "${IBCONTROLLER_GIT_REF}" \
+      "${IBCONTROLLER_GIT_REPO}" /tmp/setup/ibcontroller-src && \
+    JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")" \
+      make -C /tmp/setup/ibcontroller-src build && \
+    uv pip install --python "${PYTHON_BIN}" --break-system-packages \
+      /tmp/setup/ibcontroller-src ; \
+  else \
+    uv pip install --python "${PYTHON_BIN}" --break-system-packages \
+      "py-ib-controller==${IBCONTROLLER_VERSION}" ; \
+  fi && \
+  ln -sfn "$(dirname "${PYTHON_BIN}")" /opt/python/current
 
 # Copy scripts
 COPY ./scripts /root/scripts
 
 ##############################################################################
-# Build Stage: build production image
+# gateway target: IB Gateway + ibcontroller on Xvfb/x11vnc
 ##############################################################################
 
-FROM ubuntu:24.04
+FROM ${UBUNTU_BASE_IMAGE} AS gateway
 
-ENV IB_GATEWAY_VERSION=10.51.1a
 # IB Gateway user constants
-ARG USER_ID="${USER_ID:-1000}"
-ARG USER_GID="${USER_GID:-1000}"
-# IBC env vars
+ARG USER_ID=1000
+ARG USER_GID=1000
 ENV HOME=/home/ibgateway
-ENV TWS_MAJOR_VRSN=${IB_GATEWAY_VERSION}
-ENV TWS_PATH=${HOME}/Jts
-ENV TWS_INI=jts.ini
-ENV TWS_INI_TMPL=${TWS_INI}.tmpl
-ENV IBC_PATH=${HOME}/ibc
-ENV IBC_INI=${HOME}/ibc/config.ini
-ENV IBC_INI_TMPL=${IBC_INI}.tmpl
 ENV SCRIPT_PATH=${HOME}/scripts
-ENV GATEWAY_OR_TWS=gateway
+# ibcontroller env vars, native names -- ibcontroller reads these directly, no
+# CLI-flag translation, so there is exactly one place each value lives.
+# IBC_APP_DIR is mountable so a user can override
+# ibcontroller.toml/labels.json without rebuilding the image
+ENV IBC_APP_DIR=${HOME}/ibcontroller
+ENV IBC_PROGRAM=gateway
+ENV IBC_TRADING_MODE=paper
+# "std" (default) keeps ibcontroller's own log on the console -> docker logs
+ENV IBC_LOG_SINK=std
+ENV IBC_TWS_PATH=${HOME}/Jts
+# matches the compose mount; without it ibcontroller falls back to ~/Jts
+ENV IBC_TWS_SETTINGS_PATH=${HOME}/tws_settings
+ENV IBC_TWS_CHANNEL=latest
+# explicit, so ibcontroller skips auto-detecting it from the install dir --
+# also doubles as this target's only copy of the installer version, replacing
+# the separate IB_GATEWAY_VERSION/TWS_MAJOR_VRSN pair (TWS_MAJOR_VRSN was dead:
+# nothing read it once ibcstart.sh was dropped)
+ENV IBC_TWS_VERSION=10.52.1d
+ENV PATH="/opt/python/current:${PATH}"
 ARG DEBIAN_FRONTEND=noninteractive
 # Copy files
-COPY --from=setup /usr/local/ /usr/local/
+COPY --from=setup /opt/python/ /opt/python/
 COPY --chown=${USER_ID}:${USER_GID} --from=setup /root/ ${HOME}
 
 # Prepare system
@@ -110,6 +142,66 @@ CMD ["/home/ibgateway/scripts/run.sh"]
 
 LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
 LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/ib-gateway
-LABEL org.opencontainers.image.description="Docker image with IB Gateway and IBC "
-LABEL org.opencontainers.image.licenses="Apache License Version 2.0"
-LABEL org.opencontainers.image.version=${IB_GATEWAY_VERSION}-${IB_GATEWAY_RELEASE_CHANNEL}
+LABEL org.opencontainers.image.description="Docker image with IB Gateway and ibcontroller "
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}
+
+##############################################################################
+# tws target: XFCE + xrdp on rdesktop-xfce, running TWS from the Gateway install
+##############################################################################
+
+# hadolint global ignore=DL3007
+FROM ${TWS_BASE_IMAGE} AS tws
+
+ENV TWS_PATH=/opt/ibkr
+ENV SCRIPT_PATH=/defaults
+ENV NO_AT_BRIDGE=1
+# ibcontroller env vars, native names -- see gateway target above for details.
+# IBC_APP_DIR lives under /config, the persistent volume this base already uses
+ENV IBC_APP_DIR=/config/ibcontroller
+ENV IBC_TRADING_MODE=paper
+ENV IBC_PROGRAM=tws
+# "std" (default) keeps ibcontroller's own log on the console -> docker logs
+ENV IBC_LOG_SINK=std
+ENV IBC_TWS_PATH=${TWS_PATH}
+ENV IBC_TWS_SETTINGS_PATH=/config/tws_settings
+ENV IBC_TWS_CHANNEL=latest
+# see gateway target above -- same consolidation, drops IB_GATEWAY_VERSION/
+# IB_GATEWAY_RELEASE_CHANNEL/TWS_MAJOR_VRSN
+ENV IBC_TWS_VERSION=10.52.1d
+ENV PATH="/opt/python/current:${PATH}"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN \
+  apt-get update -y && \
+  apt-get upgrade -y && \
+  apt-get install --no-install-recommends --yes socat sshpass gettext-base openssh-client\
+    libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+    libdrm2 libexpat1 libgbm1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
+    libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 \
+    libxrandr2 fonts-liberation libasound2t64 libxtst6 xdg-utils libcrypto++8 \
+    xfce4-cpugraph-plugin xfce4-netload-plugin xfce4-taskmanager xfce4-xkb-plugin \
+    xfce4-notes gvfs gvfs-backends gvfs-fuse telnet && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* # end
+
+# Copy files -- same setup-stage payload as gateway target: Gateway install + ibcontroller
+COPY --from=setup /opt/python/ /opt/python/
+COPY --chown=abc:abc --from=setup /root/Jts ${TWS_PATH}
+COPY ./tws-scripts/start_session.sh /custom-services.d/start_session.sh
+COPY ./tws-scripts/run_tws.sh ${SCRIPT_PATH}
+COPY ./scripts/* ${SCRIPT_PATH}
+
+# setup stage bakes the gateway HOME path into inst_jre.cfg -- point it at
+# TWS_PATH instead, since this target copies the same install elsewhere
+RUN if [ -d "${TWS_PATH}/ibgateway/${IBC_TWS_VERSION}/jre" ]; then \
+  echo "${TWS_PATH}/ibgateway/${IBC_TWS_VERSION}/jre" > "${TWS_PATH}/ibgateway/${IBC_TWS_VERSION}/.install4j/inst_jre.cfg" ; \
+fi
+
+# labels
+LABEL org.opencontainers.image.source=https://github.com/gnzsnz/ib-gateway-docker
+LABEL org.opencontainers.image.url=https://github.com/gnzsnz/ib-gateway-docker/pkgs/container/tws-rdesktop
+LABEL org.opencontainers.image.description="Docker image with XFCE, TWS and ibcontroller"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.version=${IBC_TWS_VERSION}-${IBC_TWS_CHANNEL}
