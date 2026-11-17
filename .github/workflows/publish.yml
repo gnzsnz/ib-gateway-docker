@@ -24,11 +24,24 @@ jobs:
       - name: Extract release channel
         id: channel
         run: |
-          # ie ref_name=v10.50.1a-latest -> channel=stable, version=10.50.1a
+          # ie ref_name=v10.50.1a-latest -> channel=latest, version=10.50.1a
           channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
           version=$(sed -E "s/^v(.*)-${channel}\$/\1/" <<< "${{ github.ref_name }}")
           echo "channel=$channel" >> $GITHUB_OUTPUT
           echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Check tag matches channel Dockerfile
+        env:
+          CHANNEL: ${{ steps.channel.outputs.channel }}
+          VERSION: ${{ steps.channel.outputs.version }}
+        run: |
+          set -euo pipefail
+          # F27: the tagged commit must already hold the regenerated channel
+          file_version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "${CHANNEL}/Dockerfile" | head -n 1)
+          if [ "${file_version}" != "${VERSION}" ]; then
+            echo "::error::tag version '${VERSION}' != IB_GATEWAY_VERSION '${file_version}' in ${CHANNEL}/Dockerfile; run ./update.sh ${CHANNEL} ${VERSION} and commit before tagging"
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -54,18 +67,29 @@ jobs:
       ###############################################################
       #   Login container registry
       ###############################################################
-      - name: Log in to the Container registry
+      - name: Log in to ghcr.io
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to the Container registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Fetch IB Gateway installer checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release download \
+            "ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --pattern '*.sha256' \
+            --dir ibgateway-checksums
 
       ###############################################################
       #   Build ibgateway
@@ -142,17 +166,6 @@ jobs:
       ###############################################################
       #   Sign, generate verification evidence, create release
       ###############################################################
-      - name: Fetch IB Gateway installer checksums
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          gh release download \
-            "ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}" \
-            --repo "${{ github.repository }}" \
-            --pattern '*.sha256' \
-            --dir ibgateway-checksums
-
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
@@ -196,9 +209,11 @@ jobs:
             echo "### Verify"
             echo '```bash'
             echo "cosign verify ghcr.io/gnzsnz/ib-gateway@${gw_digest} \\"
-            echo "  --certificate-identity-regexp '.*' --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo "  --certificate-identity https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@refs/tags/${GITHUB_REF_NAME} \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
             echo "cosign verify ghcr.io/gnzsnz/tws-rdesktop@${tws_digest} \\"
-            echo "  --certificate-identity-regexp '.*' --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo "  --certificate-identity https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@refs/tags/${GITHUB_REF_NAME} \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
             echo
             echo "docker buildx imagetools inspect ghcr.io/gnzsnz/ib-gateway@${gw_digest} --format '{{json .SBOM}}'"
             echo "docker buildx imagetools inspect ghcr.io/gnzsnz/ib-gateway@${gw_digest} --format '{{json .Provenance}}'"
@@ -208,10 +223,10 @@ jobs:
           } > BUILD_INFO.md
 
           sed \
-            -e "s#ghcr.io/gnzsnz/ib-gateway:latest#ghcr.io/gnzsnz/ib-gateway@${gw_digest}#g" \
+            -e "/^[[:space:]]*image:/s#ghcr.io/gnzsnz/ib-gateway:latest#ghcr.io/gnzsnz/ib-gateway@${gw_digest}#g" \
             docker-compose.yml > compose.release.yml
           sed \
-            -e "s#ghcr.io/gnzsnz/tws-rdesktop:latest#ghcr.io/gnzsnz/tws-rdesktop@${tws_digest}#g" \
+            -e "/^[[:space:]]*image:/s#ghcr.io/gnzsnz/tws-rdesktop:latest#ghcr.io/gnzsnz/tws-rdesktop@${tws_digest}#g" \
             tws-docker-compose.yml > tws-compose.release.yml
 
           cp ibgateway-checksums/*.sha256 .
