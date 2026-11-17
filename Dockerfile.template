@@ -15,7 +15,7 @@ FROM ${UBUNTU_BASE_IMAGE} AS setup
 
 ENV IB_GATEWAY_VERSION=$VERSION
 ENV IB_GATEWAY_CHANNEL=$CHANNEL
-ENV IBCONTROLLER_VERSION=0.1.5
+ENV IBCONTROLLER_VERSION=0.2.0
 ARG DEBIAN_FRONTEND=noninteractive
 ARG IB_GATEWAY_REPO="https://github.com/gnzsnz/ib-gateway-docker"
 # pypi (default) installs the pinned release; git installs IBCONTROLLER_GIT_REF from
