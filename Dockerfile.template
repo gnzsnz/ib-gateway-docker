@@ -86,8 +86,8 @@ COPY ./scripts /root/scripts
 FROM ${UBUNTU_BASE_IMAGE} AS gateway
 
 # IB Gateway user constants
-ARG USER_ID="${USER_ID:-1000}"
-ARG USER_GID="${USER_GID:-1000}"
+ARG USER_ID=1000
+ARG USER_GID=1000
 ENV HOME=/home/ibgateway
 ENV SCRIPT_PATH=${HOME}/scripts
 # ibcontroller env vars, native names -- ibcontroller reads these directly, no
