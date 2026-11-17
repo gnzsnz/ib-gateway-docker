@@ -13,7 +13,7 @@ ARG TWS_BASE_IMAGE=ghcr.io/gnzsnz/rdesktop-xfce:latest
 # hadolint global ignore=DL3008,DL4006
 FROM ${UBUNTU_BASE_IMAGE} AS setup
 
-ENV IB_GATEWAY_VERSION=10.50.1g
+ENV IB_GATEWAY_VERSION=10.50.1h
 ENV IB_GATEWAY_CHANNEL=stable
 ENV IBCONTROLLER_VERSION=0.2.0
 ARG DEBIAN_FRONTEND=noninteractive
@@ -107,7 +107,7 @@ ENV IBC_TWS_CHANNEL=stable
 # also doubles as this target's only copy of the installer version, replacing
 # the separate IB_GATEWAY_VERSION/TWS_MAJOR_VRSN pair (TWS_MAJOR_VRSN was dead:
 # nothing read it once ibcstart.sh was dropped)
-ENV IBC_TWS_VERSION=10.50.1g
+ENV IBC_TWS_VERSION=10.50.1h
 ENV PATH="/opt/python/current:${PATH}"
 ARG DEBIAN_FRONTEND=noninteractive
 # Copy files
@@ -168,7 +168,7 @@ ENV IBC_TWS_SETTINGS_PATH=/config/tws_settings
 ENV IBC_TWS_CHANNEL=stable
 # see gateway target above -- same consolidation, drops IB_GATEWAY_VERSION/
 # IB_GATEWAY_RELEASE_CHANNEL/TWS_MAJOR_VRSN
-ENV IBC_TWS_VERSION=10.50.1g
+ENV IBC_TWS_VERSION=10.50.1h
 ENV PATH="/opt/python/current:${PATH}"
 
 ARG DEBIAN_FRONTEND=noninteractive
