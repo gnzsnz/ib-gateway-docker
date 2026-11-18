@@ -36,8 +36,8 @@ services:
       RDP_PASSWORD: ${RDP_PASSWORD:-}
       RDP_PASSWORD_FILE: ${RDP_PASSWORD_FILE:-}
       IBC_TWS_SETTINGS_PATH: ${IBC_TWS_SETTINGS_PATH:-/config/tws_settings}
-      # no env var for TWOFA_DEVICE/ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/
-      # BYPASS_WARNING/SAVE_TWS_SETTINGS -- use [[setting]]/[[dialog]] in ibcontroller.toml, see README
+      # ALLOW_BLIND_TRADING/TWS_MASTER_CLIENT_ID/BYPASS_WARNING are now IBKR_* in ib.env, see README;
+      # TWOFA_DEVICE/SAVE_TWS_SETTINGS are gone
       TZ: ${TZ:-Etc/UTC}
       SSH_TUNNEL: ${SSH_TUNNEL:-}
       SSH_OPTIONS: ${SSH_OPTIONS:-}

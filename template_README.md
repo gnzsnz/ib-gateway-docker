@@ -182,7 +182,8 @@ All environment variables are common between ibgateway and TWS image, unless spe
 | `IBC_DIAGNOSTIC_WHEN` | When to log a window structure dump: `open`/`openclose`/`never`. | never |
 | `IBC_DIAGNOSTIC_SETTINGS_SWEEP` | Log a dump of each Global Configuration tree node in `labels.settings.sweep_paths`. | false |
 | `IBC_JAVA_HEAP_SIZE` | JVM heap for TWS/Gateway at launch. Includes the unit, e.g. `1024m`/`4g`. Leave unset to keep the installed `.vmoptions` file's `-Xmx` value. | **not defined** |
-| *(was `TWOFA_DEVICE`/`ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`/`SAVE_TWS_SETTINGS`)* | No longer an env var. Add `[[setting]]` entries to `ibcontroller.toml` on the [config volume](#ibcontroller-env-vars-and-config-volume) instead. `BYPASS_WARNING`'s old behavior is ibcontroller's default already. | |
+| *(was `ALLOW_BLIND_TRADING`/`TWS_MASTER_CLIENT_ID`/`BYPASS_WARNING`)* | Renamed, set in `ib.env`: `IBKR_BLIND_TRADING`, `IBKR_MASTER_API_CLIENT_ID`, and `IBKR_API_PRECAUTIONS_BYPASS_ORDER_PRECAUTIONS` plus `IBKR_API_PRECAUTIONS_BYPASS_BOND_WARNING` (the old `BYPASS_WARNING` set both). See [IBKR settings and pop-ups](#ibkr-settings-and-pop-ups-ibenv). | |
+| *(was `TWOFA_DEVICE`/`SAVE_TWS_SETTINGS`)* | Gone, not implemented in ibcontroller v0.2.0. | |
 
 #### IBKR settings and pop-ups (`ib.env`)
 
@@ -257,7 +258,7 @@ ibcontroller 0.2.0 has no compatibility layer. Before upgrading:
 - `CUSTOM_CONFIG` and `IBC_TIME_ZONE` forwarding are gone from the compose files. Set `TZ` in `.env`. The image no longer writes `TrustedIPs`/`WriteDebug` into a new `jts.ini`.
 - `JAVA_HEAP_SIZE` (old image scripts, still shipped by `stable`) is now `IBC_JAVA_HEAP_SIZE` in `ib.env`, read by ibcontroller. The value now includes the unit (`1024m`; the old one was a bare number, `1024`). No image script handles it any more.
 
-See [ibcontroller's Upgrading guide](https://github.com/gnzsnz/ibcontroller/blob/main/docs/Upgrading.md).
+See [ibcontroller's Upgrading guide](https://github.com/gnzsnz/ibcontroller/blob/master/docs/Upgrading.md).
 
 ## Ports
 
@@ -309,7 +310,7 @@ itself is configured through a TOML file (`ibcontroller.toml`, with
 `[ibcontroller]` and `[ibkr]` tables, plus your own `[[setting]]`/`[[dialog]]`
 entries) under the [config
 volume](#ibcontroller-env-vars-and-config-volume) -- see there for the mount
-and [ibcontroller's own README](https://github.com/gnzsnz/ibcontroller/blob/main/README.md)
+and [ibcontroller's own README](https://github.com/gnzsnz/ibcontroller/blob/master/README.md)
 for the full field reference.
 
 `jts.ini` is no longer rendered by the image. ibcontroller creates the settings
