@@ -2,6 +2,12 @@
 
 [![Build](https://github.com/gnzsnz/ib-gateway-docker/actions/workflows/on-push-n-pr.yml/badge.svg?branch=master)](https://github.com/gnzsnz/ib-gateway-docker/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Discussions](https://img.shields.io/github/discussions/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/discussions) [![GitHub Repo stars](https://img.shields.io/github/stars/gnzsnz/ib-gateway-docker)](#repo-stats) [![GitHub forks](https://img.shields.io/github/forks/gnzsnz/ib-gateway-docker)](https://github.com/gnzsnz/ib-gateway-docker/network/members)
 
+> [!IMPORTANT]
+> This image is moving from [IBC](https://github.com/IbcAlpha/IBC) to [ibcontroller](https://github.com/gnzsnz/ibcontroller). The change breaks existing compose and env files.
+> The switch on `master` is not before 2027-01-10.
+> Read the migration guide: <https://github.com/gnzsnz/ib-gateway-docker/discussions/468>
+> To stay on the IBC image, pin an exact version tag published before the switch.
+
 <img src="https://github.com/gnzsnz/ib-gateway-docker/blob/master/logo.png" height="300" class="center" alt="IB Gateway Docker"/>
 
 ## What is it?
