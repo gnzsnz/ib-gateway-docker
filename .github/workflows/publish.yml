@@ -4,40 +4,150 @@ on:
   push:
     tags:
       - 'v*'
+  schedule:
+    # Weekly refresh of the stable channel: same Gateway version, new Ubuntu packages.
+    # Monday 04:00 UTC, before the daily detect-releases run at 06:00 UTC.
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to rebuild"
+        type: choice
+        options:
+          - stable
+        default: stable
+      version:
+        description: "Gateway version (empty = version in <channel>/Dockerfile on the default branch)"
+        type: string
+        default: ""
+      dry_run:
+        description: "Build only, do not push"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   packages: write
   id-token: write
 
+# A release tag and a scheduled rebuild can target the same channel; never let them push at once.
+concurrency:
+  group: publish-docker
+  cancel-in-progress: false
+
 jobs:
-  publish-docker:
-    name: Publish Docker Image
+  resolve:
+    name: Resolve release
     runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.release.outputs.skip }}
+      channel: ${{ steps.release.outputs.channel }}
+      version: ${{ steps.release.outputs.version }}
+      minor: ${{ steps.release.outputs.minor }}
+      tag: ${{ steps.release.outputs.tag }}
+      rebuild: ${{ steps.release.outputs.rebuild }}
+      dry_run: ${{ steps.release.outputs.dry_run }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref }}
           lfs: true
 
-      - name: Extract release channel
-        id: channel
+      - name: Resolve release
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_CHANNEL: ${{ inputs.channel }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          # ie ref_name=v10.50.1a-latest -> channel=latest, version=10.50.1a
-          channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
-          version=$(sed -E "s/^v(.*)-${channel}\$/\1/" <<< "${{ github.ref_name }}")
-          echo "channel=$channel" >> $GITHUB_OUTPUT
-          echo "version=$version" >> $GITHUB_OUTPUT
+          set -Eeuo pipefail
+
+          rebuild=false
+          dry_run=false
+
+          case "$EVENT_NAME" in
+            push)
+              # ie ref_name=v10.50.1h-stable -> channel=stable, version=10.50.1h
+              channel=$(cut -d - -f 2 <<< "$REF_NAME")
+              version=$(sed -E "s/^v(.*)-${channel}\$/\1/" <<< "$REF_NAME")
+              ;;
+            schedule)
+              channel=stable
+              rebuild=true
+              ;;
+            workflow_dispatch)
+              channel="${INPUT_CHANNEL:-stable}"
+              version="$INPUT_VERSION"
+              rebuild=true
+              if [ "$INPUT_DRY_RUN" = "true" ]; then
+                dry_run=true
+              fi
+              ;;
+            *)
+              echo "::error::unsupported event: $EVENT_NAME"
+              exit 1
+              ;;
+          esac
+
+          if [ "$rebuild" = "true" ] && [ "$dry_run" = "false" ] && [ "$REF" != "refs/heads/${DEFAULT_BRANCH}" ]; then
+            echo "::error::rebuilds push and sign only from refs/heads/${DEFAULT_BRANCH} (got ${REF}); use dry_run on other refs"
+            exit 1
+          fi
+
+          if [ -z "$version" ]; then
+            version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "${channel}/Dockerfile" | head -n 1)
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::could not resolve a Gateway version for channel '${channel}'"
+            exit 1
+          fi
+
+          tag="v${version}-${channel}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            # The release PR can merge before the maintainer creates the tag; wait for the tag.
+            if [ "$rebuild" = "true" ]; then
+              echo "::notice::tag ${tag} does not exist; skipping rebuild"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::tag ${tag} does not exist"
+            exit 1
+          fi
+
+          {
+            echo "channel=${channel}"
+            echo "version=${version}"
+            echo "minor=$(cut -d. -f1,2 <<< "$version")"
+            echo "tag=${tag}"
+            echo "rebuild=${rebuild}"
+            echo "dry_run=${dry_run}"
+            echo "skip=false"
+          } >> "$GITHUB_OUTPUT"
+
+  publish-docker:
+    name: Publish Docker Image
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
+          path: source
+          lfs: true
 
       - name: Check tag matches channel Dockerfile
         env:
-          CHANNEL: ${{ steps.channel.outputs.channel }}
-          VERSION: ${{ steps.channel.outputs.version }}
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
+          VERSION: ${{ needs.resolve.outputs.version }}
         run: |
-          set -euo pipefail
-          # F27: the tagged commit must already hold the regenerated channel
-          file_version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "${CHANNEL}/Dockerfile" | head -n 1)
+          set -Eeuo pipefail
+          file_version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "source/${CHANNEL}/Dockerfile" | head -n 1)
           if [ "${file_version}" != "${VERSION}" ]; then
             echo "::error::tag version '${VERSION}' != IB_GATEWAY_VERSION '${file_version}' in ${CHANNEL}/Dockerfile; run ./update.sh ${CHANNEL} ${VERSION} and commit before tagging"
             exit 1
@@ -52,42 +162,80 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       ###############################################################
-      #   Resolve base image digests -- pins the floating tags baked
-      #   into Dockerfile.template's default ARGs, for this release only
+      #   Channel layout: two-file IBC build or multi-target build
       ###############################################################
-      - name: Resolve base image digests
-        id: resolve-base
+      # The tag decides the layout, so after the flip a rebuild of an IBC-era
+      # stable tag still takes the two-file path (F33).
+      - name: Detect channel layout
+        id: layout
+        env:
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
         run: |
-          set -euo pipefail
-          ubuntu_digest=$(docker buildx imagetools inspect ubuntu:26.04 --format '{{json .Manifest}}' | jq -r '.digest')
-          tws_digest=$(docker buildx imagetools inspect ghcr.io/gnzsnz/rdesktop-xfce:latest --format '{{json .Manifest}}' | jq -r '.digest')
-          echo "ubuntu_pinned=ubuntu:26.04@${ubuntu_digest}" >> "$GITHUB_OUTPUT"
-          echo "tws_pinned=ghcr.io/gnzsnz/rdesktop-xfce@${tws_digest}" >> "$GITHUB_OUTPUT"
+          set -Eeuo pipefail
+          dir="source/${CHANNEL}"
+          if [ -f "${dir}/Dockerfile.tws" ]; then
+            layout=two-file
+            {
+              echo "layout=${layout}"
+              echo "gateway_target="
+              echo "tws_target="
+              echo "tws_file=${dir}/Dockerfile.tws"
+              echo "ubuntu_pinned="
+              echo "tws_pinned="
+              echo "build_args="
+            } >> "$GITHUB_OUTPUT"
+          else
+            layout=multi-target
+            ubuntu_digest=$(docker buildx imagetools inspect ubuntu:26.04 --format '{{json .Manifest}}' | jq -r '.digest')
+            tws_digest=$(docker buildx imagetools inspect ghcr.io/gnzsnz/rdesktop-xfce:latest --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ -z "${ubuntu_digest}" ] || [ -z "${tws_digest}" ]; then
+              echo "::error::could not resolve base image digests (ubuntu='${ubuntu_digest}', rdesktop-xfce='${tws_digest}')"
+              exit 1
+            fi
+            ubuntu_pinned="ubuntu:26.04@${ubuntu_digest}"
+            tws_pinned="ghcr.io/gnzsnz/rdesktop-xfce@${tws_digest}"
+            {
+              echo "layout=${layout}"
+              echo "gateway_target=gateway"
+              echo "tws_target=tws"
+              echo "tws_file=${dir}/Dockerfile"
+              echo "ubuntu_pinned=${ubuntu_pinned}"
+              echo "tws_pinned=${tws_pinned}"
+              echo "build_args<<EOF"
+              echo "UBUNTU_BASE_IMAGE=${ubuntu_pinned}"
+              echo "TWS_BASE_IMAGE=${tws_pinned}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+          echo "::notice::channel layout: ${layout}"
 
       ###############################################################
       #   Login container registry
       ###############################################################
-      - name: Log in to ghcr.io
+      - name: Log in ghcr.io
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub
+      - name: Log in Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Runs on every path: a missing installer release fails before any build.
       - name: Fetch IB Gateway installer checksums
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          REPO: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          gh release download \
-            "ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}" \
-            --repo "${{ github.repository }}" \
+          set -Eeuo pipefail
+          gh release download "ibgateway-${CHANNEL}@${VERSION}" \
+            --repo "${REPO}" \
             --pattern '*.sha256' \
             --dir ibgateway-checksums
 
@@ -105,25 +253,27 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+            type=raw,value=${{ needs.resolve.outputs.minor }}
+            type=raw,value=${{ needs.resolve.outputs.version }}
+            type=raw,value=${{ needs.resolve.outputs.channel }}
 
       - name: Build and push ibgateway
         id: build
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
-          context: ${{ steps.channel.outputs.channel }}
-          target: gateway
-          build-args: |
-            UBUNTU_BASE_IMAGE=${{ steps.resolve-base.outputs.ubuntu_pinned }}
-            TWS_BASE_IMAGE=${{ steps.resolve-base.outputs.tws_pinned }}
+          context: ./source/${{ needs.resolve.outputs.channel }}
+          file: ./source/${{ needs.resolve.outputs.channel }}/Dockerfile
+          target: ${{ steps.layout.outputs.gateway_target }}
+          build-args: ${{ steps.layout.outputs.build_args }}
           provenance: true
           sbom: true
+          # A rebuild must not reuse cached apt layers or a cached moving base tag.
+          pull: ${{ needs.resolve.outputs.rebuild == 'true' }}
+          no-cache: ${{ needs.resolve.outputs.rebuild == 'true' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ needs.resolve.outputs.dry_run != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -141,25 +291,28 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+            type=raw,value=${{ needs.resolve.outputs.minor }}
+            type=raw,value=${{ needs.resolve.outputs.version }}
+            type=raw,value=${{ needs.resolve.outputs.channel }}
 
+      # two-file layout: Dockerfile.tws builds FROM ghcr.io/gnzsnz/ib-gateway:<version>. A rebuild (pull: true) uses the gateway pushed just above; under dry_run nothing is pushed, so it uses the previously published gateway.
       - name: Build and push TWS
         id: build-tws
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
-          context: ${{ steps.channel.outputs.channel }}
-          target: tws
-          build-args: |
-            UBUNTU_BASE_IMAGE=${{ steps.resolve-base.outputs.ubuntu_pinned }}
-            TWS_BASE_IMAGE=${{ steps.resolve-base.outputs.tws_pinned }}
+          context: ./source/${{ needs.resolve.outputs.channel }}
+          file: ./${{ steps.layout.outputs.tws_file }}
+          target: ${{ steps.layout.outputs.tws_target }}
+          build-args: ${{ steps.layout.outputs.build_args }}
           provenance: true
           sbom: true
+          # A rebuild must not reuse cached apt layers or a cached moving base tag.
+          pull: ${{ needs.resolve.outputs.rebuild == 'true' }}
+          no-cache: ${{ needs.resolve.outputs.rebuild == 'true' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ needs.resolve.outputs.dry_run != 'true' }}
           tags: ${{ steps.meta-tws.outputs.tags }}
           labels: ${{ steps.meta-tws.outputs.labels }}
 
@@ -167,41 +320,59 @@ jobs:
       #   Sign, generate verification evidence, create release
       ###############################################################
       - name: Install cosign
+        if: needs.resolve.outputs.dry_run != 'true'
         uses: sigstore/cosign-installer@v3
 
       - name: Sign images (keyless)
+        if: needs.resolve.outputs.dry_run != 'true'
+        env:
+          GW_DIGEST: ${{ steps.build.outputs.digest }}
+          TWS_DIGEST: ${{ steps.build-tws.outputs.digest }}
         run: |
-          set -euo pipefail
-          cosign sign --yes "ghcr.io/gnzsnz/ib-gateway@${{ steps.build.outputs.digest }}"
-          cosign sign --yes "docker.io/gnzsnz/ib-gateway@${{ steps.build.outputs.digest }}"
-          cosign sign --yes "ghcr.io/gnzsnz/tws-rdesktop@${{ steps.build-tws.outputs.digest }}"
-          cosign sign --yes "docker.io/gnzsnz/tws-rdesktop@${{ steps.build-tws.outputs.digest }}"
+          set -Eeuo pipefail
+          cosign sign --yes "ghcr.io/gnzsnz/ib-gateway@${GW_DIGEST}"
+          cosign sign --yes "docker.io/gnzsnz/ib-gateway@${GW_DIGEST}"
+          cosign sign --yes "ghcr.io/gnzsnz/tws-rdesktop@${TWS_DIGEST}"
+          cosign sign --yes "docker.io/gnzsnz/tws-rdesktop@${TWS_DIGEST}"
 
-      - name: Collect reproducibility evidence
+      - name: Collect release evidence
+        if: needs.resolve.outputs.rebuild != 'true'
+        env:
+          GW_DIGEST: ${{ steps.build.outputs.digest }}
+          TWS_DIGEST: ${{ steps.build-tws.outputs.digest }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          LAYOUT: ${{ steps.layout.outputs.layout }}
+          UBUNTU_PINNED: ${{ steps.layout.outputs.ubuntu_pinned }}
+          TWS_PINNED: ${{ steps.layout.outputs.tws_pinned }}
         run: |
-          set -euo pipefail
-          gw_digest="${{ steps.build.outputs.digest }}"
-          tws_digest="${{ steps.build-tws.outputs.digest }}"
+          set -Eeuo pipefail
+          gw_digest="${GW_DIGEST}"
+          tws_digest="${TWS_DIGEST}"
+          identity="https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@refs/tags/${TAG}"
 
           {
             echo "## Build info"
             echo
-            echo "- Tag: ${GITHUB_REF_NAME}"
-            echo "- Channel: ${{ steps.channel.outputs.channel }}"
-            echo "- Git commit: ${GITHUB_SHA}"
+            echo "- Tag: ${TAG}"
+            echo "- Channel: ${CHANNEL}"
+            echo "- Layout: ${LAYOUT}"
+            echo "- Source commit: $(git -C source rev-parse HEAD)"
+            echo "- Workflow commit: ${GITHUB_SHA}"
             echo "- Build timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "- Ubuntu base (pinned): ${{ steps.resolve-base.outputs.ubuntu_pinned }}"
-            echo "- TWS base (pinned): ${{ steps.resolve-base.outputs.tws_pinned }}"
+            echo "- Ubuntu base (pinned): ${UBUNTU_PINNED:-not pinned (two-file layout)}"
+            echo "- TWS base (pinned): ${TWS_PINNED:-not pinned (two-file layout)}"
             echo "- Published ib-gateway digest: ${gw_digest}"
             echo "- Published tws-rdesktop digest: ${tws_digest}"
             echo "- Platforms: linux/amd64,linux/arm64"
             echo "- Registries: ghcr.io/gnzsnz/ib-gateway, docker.io/gnzsnz/ib-gateway, ghcr.io/gnzsnz/tws-rdesktop, docker.io/gnzsnz/tws-rdesktop"
             echo
-            echo "Tags \`${GITHUB_REF_NAME}\` and channel-latest float; pin by tag or digest for reproducibility."
+            echo "Tags \`${TAG}\` and channel-latest float; pin by tag or digest for reproducibility."
             echo
             echo "### IB Gateway installer"
             echo
-            echo "Checksums from release \`ibgateway-${{ steps.channel.outputs.channel }}@${{ steps.channel.outputs.version }}\`, as fetched by the \`setup\` stage:"
+            echo "Checksums from release \`ibgateway-${CHANNEL}@${VERSION}\`, as fetched by the \`setup\` stage:"
             echo '```'
             cat ibgateway-checksums/*.sha256
             echo '```'
@@ -209,10 +380,10 @@ jobs:
             echo "### Verify"
             echo '```bash'
             echo "cosign verify ghcr.io/gnzsnz/ib-gateway@${gw_digest} \\"
-            echo "  --certificate-identity https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@refs/tags/${GITHUB_REF_NAME} \\"
+            echo "  --certificate-identity ${identity} \\"
             echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
             echo "cosign verify ghcr.io/gnzsnz/tws-rdesktop@${tws_digest} \\"
-            echo "  --certificate-identity https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@refs/tags/${GITHUB_REF_NAME} \\"
+            echo "  --certificate-identity ${identity} \\"
             echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
             echo
             echo "docker buildx imagetools inspect ghcr.io/gnzsnz/ib-gateway@${gw_digest} --format '{{json .SBOM}}'"
@@ -224,17 +395,18 @@ jobs:
 
           sed \
             -e "/^[[:space:]]*image:/s#ghcr.io/gnzsnz/ib-gateway:latest#ghcr.io/gnzsnz/ib-gateway@${gw_digest}#g" \
-            docker-compose.yml > compose.release.yml
+            source/docker-compose.yml > compose.release.yml
           sed \
             -e "/^[[:space:]]*image:/s#ghcr.io/gnzsnz/tws-rdesktop:latest#ghcr.io/gnzsnz/tws-rdesktop@${tws_digest}#g" \
-            tws-docker-compose.yml > tws-compose.release.yml
-
+            source/tws-docker-compose.yml > tws-compose.release.yml
           cp ibgateway-checksums/*.sha256 .
           sha256sum compose.release.yml tws-compose.release.yml *.sh.sha256 > SHA256SUMS
 
       - name: Create release
+        if: needs.resolve.outputs.rebuild != 'true'
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ needs.resolve.outputs.tag }}
           generate_release_notes: true
           append_body: true
           body_path: BUILD_INFO.md
@@ -243,3 +415,61 @@ jobs:
             tws-compose.release.yml
             *.sh.sha256
             SHA256SUMS
+
+      ###############################################################
+      #   Weekly rebuild: record the rebuild in the tag's release
+      ###############################################################
+      - name: Collect rebuild evidence
+        if: needs.resolve.outputs.rebuild == 'true' && needs.resolve.outputs.dry_run != 'true'
+        env:
+          GW_DIGEST: ${{ steps.build.outputs.digest }}
+          TWS_DIGEST: ${{ steps.build-tws.outputs.digest }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+          MINOR: ${{ needs.resolve.outputs.minor }}
+          LAYOUT: ${{ steps.layout.outputs.layout }}
+          UBUNTU_PINNED: ${{ steps.layout.outputs.ubuntu_pinned }}
+          TWS_PINNED: ${{ steps.layout.outputs.tws_pinned }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -Eeuo pipefail
+          identity="https://github.com/gnzsnz/ib-gateway-docker/.github/workflows/publish.yml@${GITHUB_REF}"
+
+          {
+            echo
+            echo "## Rebuild $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            echo "- Rebuilt: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Trigger: ${EVENT}"
+            echo "- Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Source: tag ${TAG}, commit $(git -C source rev-parse HEAD)"
+            echo "- Workflow commit: ${GITHUB_SHA}"
+            echo "- Layout: ${LAYOUT}"
+            echo "- Ubuntu base (pinned): ${UBUNTU_PINNED:-not pinned (two-file layout)}"
+            echo "- TWS base (pinned): ${TWS_PINNED:-not pinned (two-file layout)}"
+            echo "- ib-gateway digest: ${GW_DIGEST}"
+            echo "- tws-rdesktop digest: ${TWS_DIGEST}"
+            echo "- Moved tags: ${CHANNEL}, ${MINOR}, ${VERSION} on ghcr.io and Docker Hub"
+            echo
+            echo "Rebuilt images are signed by the workflow on the default branch, not by the tag; verify with this identity."
+            echo
+            echo '```bash'
+            echo "cosign verify ghcr.io/gnzsnz/ib-gateway@${GW_DIGEST} \\"
+            echo "  --certificate-identity ${identity} \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\"
+            echo "  --certificate-github-workflow-sha ${GITHUB_SHA}"
+            echo "cosign verify ghcr.io/gnzsnz/tws-rdesktop@${TWS_DIGEST} \\"
+            echo "  --certificate-identity ${identity} \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\"
+            echo "  --certificate-github-workflow-sha ${GITHUB_SHA}"
+            echo '```'
+          } > REBUILD.md
+
+      - name: Append rebuild entry to release
+        if: needs.resolve.outputs.rebuild == 'true' && needs.resolve.outputs.dry_run != 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.resolve.outputs.tag }}
+          body_path: REBUILD.md
+          append_body: true
