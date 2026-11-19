@@ -53,6 +53,13 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 All tags are available in the container repository for [ib-gateway][1] and
 [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
 
+The `stable` channel is rebuilt weekly with the same IB Gateway version, to pick
+up Ubuntu security updates. The `stable`, minor and version tags all move to the
+new image, so their digest changes even though the version does not. Pin by
+digest if you need an immutable reference.
+Each rebuild is listed in the GitHub release of the version's tag (for example
+`v10.50.1h-stable`) with the new digests and the `cosign verify` command.
+
 ## How to use it?
 
 Create a `docker-compose.yml` file (or include ib-gateway services on your existing

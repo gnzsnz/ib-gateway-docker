@@ -89,6 +89,48 @@ pre-commit install
 
     Once the hooks pass, you can commit your changes.
 
+## Releasing
+
+Releases are published by pushing a tag named `v<version>-<channel>`, for
+example `v10.50.1h-stable`. The tag must point at a commit where
+`<channel>/Dockerfile` already holds that version; the workflow fails
+otherwise. The maintainer pushes the tag by hand.
+
+`publish.yml` fails before building when the `ibgateway-<channel>@<version>`
+release is missing. It then builds both images with SBOM and provenance, pushes
+them to GHCR and Docker Hub, and signs them with keyless cosign. Finally it
+creates the GitHub release of the tag with build info, the `cosign verify`
+command, pinned compose files and `SHA256SUMS`.
+
+The workflow supports two channel layouts. A channel directory with a
+`Dockerfile.tws` (IBC layout) builds the two files and does not pin base
+images. Without it, the workflow builds `target: gateway` and `target: tws` of
+the channel `Dockerfile`, with base images pinned by digest. The tag decides the
+layout, so rebuilds of older tags keep working.
+
+### Weekly stable rebuild
+
+`publish.yml` also runs every Monday at 04:00 UTC to rebuild `stable` with the
+same Gateway version. A release tag is not moved or created: the rebuild exists
+to pick up Ubuntu security updates that landed since the Gateway release.
+
+- The image is built from the existing `v<version>-stable` tag, with the build
+  cache disabled so apt packages and the moving `ubuntu` base are fetched fresh.
+- The `stable`, minor (`10.50`) and version (`10.50.1h`) tags all move to the
+  new image.
+- Each rebuild signs the new images with identity
+  `publish.yml@refs/heads/master` and appends an entry (UTC timestamp, run, digests,
+  `cosign verify` command with the workflow SHA) to the GitHub release of the
+  tag, creating that release if the tag has none.
+- If the tag does not exist yet (release PR merged, tag not pushed), the run
+  skips instead of failing.
+
+Run it on demand with `workflow_dispatch` and `channel=stable`, optionally with
+a `version`. Pushing rebuilds run only from `master`. Set `dry_run` to build
+without pushing, signing or touching the release; on the two-file layout its TWS
+build uses the previously published gateway image. Trigger it after a CVE when
+waiting for Monday is not acceptable.
+
 ## Submitting a Pull Request
 
 When you are ready to submit your contribution:
