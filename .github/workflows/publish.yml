@@ -6,6 +6,7 @@ on:
       - 'v*'
   schedule:
     # Weekly refresh of the stable channel: same Gateway version, new Ubuntu packages.
+    # runs before the detect-releases
     - cron: "0 4 * * 1"
   workflow_dispatch:
     inputs:
