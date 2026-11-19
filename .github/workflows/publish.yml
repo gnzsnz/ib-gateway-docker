@@ -4,23 +4,145 @@ on:
   push:
     tags:
       - 'v*'
+  schedule:
+    # Weekly refresh of the stable channel: same Gateway version, new Ubuntu packages.
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to rebuild"
+        type: choice
+        options:
+          - stable
+        default: stable
+      version:
+        description: "Gateway version (empty = version in <channel>/Dockerfile on the default branch)"
+        type: string
+        default: ""
+      dry_run:
+        description: "Build only, do not push"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+# A release tag and a scheduled rebuild can target the same channel; never let them push at once.
+concurrency:
+  group: publish-docker
+  cancel-in-progress: false
 
 jobs:
-  publish-docker:
-    name: Publish Docker Image
+  resolve:
+    name: Resolve release
     runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.release.outputs.skip }}
+      channel: ${{ steps.release.outputs.channel }}
+      version: ${{ steps.release.outputs.version }}
+      minor: ${{ steps.release.outputs.minor }}
+      tag: ${{ steps.release.outputs.tag }}
+      rebuild: ${{ steps.release.outputs.rebuild }}
+      dry_run: ${{ steps.release.outputs.dry_run }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref }}
           lfs: true
 
-      - name: Extract release channel
-        id: channel
+      - name: Resolve release
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_CHANNEL: ${{ inputs.channel }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          channel=$(cut -d - -f 2 <<< "${{ github.ref_name }}")
-          echo "channel=$channel" >> $GITHUB_OUTPUT
+          set -Eeuo pipefail
+
+          rebuild=false
+          dry_run=false
+
+          case "$EVENT_NAME" in
+            push)
+              # ie ref_name=v10.50.1h-stable -> channel=stable, version=10.50.1h
+              channel=$(cut -d - -f 2 <<< "$REF_NAME")
+              version=$(sed -E "s/^v(.*)-${channel}\$/\1/" <<< "$REF_NAME")
+              ;;
+            schedule)
+              channel=stable
+              rebuild=true
+              ;;
+            workflow_dispatch)
+              channel="${INPUT_CHANNEL:-stable}"
+              version="$INPUT_VERSION"
+              rebuild=true
+              if [ "$INPUT_DRY_RUN" = "true" ]; then
+                dry_run=true
+              fi
+              ;;
+            *)
+              echo "::error::unsupported event: $EVENT_NAME"
+              exit 1
+              ;;
+          esac
+
+          if [ -z "$version" ]; then
+            version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "${channel}/Dockerfile" | head -n 1)
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::could not resolve a Gateway version for channel '${channel}'"
+            exit 1
+          fi
+
+          tag="v${version}-${channel}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            # The release PR can merge before the maintainer creates the tag; wait for the tag.
+            if [ "$rebuild" = "true" ]; then
+              echo "::notice::tag ${tag} does not exist; skipping rebuild"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::tag ${tag} does not exist"
+            exit 1
+          fi
+
+          {
+            echo "channel=${channel}"
+            echo "version=${version}"
+            echo "minor=$(cut -d. -f1,2 <<< "$version")"
+            echo "tag=${tag}"
+            echo "rebuild=${rebuild}"
+            echo "dry_run=${dry_run}"
+            echo "skip=false"
+          } >> "$GITHUB_OUTPUT"
+
+  publish-docker:
+    name: Publish Docker Image
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
+          path: source
+          lfs: true
+
+      - name: Check tag matches channel Dockerfile
+        env:
+          CHANNEL: ${{ needs.resolve.outputs.channel }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          set -Eeuo pipefail
+          file_version=$(sed -nE 's/^ENV IB_GATEWAY_VERSION=(.*)$/\1/p' "source/${CHANNEL}/Dockerfile" | head -n 1)
+          if [ "${file_version}" != "${VERSION}" ]; then
+            echo "::error::tag version '${VERSION}' != IB_GATEWAY_VERSION '${file_version}' in ${CHANNEL}/Dockerfile; run ./update.sh ${CHANNEL} ${VERSION} and commit before tagging"
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -60,18 +182,21 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+            type=raw,value=${{ needs.resolve.outputs.minor }}
+            type=raw,value=${{ needs.resolve.outputs.version }}
+            type=raw,value=${{ needs.resolve.outputs.channel }}
 
       - name: Build and push ibgateway
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
-          context: ${{ steps.channel.outputs.channel }}
+          context: ./source/${{ needs.resolve.outputs.channel }}
+          # A rebuild must not reuse cached apt layers or a cached moving base tag.
+          pull: ${{ needs.resolve.outputs.rebuild == 'true' }}
+          no-cache: ${{ needs.resolve.outputs.rebuild == 'true' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ needs.resolve.outputs.dry_run != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -89,18 +214,21 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=match,pattern=v(\d+.\d+),group=1
-            type=match,pattern=v(\d+.\d+.\w+),group=1
-            type=match,pattern=v(\d+.\d+.\w+)+\-(stable|latest),group=2
+            type=raw,value=${{ needs.resolve.outputs.minor }}
+            type=raw,value=${{ needs.resolve.outputs.version }}
+            type=raw,value=${{ needs.resolve.outputs.channel }}
 
       - name: Build and push TWS
         uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
-          context: ${{ steps.channel.outputs.channel }}
-          file: ${{ steps.channel.outputs.channel }}/Dockerfile.tws
+          context: ./source/${{ needs.resolve.outputs.channel }}
+          file: ./source/${{ needs.resolve.outputs.channel }}/Dockerfile.tws
+          # A rebuild must not reuse cached apt layers or a cached moving base tag.
+          pull: ${{ needs.resolve.outputs.rebuild == 'true' }}
+          no-cache: ${{ needs.resolve.outputs.rebuild == 'true' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ needs.resolve.outputs.dry_run != 'true' }}
           tags: ${{ steps.meta-tws.outputs.tags }}
           labels: ${{ steps.meta-tws.outputs.labels }}

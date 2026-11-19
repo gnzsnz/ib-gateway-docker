@@ -89,6 +89,32 @@ pre-commit install
 
     Once the hooks pass, you can commit your changes.
 
+## Releasing
+
+Releases are published by pushing a tag named `v<version>-<channel>`, for
+example `v10.50.1h-stable`. The tag must point at a commit where
+`<channel>/Dockerfile` already holds that version. `publish.yml` builds the
+image from the tagged commit and publishes it to GHCR and Docker Hub.
+
+### Weekly stable rebuild
+
+`publish.yml` also runs every Monday at 04:00 UTC to rebuild `stable` with the
+same Gateway version. A release tag is not moved or created: the rebuild exists
+to pick up Ubuntu security updates that landed since the Gateway release.
+
+- The image is built from the existing `v<version>-stable` tag, with the build
+  cache disabled so apt packages and the moving `ubuntu` base are fetched fresh.
+- The `stable`, minor (`10.50`) and version (`10.50.1h`) tags all move to the
+  new image.
+- Rebuilds do not create a GitHub release; they refresh the published images
+  only.
+- If the tag does not exist yet (release PR merged, tag not pushed), the run
+  skips instead of failing.
+
+Run it on demand with `workflow_dispatch` and `channel=stable`; set `dry_run` to
+build without pushing. Trigger it after a CVE when waiting for Monday is not
+acceptable.
+
 ## Submitting a Pull Request
 
 When you are ready to submit your contribution:
