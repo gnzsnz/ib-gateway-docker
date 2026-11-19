@@ -23,5 +23,5 @@ scanning, enable code scanning for the repository and set the repository Actions
 variable `TRIVY_UPLOAD_SARIF` to `true`. Uploads run on the default branch.
 
 Findings are informational. The workflow runs independently of image publishing.
-See the [IB Gateway JAR findings](docs/ib-gateway-jar-findings.md) for the scan
+See the [IB Gateway JAR findings](https://github.com/gnzsnz/ib-gateway-docker/discussions/472) for the scan
 baseline and reproduction steps.
