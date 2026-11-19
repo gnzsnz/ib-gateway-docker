@@ -2,7 +2,7 @@ name: IB Gateway image security scan
 
 on:
   schedule:
-    - cron: '43 4 * * 1'
+    - cron: '43 4 * * 5' # Friday: findings are fixed by the Monday stable rebuild
   workflow_dispatch:
 
 jobs:
