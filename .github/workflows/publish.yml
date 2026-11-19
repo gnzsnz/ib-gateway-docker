@@ -438,7 +438,7 @@ jobs:
 
           {
             echo
-            echo "## Rebuild $(date -u +%Y-%m-%d)"
+            echo "## Rebuild $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo
             echo "- Rebuilt: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "- Trigger: ${EVENT}"

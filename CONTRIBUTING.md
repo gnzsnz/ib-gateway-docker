@@ -119,7 +119,7 @@ to pick up Ubuntu security updates that landed since the Gateway release.
 - The `stable`, minor (`10.50`) and version (`10.50.1h`) tags all move to the
   new image.
 - Each rebuild signs the new images with identity
-  `publish.yml@refs/heads/master` and appends an entry (date, run, digests,
+  `publish.yml@refs/heads/master` and appends an entry (UTC timestamp, run, digests,
   `cosign verify` command with the workflow SHA) to the GitHub release of the
   tag, creating that release if the tag has none.
 - If the tag does not exist yet (release PR merged, tag not pushed), the run
