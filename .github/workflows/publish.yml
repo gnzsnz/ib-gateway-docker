@@ -68,6 +68,7 @@ jobs:
 
           rebuild=false
           dry_run=false
+          version="" # schedule leaves it unset; resolved from <channel>/Dockerfile below
 
           case "$EVENT_NAME" in
             push)
