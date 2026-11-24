@@ -45,13 +45,20 @@ Images are provided for [IB gateway][1] and [TWS][2]. With the following tags:
 
 | Image| Channel  | IB Gateway Version  | IBC Version      | Docker Tags                                    |
 | --- | -------- | ------------------- | ---------------- | ---------------------------------------------- |
-| [ib-gateway][1] | `latest` | `10.52.1d` | `3.24.2` | `latest` `10.52` `10.52.1d` |
+| [ib-gateway][1] | `latest` | `10.53.1a` | `3.24.2` | `latest` `10.53` `10.53.1a` |
 | [ib-gateway][1] |`stable` | `10.50.1h` | `3.24.2` | `stable` `10.50` `10.50.1h` |
-| [tws-rdesktop][2] | `latest` | `10.52.1d` | `3.24.2` | `latest` `10.52` `10.52.1d` |
+| [tws-rdesktop][2] | `latest` | `10.53.1a` | `3.24.2` | `latest` `10.53` `10.53.1a` |
 | [tws-rdesktop][2] |`stable` | `10.50.1h` | `3.24.2` | `stable` `10.50` `10.50.1h` |
 
 All tags are available in the container repository for [ib-gateway][1] and
 [tws-rdesktop][2]. IB Gateway and TWS share the same version numbers and tags.
+
+The `stable` channel is rebuilt weekly with the same IB Gateway version, to pick
+up Ubuntu security updates. The `stable`, minor and version tags all move to the
+new image, so their digest changes even though the version does not. Pin by
+digest if you need an immutable reference.
+Each rebuild is listed in the GitHub release of the version's tag (for example
+`v10.50.1h-stable`) with the new digests and the `cosign verify` command.
 
 ## How to use it?
 
